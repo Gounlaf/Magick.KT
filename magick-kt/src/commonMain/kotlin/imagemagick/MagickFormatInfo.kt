@@ -16,6 +16,7 @@ import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.convert
 import kotlinx.cinterop.memScoped
 import libMagickNative.MagickInfo
+import okio.Path
 import platform.posix.free
 import platform.posix.size_t
 import imagemagick.core.MagickFormatInfo as Interface
@@ -35,7 +36,6 @@ class MagickFormatInfo private constructor(
         internal val allFormats: Map<MagickFormat, Interface>
 
         init {
-            println("Environment_Initialize")
             Environment.initialize()
 
             allFormats = loadFormats()
@@ -51,7 +51,7 @@ class MagickFormatInfo private constructor(
                     memScoped {
                         NativeMagickFormatInfo.getInfo(memScope, list, i).let { ptr ->
                             try {
-                                ctor(ptr).also {
+                                ptr.toMagickFormatInfo().also {
                                     formats[it.format] = it
                                 }
                             } catch (e: Exception) {
@@ -71,8 +71,9 @@ class MagickFormatInfo private constructor(
 
         private fun formatCleaner(format: String?): MagickFormat =
             try {
-                enumValueOf<MagickFormat>(format?.filterNot { it == '-' }?.let {
+                enumValueOf<MagickFormat>(format?.filterNot { it == '-' }?.uppercase()?.let {
                     when (it) {
+                        // Rename some format with text equivalent because property can't begin with a number
                         "3FR" -> "THREEFR"
                         "3G2" -> "THREEG2"
                         "3GP" -> "THREEGP"
@@ -83,16 +84,59 @@ class MagickFormatInfo private constructor(
                 MagickFormat.UNKNOWN
             }
 
-        private fun ctor(ptr: CPointer<MagickInfo>): MagickFormatInfo = MagickFormatInfo(
-            canReadMultithreaded = ptr.canReadMultithreaded(),
-            canWriteMultithreaded = ptr.canWriteMultithreaded(),
-            description = ptr.description(),
-            format = formatCleaner(ptr.format()),
-            mimeType = ptr.mimeType(),
-            moduleFormat = formatCleaner(ptr.moduleFormat()),
-            supportsMultipleFrames = ptr.supportsMultipleFrames(),
-            supportsReading = ptr.supportsReading(),
-            supportsWriting = ptr.supportsWriting()
+        private inline fun CPointer<MagickInfo>.toMagickFormatInfo(): MagickFormatInfo = MagickFormatInfo(
+            canReadMultithreaded = this.canReadMultithreaded(),
+            canWriteMultithreaded = this.canWriteMultithreaded(),
+            description = this.description(),
+            format = formatCleaner(this.format()),
+            mimeType = this.mimeType(),
+            moduleFormat = formatCleaner(this.moduleFormat()),
+            supportsMultipleFrames = this.supportsMultipleFrames(),
+            supportsReading = this.supportsReading(),
+            supportsWriting = this.supportsWriting()
         )
+
+        /**
+         * Returns the format information. The extension of the supplied [file] is used to determine the format.
+         *
+         * @param file The file to check.
+         * @return The format information.
+         */
+        fun create(file: Path): Interface? = create(file.normalized().toString())
+
+        /**
+         * Returns the format information of the specified [format].
+         *
+         *
+         * @param format The image format.
+         * @return The format information.
+         */
+        fun create(format: MagickFormat): Interface? = when (format) {
+            MagickFormat.UNKNOWN -> null
+            else -> allFormats[format]
+        }
+
+        @Throws(IllegalArgumentException::class)
+        fun create(data: ByteArray): Interface? {
+            require(data.isNotEmpty())
+
+            val uData = data.toUByteArray()
+
+            return memScoped {
+                try {
+                    NativeMagickFormatInfo.GetInfoWithBlob(memScope, uData, uData.size.convert()).toMagickFormatInfo()
+                } catch (e: Exception) {
+                    null
+                }
+            }
+        }
+
+        /**
+         * Returns the format information. The extension of the supplied file name is used to determine the format.
+         *
+         * @param fileName The name of the file to check.
+         * @return The format information.
+         */
+        fun create(fileName: String): Interface? = create(formatCleaner(fileName.substringAfterLast('.')))
     }
 }

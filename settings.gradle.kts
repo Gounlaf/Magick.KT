@@ -1,4 +1,8 @@
+rootProject.name = "magick-kt"
+
 pluginManagement {
+    includeBuild("build-logic")
+
     repositories {
         mavenCentral()
         gradlePluginPortal()
@@ -10,4 +14,4 @@ plugins {
     id("de.fayard.refreshVersions") version "0.60.2"
 }
 
-rootProject.name = "magick-kt"
+include(":magick-kt")

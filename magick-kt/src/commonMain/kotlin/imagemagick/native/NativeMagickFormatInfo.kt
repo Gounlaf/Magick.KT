@@ -8,6 +8,7 @@ import kotlinx.cinterop.MemScope
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
+import kotlinx.cinterop.toCValues
 import kotlinx.cinterop.toKString
 import kotlinx.cinterop.value
 import libMagickNative.ExceptionInfo
@@ -17,6 +18,7 @@ import libMagickNative.MagickFormatInfo_CreateList
 import libMagickNative.MagickFormatInfo_Description_Get
 import libMagickNative.MagickFormatInfo_Format_Get
 import libMagickNative.MagickFormatInfo_GetInfo
+import libMagickNative.MagickFormatInfo_GetInfoWithBlob
 import libMagickNative.MagickFormatInfo_MimeType_Get
 import libMagickNative.MagickFormatInfo_Module_Get
 import libMagickNative.MagickFormatInfo_SupportsMultipleFrames_Get
@@ -47,6 +49,16 @@ internal object NativeMagickFormatInfo {
         val exception = memScope.alloc<ExceptionInfoPtrVar>()
 
         val result = MagickFormatInfo_GetInfo(list, index, exception.ptr)
+
+        // TODO Check exception
+
+        return result!!
+    }
+
+    @Throws(Exception::class)
+    fun GetInfoWithBlob(memScope: MemScope, data: UByteArray, length: size_t): CPointer<MagickInfo> {
+        val exception = memScope.alloc<ExceptionInfoPtrVar>()
+        val result = MagickFormatInfo_GetInfoWithBlob(data.toCValues(), length, exception.ptr)
 
         // TODO Check exception
 
