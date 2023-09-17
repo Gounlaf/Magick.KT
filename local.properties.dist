@@ -1,0 +1,2 @@
+local.lib=/absolute/path/to/lib/folder
+local.include=/absolute/path/to/include/folder
