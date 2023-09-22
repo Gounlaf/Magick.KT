@@ -43,7 +43,11 @@ There is no built-in equivalent of `C# ArgumentException`.
 
 ### Tests
 
-Tests are done with [Kotest](https://kotest.io), with known caveats:
+Tests are mostly mirrored from [Magick.NET](https://github.com/dlemstra/Magick.NET), using the same resources (images).
+
+Tests are done with [Kotest](https://kotest.io)
+
+#### Caveats
 
 - [it can't be configured with system properties](https://github.com/kotest/kotest/blob/402597ca4bf581f10df2f3d062a2427e0de2d005/kotest-framework/kotest-framework-engine/src/commonMain/kotlin/io/kotest/engine/config/ConfigManager.kt#L37)
 
@@ -51,12 +55,13 @@ Tests are done with [Kotest](https://kotest.io), with known caveats:
 
 - [ ] MagickFormatInfo
     - [x] Properties
-    - [ ] Equality
+    - [x] Equality; use `data class`
     - [ ] Methods
       - [x] `public static IMagickFormatInfo? Create(FileInfo file)`
       - [x] `public static IMagickFormatInfo? Create(MagickFormat format)`
       - [x] `public static IMagickFormatInfo? Create(string fileName)`
       - [x] `public static IMagickFormatInfo? Create(byte[] data)`
+      - [x] `public string toString()`
       - [ ] `public bool Unregister()`
     - [ ] Tests
       - [ ] Methods

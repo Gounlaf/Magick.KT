@@ -1,11 +1,9 @@
-import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import tasks.GenerateEnumsForResources
 import java.util.*
 
 plugins {
-//    @Suppress("UnstableApiUsage")
-    kotlin("multiplatform") version "1.9.10"
+    kotlin("multiplatform")
     id("io.kotest.multiplatform")
     id("build-logic")
     id("com.goncalossilva.resources")
@@ -44,25 +42,13 @@ kotlin {
                 freeCompilerArgs += "-Xruntime-logs=gc=info"
 
                 linkerOpts += "-L${localLib.absolutePath}"
+                // TODO Support other Quantum
                 linkerOpts += "-lMagick.Native-Q8-x64.dll"
             }
 
             executable {
                 entryPoint = "main"
-
-//                linkerOpts += "-L${localLib.absolutePath}"
-//                linkerOpts += "-lMagick.Native-Q8-x64.dll"
             }
-
-//            findTest(NativeBuildType.DEBUG)?.apply {
-//                linkerOpts += "-L${localLib.absolutePath}"
-//                linkerOpts += "-lMagick.Native-Q8-x64.dll"
-//            }
-
-//            findTest(NativeBuildType.RELEASE)?.apply {
-//                linkerOpts += "-L${localLib.absolutePath}"
-//                linkerOpts += "-lMagick.Native-Q8-x64.dll"
-//            }
         }
     }
 

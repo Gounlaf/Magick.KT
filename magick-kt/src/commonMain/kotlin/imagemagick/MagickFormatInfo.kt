@@ -2,6 +2,7 @@ package imagemagick
 
 import imagemagick.core.enums.MagickFormat
 import imagemagick.helpers.Environment
+import imagemagick.helpers.toString
 import imagemagick.native.NativeMagickFormatInfo
 import imagemagick.native.NativeMagickFormatInfo.canReadMultithreaded
 import imagemagick.native.NativeMagickFormatInfo.canWriteMultithreaded
@@ -22,7 +23,7 @@ import platform.posix.free
 import platform.posix.size_t
 import imagemagick.core.MagickFormatInfo as Interface
 
-class MagickFormatInfo private constructor(
+data class MagickFormatInfo(
     override val canReadMultithreaded: Boolean,
     override val canWriteMultithreaded: Boolean,
     override val description: String?,
@@ -141,5 +142,12 @@ class MagickFormatInfo private constructor(
             require(fileName.isNotBlank()) // TODO Set error message
             return create(formatCleaner(fileName.substringAfterLast('.')))
         }
+    }
+
+    // "{0}: {1} ({2}R{3}W{4}M)"
+    override fun toString(): String = "${format}: $description ({${supportsReading.toString("+","-")}}R{${supportsWriting.toString("+","-")}W{${supportsMultipleFrames.toString("+","-")}}M)"
+
+    override fun unregister(): Boolean {
+        TODO("Not yet implemented")
     }
 }
