@@ -1,11 +1,14 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
+import tasks.GenerateEnumsForResources
 import java.util.*
 
 plugins {
-    @Suppress("UnstableApiUsage")
-    embeddedKotlin("multiplatform")
+//    @Suppress("UnstableApiUsage")
+    kotlin("multiplatform") version "1.9.10"
     id("io.kotest.multiplatform")
+    id("build-logic")
+    id("com.goncalossilva.resources")
 }
 
 val localProperties = Properties().apply {
@@ -19,6 +22,12 @@ val localInclude = file(localProperties.getProperty("local.include", "/usr/inclu
 
 kotlin {
     linuxX64 {
+        compilations.configureEach {
+            compilerOptions.configure {
+                freeCompilerArgs.add("-Xallocator=custom")
+            }
+        }
+
         compilations.getByName("main") {
             cinterops {
                 val libMagickNative by creating {
@@ -31,24 +40,39 @@ kotlin {
         }
 
         binaries {
+            all {
+                freeCompilerArgs += "-Xruntime-logs=gc=info"
+
+                linkerOpts += "-L${localLib.absolutePath}"
+                linkerOpts += "-lMagick.Native-Q8-x64.dll"
+            }
+
             executable {
                 entryPoint = "main"
 
-                linkerOpts += "-L${localLib.absolutePath}"
-                linkerOpts += "-lMagick.Native-Q8-x64.dll"
+//                linkerOpts += "-L${localLib.absolutePath}"
+//                linkerOpts += "-lMagick.Native-Q8-x64.dll"
             }
 
-            findTest(NativeBuildType.DEBUG)?.apply {
-                linkerOpts += "-L${localLib.absolutePath}"
-                linkerOpts += "-lMagick.Native-Q8-x64.dll"
-            }
+//            findTest(NativeBuildType.DEBUG)?.apply {
+//                linkerOpts += "-L${localLib.absolutePath}"
+//                linkerOpts += "-lMagick.Native-Q8-x64.dll"
+//            }
 
-            findTest(NativeBuildType.RELEASE)?.apply {
-                linkerOpts += "-L${localLib.absolutePath}"
-                linkerOpts += "-lMagick.Native-Q8-x64.dll"
-            }
+//            findTest(NativeBuildType.RELEASE)?.apply {
+//                linkerOpts += "-L${localLib.absolutePath}"
+//                linkerOpts += "-lMagick.Native-Q8-x64.dll"
+//            }
         }
     }
+
+    val optIns = listOf(
+        "kotlin.ExperimentalStdlibApi",
+        "kotlin.native.runtime.NativeRuntimeApi",
+        "kotlin.experimental.ExperimentalNativeApi",
+        "kotlin.contracts.ExperimentalContracts",
+        "io.kotest.common.ExperimentalKotest",
+    )
 
     sourceSets {
         all {
@@ -57,33 +81,33 @@ kotlin {
 
         val commonMain by getting {
             dependencies {
-                implementation(platform("org.jetbrains.kotlinx:kotlinx-coroutines-bom:_"))
+                implementation(project.dependencies.platform("org.jetbrains.kotlinx:kotlinx-coroutines-bom:_"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
 
-                implementation(platform("com.squareup.okio:okio-bom:_"))
+                implementation(project.dependencies.platform("com.squareup.okio:okio-bom:_"))
                 implementation("com.squareup.okio:okio")
+                implementation("com.squareup.okio:okio-fakefilesystem")
             }
         }
 
         val commonTest by getting {
             dependencies {
-                implementation(platform("io.kotest:kotest-bom:_"))
+                implementation(project.dependencies.platform("io.kotest:kotest-bom:_"))
                 implementation("io.kotest:kotest-assertions-core")
                 implementation("io.kotest:kotest-framework-engine")
 
+                implementation("com.goncalossilva:resources:_")
+
+                implementation(kotlin("test"))
                 implementation(kotlin("test-common"))
                 implementation(kotlin("test-annotations-common"))
             }
 
-            languageSettings.optIn("kotlin.ExperimentalStdlibApi")
-            languageSettings.optIn("kotlin.native.runtime.NativeRuntimeApi")
-            languageSettings.optIn("kotlin.contracts.ExperimentalContracts")
+            optIns.forEach { languageSettings.optIn(it) }
         }
 
         val linuxX64Test by getting {
-            languageSettings.optIn("kotlin.ExperimentalStdlibApi")
-            languageSettings.optIn("kotlin.native.runtime.NativeRuntimeApi")
-            languageSettings.optIn("kotlin.contracts.ExperimentalContracts")
+            optIns.forEach { languageSettings.optIn(it) }
         }
     }
 }
@@ -91,3 +115,12 @@ kotlin {
 tasks.withType<KotlinNativeTest>().all {
     environment("LD_LIBRARY_PATH", localLib.absolutePath)
 }
+
+// Task dedicated to generate Enums from resources folder
+tasks.register<GenerateEnumsForResources>(
+    "generateEnumsForResources",
+    project,
+    File("src/commonTest"),
+    "imagemagick",
+    "files"
+)

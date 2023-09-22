@@ -2,4 +2,4 @@ package imagemagick.core
 
 import libMagickNative.MagickBooleanType
 
-fun MagickBooleanType.toBoolean(): Boolean = this.toInt() == 1
+fun MagickBooleanType.toBoolean(): Boolean = this == 1u

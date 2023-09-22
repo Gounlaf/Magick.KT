@@ -15,6 +15,7 @@ import imagemagick.native.NativeMagickFormatInfo.supportsWriting
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.convert
 import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.usePinned
 import libMagickNative.MagickInfo
 import okio.Path
 import platform.posix.free
@@ -63,7 +64,7 @@ class MagickFormatInfo private constructor(
 
                 free(list)
             } catch (e: Exception) {
-                println()
+                // NO-OP
             }
 
             return formats
@@ -107,7 +108,6 @@ class MagickFormatInfo private constructor(
         /**
          * Returns the format information of the specified [format].
          *
-         *
          * @param format The image format.
          * @return The format information.
          */
@@ -117,17 +117,17 @@ class MagickFormatInfo private constructor(
         }
 
         @Throws(IllegalArgumentException::class)
-        fun create(data: ByteArray): Interface? {
+        fun create(data: UByteArray): Interface? {
             require(data.isNotEmpty())
 
-            val uData = data.toUByteArray()
+            return try {
+                memScoped {
+                    val infos = NativeMagickFormatInfo.getInfoWithBlob(data)
 
-            return memScoped {
-                try {
-                    NativeMagickFormatInfo.GetInfoWithBlob(memScope, uData, uData.size.convert()).toMagickFormatInfo()
-                } catch (e: Exception) {
-                    null
+                    infos.toMagickFormatInfo()
                 }
+            } catch (e: Exception) {
+                null
             }
         }
 
@@ -137,6 +137,9 @@ class MagickFormatInfo private constructor(
          * @param fileName The name of the file to check.
          * @return The format information.
          */
-        fun create(fileName: String): Interface? = create(formatCleaner(fileName.substringAfterLast('.')))
+        fun create(fileName: String): Interface? {
+            require(fileName.isNotBlank()) // TODO Set error message
+            return create(formatCleaner(fileName.substringAfterLast('.')))
+        }
     }
 }

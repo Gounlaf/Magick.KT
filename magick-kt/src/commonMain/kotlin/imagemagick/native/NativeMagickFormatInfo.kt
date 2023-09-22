@@ -5,11 +5,14 @@ import kotlinx.cinterop.ByteVar
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.CPointerVar
 import kotlinx.cinterop.MemScope
+import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.alloc
+import kotlinx.cinterop.convert
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.toCValues
 import kotlinx.cinterop.toKString
+import kotlinx.cinterop.usePinned
 import kotlinx.cinterop.value
 import libMagickNative.ExceptionInfo
 import libMagickNative.MagickFormatInfo_CanReadMultithreaded_Get
@@ -56,9 +59,16 @@ internal object NativeMagickFormatInfo {
     }
 
     @Throws(Exception::class)
-    fun GetInfoWithBlob(memScope: MemScope, data: UByteArray, length: size_t): CPointer<MagickInfo> {
-        val exception = memScope.alloc<ExceptionInfoPtrVar>()
-        val result = MagickFormatInfo_GetInfoWithBlob(data.toCValues(), length, exception.ptr)
+    fun getInfoWithBlob(data: UByteArray): CPointer<MagickInfo> = memScoped {
+        val exception = alloc<ExceptionInfoPtrVar>()
+
+//        MagickFormatInfo_GetInfoWithBlob(data.toCValues(), data.size.convert(), exception.ptr)
+        // version below seems to be the equivalent of fixed in C#
+        val result = data.usePinned {
+            val cPt = it.addressOf(0)
+
+            MagickFormatInfo_GetInfoWithBlob(cPt, data.size.convert(), exception.ptr)
+        }
 
         // TODO Check exception
 
