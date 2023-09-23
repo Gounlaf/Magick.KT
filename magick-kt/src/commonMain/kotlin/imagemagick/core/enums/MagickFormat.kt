@@ -1,5 +1,8 @@
 package imagemagick.core.enums
 
+/**
+ * Specifies the different file formats that are supported by ImageMagick.
+ */
 enum class MagickFormat {
     /** Unknown. */
     UNKNOWN,
@@ -538,9 +541,9 @@ enum class MagickFormat {
     /** The image format and characteristics. */
     YAML,
     /** Raw Y, Cb, and Cr samples. */
-    YCbCr,
+    YCBCR,
     /** Raw Y, Cb, Cr, and alpha samples. */
-    YCbCrA,
+    YCBCRA,
     /**CCIR 601 4:1:1 or 4:2:2. */
     YUV,
 }

@@ -16,14 +16,13 @@ import imagemagick.native.NativeMagickFormatInfo.supportsWriting
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.convert
 import kotlinx.cinterop.memScoped
-import kotlinx.cinterop.usePinned
 import libMagickNative.MagickInfo
 import okio.Path
 import platform.posix.free
 import platform.posix.size_t
 import imagemagick.core.MagickFormatInfo as Interface
 
-data class MagickFormatInfo(
+data class MagickFormatInfo private constructor(
     override val canReadMultithreaded: Boolean,
     override val canWriteMultithreaded: Boolean,
     override val description: String?,
@@ -144,7 +143,7 @@ data class MagickFormatInfo(
         }
     }
 
-    // "{0}: {1} ({2}R{3}W{4}M)"
+    // "{Format}: {Description} ({SupportReading}R{SupportWriting}W{SupportMultipleFrames}M)"
     override fun toString(): String = "${format}: $description ({${supportsReading.toString("+","-")}}R{${supportsWriting.toString("+","-")}W{${supportsMultipleFrames.toString("+","-")}}M)"
 
     override fun unregister(): Boolean {

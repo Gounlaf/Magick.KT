@@ -15,7 +15,7 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import okio.Path.Companion.toPath
 
-class MagickFormatInfoTest : ShouldSpec() {
+class MagickFormatInfoTests : ShouldSpec() {
     companion object {
         fun shouldReport(format: MagickFormat): Boolean {
             if (isDisabledThroughPolicy(format))
@@ -32,7 +32,7 @@ class MagickFormatInfoTest : ShouldSpec() {
     }
 
     init {
-        context("create") {
+        context("MagickFormatInfo TheConstructor") {
             context("with ByteArray") {
                 should("throw exception when array is empty") {
                     checkGcUsage {
@@ -192,7 +192,7 @@ class MagickFormatInfoTest : ShouldSpec() {
             }
         }
 
-        context("equality") {
+        context("MagickFormatInfo TheEqualsMethod") {
             should("return true when the objects are equal") {
                 val first = MagickFormatInfo.create(MagickFormat.PNG)
                 val second = MagickFormatInfo.create(Resources.Images.SnakewarePNG.path)
