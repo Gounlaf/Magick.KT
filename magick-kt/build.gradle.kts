@@ -7,6 +7,7 @@ plugins {
     id("io.kotest.multiplatform")
     id("build-logic")
     id("com.goncalossilva.resources")
+    id("io.gitlab.arturbosch.detekt")
 }
 
 val localProperties = Properties().apply {
@@ -80,6 +81,7 @@ kotlin {
             dependencies {
                 implementation(project.dependencies.platform("io.kotest:kotest-bom:_"))
                 implementation("io.kotest:kotest-assertions-core")
+                implementation("io.kotest:kotest-framework-datatest")
                 implementation("io.kotest:kotest-framework-engine")
 
                 implementation("com.goncalossilva:resources:_")

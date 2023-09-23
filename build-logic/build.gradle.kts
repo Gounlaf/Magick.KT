@@ -4,6 +4,11 @@ plugins {
     `kotlin-dsl`
 }
 
+repositories {
+    mavenCentral()
+    gradlePluginPortal()
+}
+
 gradlePlugin {
     plugins {
         create("build-logic") {
