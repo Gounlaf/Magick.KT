@@ -1,5 +1,9 @@
 package imagemagick.core.enums
 
+//
+// /!\ do not modify order: it's directly linked to the underlying C library enum/order /!\
+//
+
 /**
  * Specifies a kind of color space.
  */
