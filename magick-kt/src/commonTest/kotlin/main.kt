@@ -1,5 +1,8 @@
+import imagemagick.helpers.Environment
+
 fun mainNoExit(args: Array<String>) {
-    Platform.isMemoryLeakCheckerActive = true
+    Environment.initialize()
+
     Platform.isMemoryLeakCheckerActive = true
     kotlin.native.internal.test.testLauncherEntryPoint(args)
     // DefaultDispatcher.shutdown() might also be required,

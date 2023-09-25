@@ -1,7 +1,6 @@
 package imagemagick
 
 import imagemagick.core.enums.MagickFormat
-import imagemagick.helpers.Environment
 import imagemagick.helpers.toString
 import imagemagick.native.NativeMagickFormatInfo
 import imagemagick.native.NativeMagickFormatInfo.canReadMultithreaded
@@ -18,7 +17,6 @@ import kotlinx.cinterop.convert
 import kotlinx.cinterop.memScoped
 import libMagickNative.MagickInfo
 import okio.Path
-import platform.posix.free
 import platform.posix.size_t
 import imagemagick.core.MagickFormatInfo as Interface
 
@@ -37,34 +35,24 @@ data class MagickFormatInfo private constructor(
         internal val allFormats: Map<MagickFormat, Interface>
 
         init {
-            Environment.initialize()
-
             allFormats = loadFormats()
         }
 
         private fun loadFormats(): Map<MagickFormat, Interface> {
             val formats = mutableMapOf<MagickFormat, Interface>()
 
-            try {
-                val (list, length) = NativeMagickFormatInfo.createList()
-
-                for (i in 0.convert<size_t>()..length) {
-                    memScoped {
+            memScoped {
+                NativeMagickFormatInfo.createList().use { list ->
+                    for (i in 0u..list.length) {
                         NativeMagickFormatInfo.getInfo(memScope, list, i).let { ptr ->
-                            try {
-                                ptr.toMagickFormatInfo().also {
-                                    formats[it.format] = it
-                                }
-                            } catch (e: Exception) {
-                                e.printStackTrace()
+                            ptr.toMagickFormatInfo().also {
+                                formats[it.format] = it
                             }
                         }
                     }
-                }
 
-                free(list)
-            } catch (e: Exception) {
-                // NO-OP
+                    // TODO AddStealthCoders(instance, formats)
+                }
             }
 
             return formats
@@ -144,7 +132,12 @@ data class MagickFormatInfo private constructor(
     }
 
     // "{Format}: {Description} ({SupportReading}R{SupportWriting}W{SupportMultipleFrames}M)"
-    override fun toString(): String = "${format}: $description ({${supportsReading.toString("+","-")}}R{${supportsWriting.toString("+","-")}W{${supportsMultipleFrames.toString("+","-")}}M)"
+    override fun toString(): String = "${format}: $description ({${supportsReading.toString("+", "-")}}R{${
+        supportsWriting.toString(
+            "+",
+            "-"
+        )
+    }W{${supportsMultipleFrames.toString("+", "-")}}M)"
 
     override fun unregister(): Boolean {
         TODO("Not yet implemented")
