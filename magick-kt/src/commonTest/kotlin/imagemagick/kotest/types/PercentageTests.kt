@@ -12,7 +12,7 @@ class PercentageTests : ShouldSpec({
         }
 
         should("set value") {
-            val percentage = Percentage(50u)
+            val percentage = Percentage(50)
             percentage.toString() shouldBe "50%"
         }
 
