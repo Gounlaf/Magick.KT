@@ -22,7 +22,6 @@ data class Percentage(private val value: Double = 0.0) : Comparable<Percentage> 
     companion object {
         inline fun Int.toPercentage(): Percentage = Percentage(this)
         inline fun Double.toPercentage(): Percentage = Percentage(this)
-        inline fun Percentage.toDouble(): Double = this.toDouble()
     }
 
     operator fun times(other: Int): Int = ((other * value) / 100.0).toInt()
