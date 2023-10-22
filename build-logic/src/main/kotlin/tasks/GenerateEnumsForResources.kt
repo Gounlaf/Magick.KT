@@ -5,7 +5,6 @@ import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
-import com.squareup.kotlinpoet.buildCodeBlock
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskAction
@@ -32,7 +31,6 @@ abstract class GenerateEnumsForResources @Inject constructor(
             .primaryConstructor(
                 FunSpec.constructorBuilder()
                     .addParameter("path", String::class)
-//                    .addParameter("rawData", ByteArray::class)
                     .build()
             )
 
@@ -48,11 +46,6 @@ abstract class GenerateEnumsForResources @Inject constructor(
                         it.sanitizeName(),
                         TypeSpec.anonymousClassBuilder()
                             .addSuperclassConstructorParameter("%S", it.relativeTo(rootDir))
-//                            .addSuperclassConstructorParameter("%L", buildCodeBlock {
-//                                add("byteArrayOf(")
-//                                add(it.readBytes().joinToString { byte -> byte.toString() })
-//                                add(")")
-//                            })
                             .build()
                     )
                 }
@@ -63,13 +56,6 @@ abstract class GenerateEnumsForResources @Inject constructor(
                 .initializer("path")
                 .build()
         )
-
-
-//        builder.addProperty(
-//            PropertySpec.builder("rawData", ByteArray::class)
-//                .initializer("rawData")
-//                .build()
-//        )
 
         return builder
     }

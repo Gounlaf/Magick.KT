@@ -53,17 +53,6 @@ Tests are done with [Kotest](https://kotest.io)
 
 ## Progress
 
-- [ ] MagickFormatInfo
-    - [x] Properties
-    - [x] Equality; use `data class`
-    - [ ] Methods
-      - [x] `public static IMagickFormatInfo? Create(FileInfo file)`
-      - [x] `public static IMagickFormatInfo? Create(MagickFormat format)`
-      - [x] `public static IMagickFormatInfo? Create(string fileName)`
-      - [x] `public static IMagickFormatInfo? Create(byte[] data)`
-      - [x] `public string toString()`
-      - [ ] `public bool Unregister()`
-    - [ ] Tests
-      - [ ] Methods
-      - [ ] Equality
-- [ ] Throw/ArgumentException portage?
+... Unable to maintain a coherent list.
+
+Tests might show the progress.

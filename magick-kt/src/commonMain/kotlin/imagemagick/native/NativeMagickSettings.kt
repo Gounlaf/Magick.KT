@@ -9,6 +9,7 @@ import imagemagick.core.toEnum
 import imagemagick.core.toNative
 import imagemagick.core.toPrimitive
 import kotlinx.cinterop.CPointer
+import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.convert
 import kotlinx.cinterop.toKString
 import libMagickNative.ImageInfo
@@ -55,6 +56,8 @@ import libMagickNative.MagickSettings_SetSize
 import libMagickNative.MagickSettings_Verbose_Get
 import libMagickNative.MagickSettings_Verbose_Set
 
+@ExperimentalForeignApi
+@ExperimentalStdlibApi
 internal class NativeMagickSettings : AutoCloseable {
     internal val native: CPointer<ImageInfo> = create()
 

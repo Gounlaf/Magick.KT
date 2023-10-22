@@ -27,5 +27,8 @@ allprojects {
     repositories {
         mavenCentral()
         gradlePluginPortal()
+        maven {
+            url = uri("https://maven.universablockchain.com/")
+        }
     }
 }

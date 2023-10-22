@@ -21,11 +21,11 @@ val localInclude = file(localProperties.getProperty("local.include", "/usr/inclu
 
 kotlin {
     linuxX64 {
-        compilations.configureEach {
-            compilerOptions.configure {
-                freeCompilerArgs.add("-Xallocator=custom")
-            }
-        }
+//        compilations.configureEach {
+//            compilerOptions.configure {
+//                freeCompilerArgs.add("-Xallocator=custom")
+//            }
+//        }
 
         compilations.getByName("main") {
             cinterops {
@@ -53,19 +53,16 @@ kotlin {
         }
     }
 
-    val optIns = listOf(
+    val testOptIns = listOf(
         "kotlin.ExperimentalStdlibApi",
         "kotlin.native.runtime.NativeRuntimeApi",
         "kotlin.experimental.ExperimentalNativeApi",
         "kotlin.contracts.ExperimentalContracts",
+        "kotlinx.cinterop.ExperimentalForeignApi",
         "io.kotest.common.ExperimentalKotest",
     )
 
     sourceSets {
-        all {
-            languageSettings.optIn("kotlinx.cinterop.ExperimentalForeignApi")
-        }
-
         val commonMain by getting {
             dependencies {
                 implementation(project.dependencies.platform("org.jetbrains.kotlinx:kotlinx-coroutines-bom:_"))
@@ -74,6 +71,8 @@ kotlin {
                 implementation(project.dependencies.platform("com.squareup.okio:okio-bom:_"))
                 implementation("com.squareup.okio:okio")
                 implementation("com.squareup.okio:okio-fakefilesystem")
+
+                implementation("net.sergeych:mp_stools:_")
             }
         }
 
@@ -91,11 +90,11 @@ kotlin {
                 implementation(kotlin("test-annotations-common"))
             }
 
-            optIns.forEach { languageSettings.optIn(it) }
+            testOptIns.forEach { languageSettings.optIn(it) }
         }
 
         val linuxX64Test by getting {
-            optIns.forEach { languageSettings.optIn(it) }
+            testOptIns.forEach { languageSettings.optIn(it) }
         }
     }
 }

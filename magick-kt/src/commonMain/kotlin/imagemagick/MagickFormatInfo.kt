@@ -13,10 +13,12 @@ import imagemagick.native.NativeMagickFormatInfo.supportsMultipleFrames
 import imagemagick.native.NativeMagickFormatInfo.supportsReading
 import imagemagick.native.NativeMagickFormatInfo.supportsWriting
 import kotlinx.cinterop.CPointer
+import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.convert
 import kotlinx.cinterop.memScoped
 import libMagickNative.MagickInfo
 import okio.Path
+import platform.posix.free
 import platform.posix.size_t
 import imagemagick.core.MagickFormatInfo as Interface
 
@@ -31,6 +33,8 @@ data class MagickFormatInfo private constructor(
     override val supportsReading: Boolean,
     override val supportsWriting: Boolean,
 ) : Interface {
+    @ExperimentalStdlibApi
+    @ExperimentalForeignApi
     companion object {
         internal val allFormats: Map<MagickFormat, Interface>
 
@@ -41,18 +45,16 @@ data class MagickFormatInfo private constructor(
         private fun loadFormats(): Map<MagickFormat, Interface> {
             val formats = mutableMapOf<MagickFormat, Interface>()
 
-            memScoped {
-                NativeMagickFormatInfo.createList().use { list ->
-                    for (i in 0u..list.length) {
-                        NativeMagickFormatInfo.getInfo(memScope, list, i).let { ptr ->
-                            ptr.toMagickFormatInfo().also {
-                                formats[it.format] = it
-                            }
+            NativeMagickFormatInfo.createList()?.use { list ->
+                for (i in 0u..list.length) {
+                    NativeMagickFormatInfo.getInfo(list, i)?.let { ptr ->
+                        ptr.toMagickFormatInfo().also {
+                            formats[it.format] = it
                         }
                     }
-
-                    // TODO AddStealthCoders(instance, formats)
                 }
+
+                // TODO AddStealthCoders(instance, formats)
             }
 
             return formats
@@ -108,14 +110,12 @@ data class MagickFormatInfo private constructor(
         fun create(data: UByteArray): Interface? {
             require(data.isNotEmpty())
 
-            return try {
-                memScoped {
-                    val infos = NativeMagickFormatInfo.getInfoWithBlob(data)
+            return NativeMagickFormatInfo.getInfoWithBlob(data)?.let {
+                val info = it.toMagickFormatInfo()
 
-                    infos.toMagickFormatInfo()
-                }
-            } catch (e: Exception) {
-                null
+                free(it)
+
+                info
             }
         }
 

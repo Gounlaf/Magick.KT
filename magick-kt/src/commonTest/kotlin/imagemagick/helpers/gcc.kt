@@ -29,15 +29,15 @@ inline fun <reified T : TestScope, reified R> checkGcUsage(receiver: T, block: T
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
-//    val before = getUsage()
+    val before = getUsage()
 
     receiver.block()
 
-//    val after = getUsage()
-//
-//    if (after > before) {
-//        receiver.warn { "⚠ you may have a memory leak; before: $before - after: $after; ${receiver.testCase.name}" }
-//    }
+    val after = getUsage()
+
+    if (after != before) {
+        receiver.warn { "⚠ you may have a memory leak; before: $before - after: $after; ${receiver.testCase.name}" }
+    }
 }
 
 
@@ -46,13 +46,13 @@ inline fun <R> checkGcUsage(block: () -> R) {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
-//    val before = getUsage()
+    val before = getUsage()
 
     block()
 
-//    val after = getUsage()
-//
-//    if (after > before) {
-//        println("⚠ you may have a memory leak; before: $before - after: $after")
-//    }
+    val after = getUsage()
+
+    if (after != before) {
+        println("⚠ you may have a memory leak; before: $before - after: $after")
+    }
 }

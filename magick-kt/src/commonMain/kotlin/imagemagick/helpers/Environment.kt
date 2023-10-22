@@ -1,10 +1,12 @@
 package imagemagick.helpers
 
+import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.toKString
 import libMagickNative.Environment_GetEnv
 import libMagickNative.Environment_Initialize
 import libMagickNative.Environment_SetEnv
 
+@ExperimentalForeignApi
 internal object Environment {
     init {
         Environment_Initialize()

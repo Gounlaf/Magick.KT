@@ -4,11 +4,12 @@ import imagemagick.core.toPrimitive
 import kotlinx.cinterop.ByteVar
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.CPointerVar
-import kotlinx.cinterop.MemScope
+import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.convert
 import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.pointed
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.toKString
 import kotlinx.cinterop.usePinned
@@ -30,23 +31,28 @@ import libMagickNative.MagickFormatInfo_SupportsWriting_Get
 import libMagickNative.MagickInfo
 import platform.posix.size_tVar
 
+@ExperimentalForeignApi
 internal typealias ExceptionInfoPtrVar = CPointerVar<ExceptionInfo>
 
+@ExperimentalForeignApi
+@ExperimentalStdlibApi
 internal object NativeMagickFormatInfo {
     data class CreateListResult(val cPointer: CPointer<CPointerVar<ByteVar>>, val length: UInt) : AutoCloseable {
-        override fun close() = disposeList(this)
+        override fun close() {
+            disposeList(this)
+        }
     }
 
     @Throws(Exception::class)
-    internal fun createList(): CreateListResult = memScoped {
+    internal fun createList(): CreateListResult? = memScoped {
         val length = alloc<size_tVar>()
         val exception = alloc<ExceptionInfoPtrVar>()
 
-        val result = MagickFormatInfo_CreateList(length.ptr, exception.ptr)
-
         // TODO Check exception
 
-        return CreateListResult(result!!, length.value.convert())
+        return MagickFormatInfo_CreateList(length.ptr, exception.ptr)?.let {
+            CreateListResult(it, length.value.convert())
+        }
     }
 
     internal fun disposeList(list: CreateListResult) {
@@ -54,31 +60,38 @@ internal object NativeMagickFormatInfo {
     }
 
     @Throws(Exception::class)
-    internal fun getInfo(memScope: MemScope, list: CreateListResult, index: UInt): CPointer<MagickInfo> {
-        val exception = memScope.alloc<ExceptionInfoPtrVar>()
+    internal fun getInfo(list: CreateListResult, index: UInt): CPointer<MagickInfo>? = memScoped {
+        val exception = alloc<ExceptionInfoPtrVar>()
 
         val result = MagickFormatInfo_GetInfo(list.cPointer, index.convert(), exception.ptr)
 
-        // TODO Check exception
-
-        return result!!
-    }
-
-    @Throws(Exception::class)
-    internal fun getInfoWithBlob(data: UByteArray): CPointer<MagickInfo> = memScoped {
-        val exception = alloc<ExceptionInfoPtrVar>()
-
-//        MagickFormatInfo_GetInfoWithBlob(data.toCValues(), data.size.convert(), exception.ptr)
-        // version below seems to be the equivalent of fixed in C#
-        val result = data.usePinned {
-            val cPt = it.addressOf(0)
-
-            MagickFormatInfo_GetInfoWithBlob(cPt, data.size.convert(), exception.ptr)
+        exception.pointed?.let {
+            println("got exception")
+            println(it.error_number)
+            println(it.description)
         }
 
         // TODO Check exception
 
-        return result!!
+        return result
+    }
+
+    @Throws(Exception::class)
+    internal fun getInfoWithBlob(data: UByteArray): CPointer<MagickInfo>? = memScoped {
+        val exceptionPtr = alloc<ExceptionInfoPtrVar>()
+
+        val result = data.usePinned {
+            MagickFormatInfo_GetInfoWithBlob(it.addressOf(0), data.size.convert(), exceptionPtr.ptr)
+        }
+
+        // TODO Check exception
+        exceptionPtr.pointed?.let { exception ->
+            println("got exception")
+            println(exception.error_number)
+            println(exception.description)
+        }
+
+        return result
     }
 
     internal inline fun CPointer<MagickInfo>.canReadMultithreaded(): Boolean =
