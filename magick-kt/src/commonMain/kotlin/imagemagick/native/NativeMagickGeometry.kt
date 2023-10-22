@@ -28,10 +28,10 @@ internal class NativeMagickGeometry : AutoCloseable {
 
     fun initialize(value: String): List<GeometryFlags> = enabledValues<GeometryFlags>(BitMask(native.initialize(value).toULong()))
 
-    val width: Double = native.width()
-    val height: Double = native.height()
-    val x: Double = native.x()
-    val y: Double = native.y()
+    val width: Double get() = native.width()
+    val height: Double get() = native.height()
+    val x: Double get() = native.x()
+    val y: Double get() = native.y()
 
     companion object {
         @Throws(IllegalStateException::class)
@@ -45,10 +45,13 @@ internal class NativeMagickGeometry : AutoCloseable {
 
         internal inline fun CPointer<GeometryInfo>.width(): Double = MagickGeometry_Width_Get(this)
 //        internal inline fun CPointer<GeometryInfo>.width(): Double = this.pointed.rho
+
         internal inline fun CPointer<GeometryInfo>.height(): Double = MagickGeometry_Height_Get(this)
 //        internal inline fun CPointer<GeometryInfo>.height(): Double = this.pointed.sigma
+
         internal inline fun CPointer<GeometryInfo>.x(): Double = MagickGeometry_X_Get(this)
 //        internal inline fun CPointer<GeometryInfo>.x(): Double = this.pointed.xi
+
         internal inline fun CPointer<GeometryInfo>.y(): Double = MagickGeometry_Y_Get(this)
 //        internal inline fun CPointer<GeometryInfo>.y(): Double = this.pointed.psi
     }
