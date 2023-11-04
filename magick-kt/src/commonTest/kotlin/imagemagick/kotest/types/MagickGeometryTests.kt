@@ -1,13 +1,16 @@
 package imagemagick.kotest.types
 
 import imagemagick.core.types.MagickGeometry
+import imagemagick.core.types.MagickGeometry.Companion.toMagickGeometry
 import imagemagick.core.types.Percentage
 import imagemagick.core.types.Percentage.Companion.toPercentage
 import imagemagick.helpers.checkGcUsage
 import imagemagick.helpers.empty
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.ShouldSpec
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 
 class MagickGeometryTests : ShouldSpec({
     context("MagickGeometry TheConstructor") {
@@ -21,7 +24,9 @@ class MagickGeometryTests : ShouldSpec({
 
         should("set ignore aspect ratio") {
             checkGcUsage {
-                val geometry = MagickGeometry("5x10!")
+                val geometry = "5x10!".toMagickGeometry()
+
+                geometry.shouldNotBeNull()
 
                 geometry.x shouldBe 0
                 geometry.y shouldBe 0
@@ -299,11 +304,106 @@ class MagickGeometryTests : ShouldSpec({
     }
 
     context("MagickGeometry TheFromPageSizeMethod") {
+        should("throw exception when page size is empty") {
+            checkGcUsage {
+                shouldThrow<IllegalArgumentException> {
+                    MagickGeometry.fromPageSize(String.empty)
+                }
+            }
+        }
 
+        should("throw exception when page size is invalid") {
+            checkGcUsage {
+                val exception = shouldThrow<IllegalStateException> {
+                    MagickGeometry.fromPageSize("invalid")
+                }
+
+                exception.message shouldBe "Invalid page size specified."
+            }
+        }
+
+        should("return the correct geometry") {
+            checkGcUsage {
+                val geometry = MagickGeometry.fromPageSize("a4")
+                geometry.width shouldBe 595u
+                geometry.height shouldBe 842u
+                geometry.x shouldBe 0
+                geometry.y shouldBe 0
+            }
+        }
+
+        should("set the x and y position") {
+            checkGcUsage {
+                val geometry = MagickGeometry.fromPageSize("a4+3+2")
+                geometry.width shouldBe 595u
+                geometry.height shouldBe 842u
+                geometry.x shouldBe 3
+                geometry.y shouldBe 2
+            }
+        }
     }
 
     context("MagickGeometry TheOperators") {
+        should("return the correct value when instance is null") {
+            val geometry = MagickGeometry(10u, 5u)
 
+            @Suppress("SENSELESS_COMPARISON")
+            (geometry == null) shouldBe false
+            @Suppress("SENSELESS_COMPARISON")
+            (geometry != null) shouldBe true
+            (geometry < null) shouldBe false
+            (geometry <= null) shouldBe false
+            (geometry > null) shouldBe true
+            (geometry >= null) shouldBe true
+            @Suppress("SENSELESS_COMPARISON")
+            (null == geometry) shouldBe false
+            @Suppress("SENSELESS_COMPARISON")
+            (null != geometry) shouldBe true
+            // the following can't happens in Kotlin
+//            (null < geometry) shouldBe true
+//            (null <= geometry) shouldBe true
+//            (null > geometry) shouldBe false
+//            (null >= geometry) shouldBe false
+        }
+
+
+        should("return the correct value when instance is specified") {
+            val first = MagickGeometry(10u, 5u)
+            val second = MagickGeometry(5u, 5u)
+
+            (first == second) shouldBe false
+            (first != second) shouldBe true
+            (first < second) shouldBe false
+            (first <= second) shouldBe false
+            (first > second) shouldBe true
+            (first >= second) shouldBe true
+        }
+
+
+        should("return the correct value when instance has same size") {
+            val first = MagickGeometry(10u, 5u)
+            val second = MagickGeometry(5u, 10u)
+
+            (first == second) shouldBe false
+            (first != second) shouldBe true
+            (first < second) shouldBe false
+            (first <= second) shouldBe true
+            (first > second) shouldBe false
+            (first >= second) shouldBe true
+        }
+
+
+        should("return the correct value when instance are equal") {
+            val first = MagickGeometry(10u, 5u)
+            val second = MagickGeometry(10u, 5u)
+
+            (first == second) shouldBe true
+            (first != second) shouldBe false
+            (first < second) shouldBe false
+            (first <= second) shouldBe true
+            (first > second) shouldBe false
+            (first >= second) shouldBe true
+        }
     }
 
     context("MagickGeometry TheToStringMethod") {

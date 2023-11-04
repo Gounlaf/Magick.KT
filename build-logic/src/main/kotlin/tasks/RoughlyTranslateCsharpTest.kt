@@ -44,8 +44,14 @@ abstract class RoughlyTranslateCsharpTest : DefaultTask() {
             .replace("""Assert.(False|True)\((.*)\);""".toRegex()) {
                 val (boolStr, assertion) = it.destructured
 
-                "($assertion) shouldBe ${boolStr.lowercase()}"
+                "$assertion shouldBe ${boolStr.lowercase()}"
             }
+            .replace("""Assert.Equal\((.*),(.*)\);""".toRegex()) {
+                val (expected, actual) = it.destructured
+
+                "${actual.lowercase()} shouldBe $expected"
+            }
+            .replace("var", "val")
             .filterNot { c -> c == ';' }
 
         if (output.isBlank()) {

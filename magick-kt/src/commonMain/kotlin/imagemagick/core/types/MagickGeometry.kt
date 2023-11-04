@@ -41,17 +41,22 @@ data class MagickGeometry(
     var y: Int = 0
 ) : Comparable<MagickGeometry?> {
     companion object {
-        fun String.toMagickGeometry(): MagickGeometry = MagickGeometry()
+        inline fun String.toMagickGeometry() = fromString(this)
 
-        fun fromRectangle(rectangle: MagickRectangle): MagickGeometry =
-            MagickGeometry(rectangle.x, rectangle.y, rectangle.width, rectangle.height)
-
-        fun fromString(value: String?): MagickGeometry? = value?.let {
+        inline fun fromString(value: String?): MagickGeometry? = value?.let {
             MagickGeometry(it)
         }
 
-        fun fromPageSize(pageSize: String) {
-//            MagickRectangle.f
+        private inline fun fromRectangle(rectangle: MagickRectangle): MagickGeometry =
+            MagickGeometry(rectangle.x, rectangle.y, rectangle.width, rectangle.height)
+
+        @Throws(IllegalStateException::class)
+        fun fromPageSize(pageSize: String): MagickGeometry {
+            Throw.ifEmpty(pageSize)
+
+            val rectangle = MagickRectangle.fromPageSize(pageSize) ?: error("Invalid page size specified.")
+
+            return fromRectangle(rectangle)
         }
 
         private fun parseInt(value: String): UInt {
