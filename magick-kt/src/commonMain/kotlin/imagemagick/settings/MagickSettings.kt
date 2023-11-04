@@ -162,7 +162,7 @@ open class MagickSettings internal constructor() : Interface {
                     val format = settings.format()?.uppercase()
 
                     it.antiAlias(settings.antiAlias)
-                    //it.backgroundColor(Any()) TODO
+                    // it.backgroundColor(Any()) TODO
                     it.colorSpace(settings.colorSpace)
                     it.colorType(settings.colorType)
                     it.compression(settings.compression)
@@ -170,21 +170,23 @@ open class MagickSettings internal constructor() : Interface {
                     it.density(settings.density?.toString(DensityUnit.UNDEFINED))
                     it.depth(settings.depth)
                     it.endian(settings.endian)
-                    //it.extract() TODO
+                    // it.extract() TODO
                     it.format(format)
                     it.interlace(settings.interlace)
                     it.monochrome(settings.monochrome)
 
                     it.colorFuzz(settings.colorFuzz)
-                    it.fileName(with(settings.fileName) {
-                        if (isNotNullOrEmpty() && format.isNotNullOrEmpty()) {
-                            "$format:$this"
-                        } else {
-                            this
+                    it.fileName(
+                        with(settings.fileName) {
+                            if (isNotNullOrEmpty() && format.isNotNullOrEmpty()) {
+                                "$format:$this"
+                            } else {
+                                this
+                            }
                         }
-                    })
+                    )
                     it.numberScenes(settings.numberScenes)
-                    //it.page() TODO
+                    // it.page() TODO
                     it.ping(settings.ping)
                     it.quality(settings.quality)
                     it.scene(settings.scene)

@@ -10,8 +10,10 @@ package imagemagick.core.enums
 enum class Endian {
     /** Undefined. */
     UNDEFINED,
+
     /** LSB. */
     LSB,
+
     /** MSB. */
-    MSB,
+    MSB
 }

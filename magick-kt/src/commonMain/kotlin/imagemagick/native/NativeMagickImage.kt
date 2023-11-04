@@ -18,7 +18,7 @@ internal class NativeMagickImage internal constructor(settings: NativeMagickSett
         MagickImage_Create(settings.native, exception.ptr)
 
         // TODO Check exception
-    }  ?: error("Failed to instantiate native MagickImage")
+    } ?: error("Failed to instantiate native MagickImage")
 
     override fun close() {
         dispose()

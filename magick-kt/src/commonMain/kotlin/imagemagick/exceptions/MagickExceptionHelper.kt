@@ -1,4 +1,3 @@
 package imagemagick.exceptions
 
-internal object MagickExceptionHelper {
-}
+internal object MagickExceptionHelper

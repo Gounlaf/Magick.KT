@@ -14,7 +14,7 @@ internal object Throw {
     }
 
     @Throws(IllegalArgumentException::class)
-    inline fun ifNegative(value: Percentage) = require(value.toDouble() <= 0.0) {
-        "Value should not be negative."
+    inline fun ifNegative(parameterName: String, value: Percentage) = require(value.toDouble() >= 0.0) {
+        "Value should not be negative; parameter: $parameterName"
     }
 }

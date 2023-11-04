@@ -46,7 +46,6 @@ data class Density(val x: Double, val y: Double, val units: DensityUnit) {
      */
     constructor(x: Number, y: Number, units: DensityUnit) : this(x.toDouble(), y.toDouble(), units)
 
-
     /**
      * Returns a string that represents the current [Density].
 

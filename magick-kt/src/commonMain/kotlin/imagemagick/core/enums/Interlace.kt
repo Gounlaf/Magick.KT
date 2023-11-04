@@ -10,18 +10,25 @@ package imagemagick.core.enums
 enum class Interlace {
     /** Undefined */
     UNDEFINED,
+
     /** NoInterlace */
     NOINTERLACE,
+
     /** Line */
     LINE,
+
     /** Plane */
     PLANE,
+
     /** Partition */
     PARTITION,
+
     /** Gif */
     GIF,
+
     /** Jpeg */
     JPEG,
+
     /** Png */
-    PNG,
+    PNG
 }

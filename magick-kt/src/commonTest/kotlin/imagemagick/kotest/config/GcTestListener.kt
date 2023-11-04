@@ -19,7 +19,7 @@ class GcTestListener : BeforeEachListener, AfterEachListener, Extension {
         val before = memConsumed.remove(testCase) ?: 0
 
         if (after != before) {
-            println("⚠ you may have a memory leak for test ${testCase.name} before: $before - after: $after")
+            println("⚠ before: $before - after: $after ->you may have a memory leak for test ${testCase.name}")
         }
     }
 }

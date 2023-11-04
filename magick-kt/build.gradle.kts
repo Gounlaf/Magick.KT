@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import tasks.GenerateEnumsForResources
+import tasks.RoughlyTranslateCsharpTest
 import java.util.*
 
 plugins {
@@ -7,7 +8,6 @@ plugins {
     id("io.kotest.multiplatform")
     id("build-logic")
     id("com.goncalossilva.resources")
-    id("io.gitlab.arturbosch.detekt")
 }
 
 val localProperties = Properties().apply {
@@ -21,12 +21,6 @@ val localInclude = file(localProperties.getProperty("local.include", "/usr/inclu
 
 kotlin {
     linuxX64 {
-//        compilations.configureEach {
-//            compilerOptions.configure {
-//                freeCompilerArgs.add("-Xallocator=custom")
-//            }
-//        }
-
         compilations.getByName("main") {
             cinterops {
                 val libMagickNative by creating {
@@ -59,10 +53,17 @@ kotlin {
         "kotlin.experimental.ExperimentalNativeApi",
         "kotlin.contracts.ExperimentalContracts",
         "kotlinx.cinterop.ExperimentalForeignApi",
-        "io.kotest.common.ExperimentalKotest",
+        "io.kotest.common.ExperimentalKotest"
     )
 
     sourceSets {
+        all {
+            languageSettings.apply {
+                languageVersion = "1.9"
+                apiVersion = "1.9"
+            }
+        }
+
         val commonMain by getting {
             dependencies {
                 implementation(project.dependencies.platform("org.jetbrains.kotlinx:kotlinx-coroutines-bom:_"))
@@ -110,4 +111,10 @@ tasks.register<GenerateEnumsForResources>(
     File("src/commonTest"),
     "imagemagick",
     "files"
-)
+).apply {
+    group = "tools"
+}
+
+tasks.register<RoughlyTranslateCsharpTest>("translateCsharpTest").apply {
+    group = "tools"
+}

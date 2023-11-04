@@ -6,8 +6,6 @@ import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.native.runtime.GC
 
-// Followed instructions from the documentation; asked for precisions/corrections
-// https://youtrack.jetbrains.com/issue/KT-62116/Kotlin-Native-memory-management-Memory-consumption
 
 fun getUsage(): Long {
     GC.collect()

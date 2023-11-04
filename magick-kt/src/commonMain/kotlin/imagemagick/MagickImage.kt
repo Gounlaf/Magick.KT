@@ -31,7 +31,6 @@ class MagickImage() : Interface {
         read(data)
     }
 
-
     override val baseHeight: UInt
         get() = TODO("Not yet implemented")
     override val baseWidth: UInt
@@ -56,13 +55,13 @@ class MagickImage() : Interface {
         lengt: UInt,
         readSettings: MagickReadSettingsInterface?,
         ping: Boolean,
-        fileName: String? = null,
+        fileName: String? = null
     ) {
 //        var newReadSettings = CreateReadSettings(readSettings);
 //        SetSettings(newReadSettings);
 
-        settings.ping = ping;
-        settings.fileName = fileName;
+        settings.ping = ping
+        settings.fileName = fileName
 
 //
 //        _nativeInstance.ReadBlob(Settings, data, offset, length);
@@ -70,8 +69,7 @@ class MagickImage() : Interface {
         resetSettings()
     }
 
-    private fun createReadSettings(readSettings: MagickReadSettingsInterface?)
-    {
+    private fun createReadSettings(readSettings: MagickReadSettingsInterface?) {
         readSettings?.frameCount?.let {
             require(it == 1u) {
                 "The frame count can only be set to 1 when a single image is being read."

@@ -2,9 +2,9 @@ package imagemagick
 
 import imagemagick.core.MagickFormatInfo
 import kotlinx.cinterop.ExperimentalForeignApi
-import imagemagick.core.MagickKT as Interface
 import kotlinx.cinterop.toKString
 import libMagickNative.Magick_Features_Get
+import imagemagick.core.MagickKT as Interface
 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi

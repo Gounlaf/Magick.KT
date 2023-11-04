@@ -5,8 +5,10 @@ import kotlinx.cinterop.convert
 import libMagickNative.MagickBooleanType
 import platform.posix.size_t
 
+@OptIn(ExperimentalForeignApi::class)
 fun MagickBooleanType.toPrimitive(): Boolean = this == 1u
 
+@OptIn(ExperimentalForeignApi::class)
 fun Boolean.toNative(): MagickBooleanType = if (this) 1u else 0u
 
 inline fun <reified T : Enum<T>> size_t.toEnum(): T = this.toInt().let { enum ->

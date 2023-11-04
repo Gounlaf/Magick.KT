@@ -38,6 +38,7 @@ data class Percentage(private val value: Double = 0.0) : Comparable<Percentage> 
     // FIXME: according to documentation, it's equivalent to System.MidpointRounding.ToPositiveInfinity
     // https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.math/round-to-int.html#roundtoint
     fun toInt(): Int = value.roundToInt()
+    fun toUInt(): UInt = value.roundToInt().toUInt()
 
     override fun compareTo(other: Percentage): Int = value.compareTo(other.value)
 

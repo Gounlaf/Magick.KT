@@ -11,5 +11,5 @@ enum class DensityUnit {
     PIXELS_PER_INCH,
 
     /** Pixels per centimeter. */
-    PIXELS_PER_CENTIMETER,
+    PIXELS_PER_CENTIMETER
 }

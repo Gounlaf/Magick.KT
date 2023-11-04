@@ -10,14 +10,19 @@ package imagemagick.core.enums
 enum class FontStyleType {
     /** Undefined. */
     UNDEFINED,
+
     /** Normal. */
     NORMAL,
+
     /** Italic. */
     ITALIC,
+
     /** Oblique. */
     OBLIQUE,
+
     /** Any. */
     ANY,
+
     /** Bold. */
-    BOLD,
+    BOLD
 }

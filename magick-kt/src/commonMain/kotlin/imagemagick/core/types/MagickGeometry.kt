@@ -38,16 +38,32 @@ data class MagickGeometry(
     /** Gets or sets the X offset from origin. */
     var x: Int = 0,
     /** Gets or sets the Y offset from origin. */
-    var y: Int = 0,
+    var y: Int = 0
 ) : Comparable<MagickGeometry?> {
     companion object {
         fun String.toMagickGeometry(): MagickGeometry = MagickGeometry()
 
         fun fromRectangle(rectangle: MagickRectangle): MagickGeometry =
-            MagickGeometry(rectangle.x, rectangle.y, rectangle.width.toUInt(), rectangle.height.toUInt())
+            MagickGeometry(rectangle.x, rectangle.y, rectangle.width, rectangle.height)
 
         fun fromString(value: String?): MagickGeometry? = value?.let {
             MagickGeometry(it)
+        }
+
+        fun fromPageSize(pageSize: String) {
+//            MagickRectangle.f
+        }
+
+        private fun parseInt(value: String): UInt {
+            // substring in Kotlin have a different API than C#
+
+            val start = value.indexOfFirst { c -> c.isDigit() }
+            var end = start
+
+            while (end < value.length && value[end].isDigit())
+                end++
+
+            return value.substring(start, end).toUInt()
         }
     }
 
@@ -95,10 +111,10 @@ data class MagickGeometry(
      * @param percentageHeight The percentage of the height.
      */
     constructor(x: Int, y: Int, percentageWith: Percentage, percentageHeight: Percentage) : this() {
-        Throw.ifNegative(percentageWith)
-        Throw.ifNegative(percentageHeight)
+        Throw.ifNegative("percentageWith", percentageWith)
+        Throw.ifNegative("percentageHeight", percentageHeight)
 
-        initializeFromPercentage(x, y, percentageWith.toInt().toUInt(), percentageHeight.toInt().toUInt())
+        initializeFromPercentage(x, y, percentageWith.toUInt(), percentageHeight.toUInt())
     }
 
     /**
@@ -155,12 +171,12 @@ data class MagickGeometry(
     override fun toString(): String {
         if (aspectRatio) return "$width:$height"
 
-        var result = "";
+        var result = ""
 
         if (width > 0u) result += width
 
         if (height > 0u) {
-            result += "x:$height"
+            result += "x$height"
         } else if (!isPercentage) {
             result += "x"
         }
@@ -172,7 +188,7 @@ data class MagickGeometry(
 
             if (y >= 0) result += '+'
 
-            result += y;
+            result += y
         }
 
         if (isPercentage) result += '%'
@@ -182,7 +198,7 @@ data class MagickGeometry(
         if (fillArea) result += '^'
         if (limitPixels) result += '@'
 
-        return result;
+        return result
     }
 
     private fun initializeFromPercentage(x: Int, y: Int, width: UInt, height: UInt) {
@@ -220,8 +236,8 @@ data class MagickGeometry(
         val ratio = value.split(':', limit = 2)
 
         // /!\ The original CSharp implementation uses a custom "ParseInt" method for theses two values
-        width = ratio[0].toUInt()
-        height = ratio[1].toUInt()
+        width = parseInt(ratio[0])
+        height = parseInt(ratio[1])
 
         x = instance.x.toInt()
         y = instance.y.toInt()

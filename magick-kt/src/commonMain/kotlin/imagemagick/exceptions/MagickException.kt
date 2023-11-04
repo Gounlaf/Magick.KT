@@ -1,4 +1,3 @@
 package imagemagick.exceptions
 
-class MagickException : Exception() {
-}
+class MagickException : Exception()

@@ -14,12 +14,9 @@ import imagemagick.native.NativeMagickFormatInfo.supportsReading
 import imagemagick.native.NativeMagickFormatInfo.supportsWriting
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.convert
-import kotlinx.cinterop.memScoped
 import libMagickNative.MagickInfo
 import okio.Path
 import platform.posix.free
-import platform.posix.size_t
 import imagemagick.core.MagickFormatInfo as Interface
 
 data class MagickFormatInfo private constructor(
@@ -31,15 +28,13 @@ data class MagickFormatInfo private constructor(
     override val moduleFormat: MagickFormat,
     override val supportsMultipleFrames: Boolean,
     override val supportsReading: Boolean,
-    override val supportsWriting: Boolean,
+    override val supportsWriting: Boolean
 ) : Interface {
     @ExperimentalStdlibApi
     @ExperimentalForeignApi
     companion object {
-        internal val allFormats: Map<MagickFormat, Interface>
-
-        init {
-            allFormats = loadFormats()
+        internal val allFormats: Map<MagickFormat, Interface> by lazy {
+            loadFormats()
         }
 
         private fun loadFormats(): Map<MagickFormat, Interface> {
@@ -62,15 +57,17 @@ data class MagickFormatInfo private constructor(
 
         private fun formatCleaner(format: String?): MagickFormat =
             try {
-                enumValueOf<MagickFormat>(format?.filterNot { it == '-' }?.uppercase()?.let {
-                    when (it) {
-                        // Rename some format with text equivalent because property can't begin with a number
-                        "3FR" -> "THREEFR"
-                        "3G2" -> "THREEG2"
-                        "3GP" -> "THREEGP"
-                        else -> it
-                    }
-                } ?: "UNKNOWN")
+                enumValueOf<MagickFormat>(
+                    format?.filterNot { it == '-' }?.uppercase()?.let {
+                        when (it) {
+                            // Rename some format with text equivalent because property can't begin with a number
+                            "3FR" -> "THREEFR"
+                            "3G2" -> "THREEG2"
+                            "3GP" -> "THREEGP"
+                            else -> it
+                        }
+                    } ?: "UNKNOWN"
+                )
             } catch (e: Exception) {
                 MagickFormat.UNKNOWN
             }
@@ -132,11 +129,11 @@ data class MagickFormatInfo private constructor(
     }
 
     // "{Format}: {Description} ({SupportReading}R{SupportWriting}W{SupportMultipleFrames}M)"
-    override fun toString(): String = "${format}: $description ({${supportsReading.toString("+", "-")}}R{${
-        supportsWriting.toString(
-            "+",
-            "-"
-        )
+    override fun toString(): String = "$format: $description ({${supportsReading.toString("+", "-")}}R{${
+    supportsWriting.toString(
+        "+",
+        "-"
+    )
     }W{${supportsMultipleFrames.toString("+", "-")}}M)"
 
     override fun unregister(): Boolean {

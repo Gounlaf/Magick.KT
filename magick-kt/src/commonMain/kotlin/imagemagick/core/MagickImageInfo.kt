@@ -2,9 +2,9 @@ package imagemagick.core
 
 import imagemagick.core.enums.ColorSpace
 import imagemagick.core.enums.CompressionMethod
-import imagemagick.core.types.Density
 import imagemagick.core.enums.Interlace
 import imagemagick.core.enums.MagickFormat
+import imagemagick.core.types.Density
 import imagemagick.exceptions.MagickException
 import okio.Path
 
@@ -69,13 +69,12 @@ interface MagickImageInfo {
     fun read(file: Path)
 
     // Doesn't exist on native; Streams are only available on JVM
-    /// <summary>
-    /// Read basic information about an image.
-    /// </summary>
-    /// <param name="stream">The stream to read the image data from.</param>
-    /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
-    //void Read(Stream stream);
-
+    // / <summary>
+    // / Read basic information about an image.
+    // / </summary>
+    // / <param name="stream">The stream to read the image data from.</param>
+    // / <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+    // void Read(Stream stream);
 
     /**
      * Read basic information about an image.

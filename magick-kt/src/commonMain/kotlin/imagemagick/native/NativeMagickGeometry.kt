@@ -6,7 +6,6 @@ import imagemagick.helpers.enabledValues
 import imagemagick.native.NativeMagickGeometry.Companion.width
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.pointed
 import libMagickNative.GeometryInfo
 import libMagickNative.MagickGeometry_Create
 import libMagickNative.MagickGeometry_Dispose
