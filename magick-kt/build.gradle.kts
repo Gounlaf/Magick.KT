@@ -1,12 +1,9 @@
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
-import tasks.GenerateEnumsForResources
-import tasks.RoughlyTranslateCsharpTest
 import java.util.*
 
 plugins {
     kotlin("multiplatform")
     id("io.kotest.multiplatform")
-    id("build-logic")
     id("com.goncalossilva.resources")
 }
 
@@ -102,19 +99,4 @@ kotlin {
 
 tasks.withType<KotlinNativeTest>().all {
     environment("LD_LIBRARY_PATH", localLib.absolutePath)
-}
-
-// Task dedicated to generate Enums from resources folder
-tasks.register<GenerateEnumsForResources>(
-    "generateEnumsForResources",
-    project,
-    File("src/commonTest"),
-    "imagemagick",
-    "files"
-).apply {
-    group = "tools"
-}
-
-tasks.register<RoughlyTranslateCsharpTest>("translateCsharpTest").apply {
-    group = "tools"
 }
