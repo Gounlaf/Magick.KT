@@ -10,7 +10,6 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
 
 class MagickGeometryTests : ShouldSpec({
     context("MagickGeometry TheConstructor") {
@@ -220,7 +219,6 @@ class MagickGeometryTests : ShouldSpec({
             }
         }
 
-
         should("return zero when instances are equal") {
             checkGcUsage {
                 val first = MagickGeometry(10u, 5u)
@@ -248,7 +246,6 @@ class MagickGeometryTests : ShouldSpec({
                 (geometry.equals(null)) shouldBe false
             }
         }
-
 
         should("return true when instance is the same") {
             checkGcUsage {
@@ -366,7 +363,6 @@ class MagickGeometryTests : ShouldSpec({
 //            (null >= geometry) shouldBe false
         }
 
-
         should("return the correct value when instance is specified") {
             val first = MagickGeometry(10u, 5u)
             val second = MagickGeometry(5u, 5u)
@@ -379,7 +375,6 @@ class MagickGeometryTests : ShouldSpec({
             (first >= second) shouldBe true
         }
 
-
         should("return the correct value when instance has same size") {
             val first = MagickGeometry(10u, 5u)
             val second = MagickGeometry(5u, 10u)
@@ -391,7 +386,6 @@ class MagickGeometryTests : ShouldSpec({
             (first > second) shouldBe false
             (first >= second) shouldBe true
         }
-
 
         should("return the correct value when instance are equal") {
             val first = MagickGeometry(10u, 5u)
@@ -407,7 +401,7 @@ class MagickGeometryTests : ShouldSpec({
     }
 
     context("MagickGeometry TheToStringMethod") {
-        should("OnlyReturnWidthAndHeight") {
+        should("only return width and height") {
             checkGcUsage {
                 val geometry = MagickGeometry(10u, 5u)
 
@@ -415,7 +409,7 @@ class MagickGeometryTests : ShouldSpec({
             }
         }
 
-        should("ReturnCorrectValueForPositiveValues") {
+        should("return correct value for positive values") {
             checkGcUsage {
                 val geometry = MagickGeometry(1, 2, 10u, 20u)
 
@@ -423,7 +417,7 @@ class MagickGeometryTests : ShouldSpec({
             }
         }
 
-        should("ReturnCorrectValueForNegativeValues") {
+        should("return correct value for negative values") {
             checkGcUsage {
                 val geometry = MagickGeometry(-1, -2, 20u, 10u)
 
@@ -431,7 +425,7 @@ class MagickGeometryTests : ShouldSpec({
             }
         }
 
-        should("ReturnCorrectValueForIgnoreAspectRatio") {
+        should("return correct value for ignore aspect ratio") {
             checkGcUsage {
                 val geometry = MagickGeometry(5u, 10u).apply {
                     ignoreAspectRatio = true
@@ -441,7 +435,7 @@ class MagickGeometryTests : ShouldSpec({
             }
         }
 
-        should("ReturnCorrectValueForLess") {
+        should("return correct value for less") {
             checkGcUsage {
                 val geometry = MagickGeometry(2, 1, 10u, 5u).apply {
                     less = true
@@ -451,7 +445,7 @@ class MagickGeometryTests : ShouldSpec({
             }
         }
 
-        should("ReturnCorrectValueForGreater") {
+        should("return correct value for greater") {
             checkGcUsage {
                 val geometry = MagickGeometry(0u, 10u).apply {
                     greater = true
@@ -461,7 +455,7 @@ class MagickGeometryTests : ShouldSpec({
             }
         }
 
-        should("ReturnCorrectValueForFillArea") {
+        should("return correct value for fill area") {
             checkGcUsage {
                 val geometry = MagickGeometry(10u, 15u).apply {
                     fillArea = true
@@ -471,7 +465,7 @@ class MagickGeometryTests : ShouldSpec({
             }
         }
 
-        should("ReturnCorrectValueForLimitPixels") {
+        should("return correct value for limit pixels") {
             checkGcUsage {
                 val geometry = MagickGeometry(10u, 0u).apply {
                     limitPixels = true
@@ -481,7 +475,7 @@ class MagickGeometryTests : ShouldSpec({
             }
         }
 
-        should("ReturnCorrectValueForAspectRation") {
+        should("return correct value for aspect ration") {
             checkGcUsage {
                 val geometry = MagickGeometry(3u, 2u).apply {
                     aspectRatio = true
@@ -491,7 +485,7 @@ class MagickGeometryTests : ShouldSpec({
             }
         }
 
-        should("SetGreaterAndIsPercentage") {
+        should("set greater and is percentage") {
             checkGcUsage {
                 val geometry = MagickGeometry(Percentage(50), Percentage(0)).apply {
                     greater = true
