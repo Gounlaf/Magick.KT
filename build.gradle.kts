@@ -1,7 +1,6 @@
 plugins {
     kotlin("multiplatform") apply false
-    id("build-logic") apply false
-    id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
+    id("org.jmailen.kotlinter") version "4.1.0" apply false
 }
 
 allprojects {
@@ -10,5 +9,5 @@ allprojects {
 }
 
 subprojects {
-    apply(plugin = "org.jlleitschuh.gradle.ktlint")
+    apply(plugin = "org.jmailen.kotlinter")
 }
