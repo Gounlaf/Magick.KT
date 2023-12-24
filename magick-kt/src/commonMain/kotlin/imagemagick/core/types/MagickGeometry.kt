@@ -14,8 +14,6 @@ import kotlinx.cinterop.ExperimentalForeignApi
  *
  * @constructor Initializes a new instance of the [MagickGeometry] class.
  */
-@ExperimentalStdlibApi
-@ExperimentalForeignApi
 data class MagickGeometry(
     /** Gets a value indicating whether the value is an aspect ratio. */
     var aspectRatio: Boolean = false,
@@ -50,6 +48,7 @@ data class MagickGeometry(
         private inline fun fromRectangle(rectangle: MagickRectangle): MagickGeometry =
             MagickGeometry(rectangle.x, rectangle.y, rectangle.width, rectangle.height)
 
+        @OptIn(ExperimentalForeignApi::class)
         @Throws(IllegalStateException::class)
         fun fromPageSize(pageSize: String): MagickGeometry {
             Throw.ifEmpty(pageSize)
@@ -129,6 +128,7 @@ data class MagickGeometry(
      *  &lt;width&gt;x&lt;height&gt;{+-}&lt;xoffset&gt;{+-}&lt;yoffset&gt;
      *  (where width, height, xoffset, and yoffset are numbers).
      */
+    @OptIn(ExperimentalForeignApi::class, ExperimentalStdlibApi::class)
     constructor(value: String) : this() {
         Throw.ifEmpty(value)
 
@@ -211,6 +211,7 @@ data class MagickGeometry(
         isPercentage = true
     }
 
+    @OptIn(ExperimentalForeignApi::class, ExperimentalStdlibApi::class)
     private fun initialize(instance: NativeMagickGeometry) {
         x = instance.x.toInt()
         y = instance.y.toInt()
@@ -218,6 +219,7 @@ data class MagickGeometry(
         height = instance.height.toUInt()
     }
 
+    @OptIn(ExperimentalForeignApi::class, ExperimentalStdlibApi::class)
     private fun initialize(instance: NativeMagickGeometry, flags: List<GeometryFlags>) {
         if (flags.size == 1) {
             require(!flags.contains(GeometryFlags.NO_VALUE)) {
@@ -235,6 +237,7 @@ data class MagickGeometry(
         limitPixels = flags.contains(GeometryFlags.LIMIT_PIXELS)
     }
 
+    @OptIn(ExperimentalForeignApi::class, ExperimentalStdlibApi::class)
     private fun initializeFromAspectRation(instance: NativeMagickGeometry, value: String) {
         aspectRatio = true
 

@@ -78,14 +78,14 @@ internal object NativeMagickFormatInfo {
 
     @Throws(Exception::class)
     internal fun getInfoWithBlob(data: UByteArray): CPointer<MagickInfo>? = memScoped {
-        val exceptionPtr = alloc<ExceptionInfoPtrVar>()
+        val exceptionInfo = alloc<ExceptionInfoPtrVar>()
 
         val result = data.usePinned {
-            MagickFormatInfo_GetInfoWithBlob(it.addressOf(0), data.size.convert(), exceptionPtr.ptr)
+            MagickFormatInfo_GetInfoWithBlob(it.addressOf(0), data.size.convert(), exceptionInfo.ptr)
         }
 
         // TODO Check exception
-        exceptionPtr.pointed?.let { exception ->
+        exceptionInfo.pointed?.let { exception ->
             println("got exception")
             println(exception.error_number)
             println(exception.description)

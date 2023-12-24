@@ -1,5 +1,6 @@
 package imagemagick.settings
 
+import imagemagick.QuantumType
 import imagemagick.core.enums.ColorSpace
 import imagemagick.core.enums.ColorType
 import imagemagick.core.enums.CompressionMethod
@@ -12,7 +13,6 @@ import imagemagick.core.types.MagickGeometry
 import imagemagick.helpers.isNotNullOrEmpty
 import imagemagick.native.NativeMagickSettings
 import imagemagick.native.NativeMagickSettings.Companion.antiAlias
-import imagemagick.native.NativeMagickSettings.Companion.colorFuzz
 import imagemagick.native.NativeMagickSettings.Companion.colorSpace
 import imagemagick.native.NativeMagickSettings.Companion.colorType
 import imagemagick.native.NativeMagickSettings.Companion.compression
@@ -20,25 +20,19 @@ import imagemagick.native.NativeMagickSettings.Companion.debug
 import imagemagick.native.NativeMagickSettings.Companion.density
 import imagemagick.native.NativeMagickSettings.Companion.depth
 import imagemagick.native.NativeMagickSettings.Companion.endian
-import imagemagick.native.NativeMagickSettings.Companion.fileName
 import imagemagick.native.NativeMagickSettings.Companion.format
 import imagemagick.native.NativeMagickSettings.Companion.interlace
 import imagemagick.native.NativeMagickSettings.Companion.monochrome
-import imagemagick.native.NativeMagickSettings.Companion.numberScenes
-import imagemagick.native.NativeMagickSettings.Companion.option
-import imagemagick.native.NativeMagickSettings.Companion.ping
-import imagemagick.native.NativeMagickSettings.Companion.quality
-import imagemagick.native.NativeMagickSettings.Companion.scene
-import imagemagick.native.NativeMagickSettings.Companion.scenes
-import imagemagick.native.NativeMagickSettings.Companion.size
 import imagemagick.native.NativeMagickSettings.Companion.verbose
 import kotlinx.cinterop.ExperimentalForeignApi
-import imagemagick.core.settings.MagickSettings as Interface
+import imagemagick.core.settings.MagickSettings as IMagickSettings
 
-@ExperimentalForeignApi
-@ExperimentalStdlibApi
-open class MagickSettings internal constructor() : Interface {
-    private val options = mutableMapOf<String, String>()
+
+@OptIn(ExperimentalForeignApi::class, ExperimentalStdlibApi::class)
+open class MagickSettings internal constructor() : IMagickSettings<QuantumType> {
+    private val options: MutableMap<String, String?> = mutableMapOf()
+
+    // TODO Take care of events
 
     override var antiAlias: Boolean = false
     override var colorSpace: ColorSpace = ColorSpace.UNDEFINED
@@ -53,40 +47,30 @@ open class MagickSettings internal constructor() : Interface {
 
     internal var colorFuzz: Double = 0.0
     internal var fileName: String? = null
-    internal var interlace: Interlace
+    internal var interlace: Interlace = Interlace.UNDEFINED
     internal var ping: Boolean = false
     internal var quality: UInt = 0u
 
     protected var extract: MagickGeometry? = null
 
-    /**
-     * Gets or sets the number of scenes.
-     */
+    /** Gets or sets the number of scenes. */
     protected var numberScenes: UInt = 0u
 
-    /**
-     * Gets or sets a value indicating whether a monochrome reader should be used.
-     */
-    protected var monochrome: Boolean
+    /** Gets or sets a value indicating whether a monochrome reader should be used. */
+    protected var monochrome: Boolean = false
 
-    /**
-     * Gets or sets the size of the image.
-     */
+    /** Gets or sets the size of the image. */
     protected var size: String? = null
 
-    /**
-     * Gets or sets the active scene.
-     */
+    /** Gets or sets the active scene. */
     protected var scene: UInt = 0u
 
-    /**
-     * Gets or sets scenes of the image.
-     */
+    /** Gets or sets scenes of the image. */
     protected var scenes: String? = null
 
     init {
         NativeMagickSettings().use { settings ->
-            settings.native.let {
+            settings.ptr?.let {
                 antiAlias = it.antiAlias()
                 colorSpace = it.colorSpace()
                 colorType = it.colorType()
@@ -154,13 +138,11 @@ open class MagickSettings internal constructor() : Interface {
     }
 
     companion object {
-        internal fun createNativeInstance(instance: Interface): NativeMagickSettings =
-            NativeMagickSettings().also { native ->
-                native.native.let {
-                    val settings = instance as MagickSettings
+        internal fun createNativeInstance(instance: IMagickSettings<QuantumType>?): NativeMagickSettings =
+            (instance as MagickSettings?)?.let { settings ->
+                val format = settings.format()?.uppercase()
 
-                    val format = settings.format()?.uppercase()
-
+                NativeMagickSettings().also {
                     it.antiAlias(settings.antiAlias)
                     // it.backgroundColor(Any()) TODO
                     it.colorSpace(settings.colorSpace)
@@ -195,6 +177,6 @@ open class MagickSettings internal constructor() : Interface {
 
                     settings.options.forEach { (k, v) -> it.option(k, v) }
                 }
-            }
+            } ?: NativeMagickSettings(null)
     }
 }

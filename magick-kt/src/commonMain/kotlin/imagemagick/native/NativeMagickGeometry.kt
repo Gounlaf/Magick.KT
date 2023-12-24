@@ -3,7 +3,6 @@ package imagemagick.native
 import imagemagick.enums.GeometryFlags
 import imagemagick.helpers.BitMask
 import imagemagick.helpers.enabledValues
-import imagemagick.native.NativeMagickGeometry.Companion.width
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.ExperimentalForeignApi
 import libMagickNative.GeometryInfo
@@ -19,18 +18,18 @@ import libMagickNative.MagickStatusType
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
 internal class NativeMagickGeometry : AutoCloseable {
-    internal val native: CPointer<GeometryInfo> = create()
+    internal val ptr: CPointer<GeometryInfo> = create()
 
     override fun close() {
-        native.dispose()
+        ptr.dispose()
     }
 
-    fun initialize(value: String): List<GeometryFlags> = enabledValues<GeometryFlags>(BitMask(native.initialize(value).toULong()))
+    fun initialize(value: String): List<GeometryFlags> = enabledValues<GeometryFlags>(BitMask(ptr.initialize(value).toULong()))
 
-    val width: Double get() = native.width()
-    val height: Double get() = native.height()
-    val x: Double get() = native.x()
-    val y: Double get() = native.y()
+    val width: Double get() = ptr.width()
+    val height: Double get() = ptr.height()
+    val x: Double get() = ptr.x()
+    val y: Double get() = ptr.y()
 
     companion object {
         @Throws(IllegalStateException::class)

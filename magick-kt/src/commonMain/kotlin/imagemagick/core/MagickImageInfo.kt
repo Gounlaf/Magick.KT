@@ -7,6 +7,7 @@ import imagemagick.core.enums.MagickFormat
 import imagemagick.core.types.Density
 import imagemagick.exceptions.MagickException
 import okio.Path
+import okio.Source
 
 interface MagickImageInfo {
     /** Gets the color space of the image. */
@@ -68,13 +69,15 @@ interface MagickImageInfo {
     @Throws(MagickException::class)
     fun read(file: Path)
 
-    // Doesn't exist on native; Streams are only available on JVM
-    // / <summary>
-    // / Read basic information about an image.
-    // / </summary>
-    // / <param name="stream">The stream to read the image data from.</param>
-    // / <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
-    // void Read(Stream stream);
+    /**
+     * Read basic information about an image.
+     *
+     * @param stream The stream to read the image data from.
+     *
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    fun read(stream: Source)
 
     /**
      * Read basic information about an image.

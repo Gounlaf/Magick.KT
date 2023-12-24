@@ -6,9 +6,7 @@ import kotlinx.cinterop.ExperimentalForeignApi
 /**
  * Class that contains setting for when an image is being read.
  */
-@ExperimentalForeignApi
-@ExperimentalStdlibApi
-interface MagickReadSettings : MagickSettings {
+interface MagickReadSettings<T> : MagickSettings<T> where T : Number {
     /** Gets or sets the defines that should be set before the image is read. */
 //    var defines: IReadDefines?
 

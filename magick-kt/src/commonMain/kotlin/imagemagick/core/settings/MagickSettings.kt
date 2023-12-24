@@ -10,7 +10,7 @@ import imagemagick.core.types.Density
 /**
  * Class that contains various settings.
  */
-interface MagickSettings {
+interface MagickSettings<T> where T : Number {
 //    /** Gets or sets the affine to use when annotating with text or drawing. */
 //    IDrawableAffine? Affine { get; set; }
 //

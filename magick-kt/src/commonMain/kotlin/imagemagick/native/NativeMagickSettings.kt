@@ -58,12 +58,85 @@ import libMagickNative.MagickSettings_Verbose_Set
 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
-internal class NativeMagickSettings : AutoCloseable {
-    internal val native: CPointer<ImageInfo> = create()
-
+internal class NativeMagickSettings(
+    internal val ptr: CPointer<ImageInfo>? = create()
+) : AutoCloseable {
     override fun close() {
-        native.dispose()
+        ptr?.dispose()
     }
+
+    internal fun dispose() = ptr?.dispose()
+
+    internal fun antiAlias(): Boolean = ptr?.antiAlias() ?: false
+
+    internal fun antiAlias(value: Boolean) = ptr?.antiAlias(value)
+
+    internal fun backgroundColor(): Nothing = TODO()
+    internal fun backgroundColor(value: Any): Nothing = TODO()
+
+    internal fun colorSpace(): ColorSpace = ptr?.colorSpace() ?: ColorSpace.UNDEFINED
+    internal fun colorSpace(value: ColorSpace) = ptr?.colorSpace(value)
+
+    internal fun colorType(): ColorType = ptr?.colorType() ?: ColorType.UNDEFINED
+    internal fun colorType(value: ColorType) = ptr?.colorType(value)
+
+    internal fun compression(): CompressionMethod = ptr?.compression() ?: CompressionMethod.UNDEFINED
+
+    internal fun compression(value: CompressionMethod) = ptr?.compression(value)
+
+    internal fun debug(): Boolean = ptr?.debug() ?: false
+    internal fun debug(value: Boolean) = ptr?.debug(value)
+
+    internal fun density(): String? = ptr?.density()
+    internal fun density(value: String?) = ptr?.density(value)
+
+    internal fun depth(): UInt = ptr?.depth() ?: 0u
+    internal fun depth(value: UInt) = ptr?.depth(value)
+
+    internal fun endian(): Endian = ptr?.endian() ?: Endian.UNDEFINED
+    internal fun endian(value: Endian) = ptr?.endian(value)
+
+    internal fun extract(): String? = ptr?.extract()
+    internal fun extract(value: String) = ptr?.extract(value)
+
+    internal fun format(): String? = ptr?.format()
+    internal fun format(value: String?) = ptr?.format(value)
+
+    internal fun font(): String? = ptr?.font()
+    internal fun font(value: String) = ptr?.font(value)
+
+    internal fun fontPointsize(): Double = ptr?.fontPointsize() ?: 0.0
+    internal fun fontPointsize(value: Double) = ptr?.fontPointsize(value)
+
+    internal fun monochrome(): Boolean = ptr?.monochrome() ?: false
+
+    internal fun monochrome(value: Boolean) = ptr?.monochrome(value)
+
+    internal fun interlace(): Interlace = ptr?.interlace() ?: Interlace.UNDEFINED
+    internal fun interlace(value: Interlace) = ptr?.interlace(value)
+
+    internal fun verbose(): Boolean = ptr?.verbose() ?: false
+    internal fun verbose(value: Boolean) = ptr?.verbose(value)
+
+    internal fun colorFuzz(value: Double) = ptr?.colorFuzz(value)
+
+    internal fun fileName(value: String?) = ptr?.fileName(value)
+
+    internal fun numberScenes(value: UInt) = ptr?.numberScenes(value)
+
+    internal fun option(key: String, value: String?) = ptr?.option(key, value)
+
+    internal fun page(value: String?) = ptr?.page(value)
+
+    internal fun ping(value: Boolean) = ptr?.ping(value)
+
+    internal fun quality(value: UInt) = ptr?.quality(value)
+
+    internal fun scene(value: UInt) = ptr?.scene(value)
+
+    internal fun scenes(value: String?) = ptr?.scenes(value)
+
+    internal fun size(value: String?) = ptr?.size(value)
 
     companion object {
         @Throws(IllegalStateException::class)
