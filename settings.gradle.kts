@@ -1,12 +1,15 @@
+pluginManagement {
+    plugins {
+        kotlin("jvm") version "1.9.22"
+    }
+}
+
 rootProject.name = "magick-kt"
 
 @Suppress("UnstableApiUsage")
 dependencyResolutionManagement {
     repositories {
         mavenCentral()
-        maven {
-            url = uri("https://maven.universablockchain.com/")
-        }
         gradlePluginPortal()
     }
 }
@@ -16,4 +19,8 @@ plugins {
     id("de.fayard.refreshVersions") version "0.60.3"
 }
 
+include(":magick-kt-common")
 include(":magick-kt")
+include(":magick-kt-native-q8")
+
+include(":magick-kt-tests")

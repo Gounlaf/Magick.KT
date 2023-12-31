@@ -33,7 +33,7 @@ data class MagickFormatInfo private constructor(
     @ExperimentalStdlibApi
     @ExperimentalForeignApi
     companion object {
-        internal val allFormats: Map<MagickFormat, Interface> by lazy {
+        val allFormats: Map<MagickFormat, Interface> by lazy {
             loadFormats()
         }
 

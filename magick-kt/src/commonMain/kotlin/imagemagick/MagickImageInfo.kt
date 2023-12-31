@@ -6,7 +6,7 @@ import imagemagick.core.enums.CompressionMethod
 import imagemagick.core.enums.Interlace
 import imagemagick.core.enums.MagickFormat
 import imagemagick.core.types.Density
-import imagemagick.exceptions.MagickException
+import imagemagick.core.exceptions.MagickException
 import kotlinx.cinterop.ExperimentalForeignApi
 import okio.Path
 import okio.Source
@@ -17,6 +17,8 @@ import imagemagick.core.MagickImageInfo as IMagickImageInfo
  *
  * @constructor Initializes a new instance of the [MagickImageInfo] class.
  */
+@ExperimentalForeignApi
+@ExperimentalStdlibApi
 class MagickImageInfo() : IMagickImageInfo {
     override lateinit var colorSpace: ColorSpace
         private set
@@ -45,7 +47,7 @@ class MagickImageInfo() : IMagickImageInfo {
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
     @Throws(MagickException::class)
-    constructor(data: ByteArray) : this() {
+    constructor(data: UByteArray) : this() {
         read(data)
     }
 
@@ -59,7 +61,7 @@ class MagickImageInfo() : IMagickImageInfo {
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
     @Throws(MagickException::class)
-    constructor(data: ByteArray, offset: UInt, count: UInt) : this() {
+    constructor(data: UByteArray, offset: UInt, count: UInt) : this() {
         read(data, offset, count)
     }
 
@@ -106,9 +108,8 @@ class MagickImageInfo() : IMagickImageInfo {
      *
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
-    @OptIn(ExperimentalStdlibApi::class, ExperimentalForeignApi::class)
     @Throws(MagickException::class)
-    override fun read(data: ByteArray) {
+    override fun read(data: UByteArray) {
         MagickImage().use {
             it.ping(data)
             initialize(it)
@@ -124,9 +125,8 @@ class MagickImageInfo() : IMagickImageInfo {
      *
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
-    @OptIn(ExperimentalStdlibApi::class, ExperimentalForeignApi::class)
     @Throws(MagickException::class)
-    override fun read(data: ByteArray, offset: UInt, count: UInt) {
+    override fun read(data: UByteArray, offset: UInt, count: UInt) {
         MagickImage().use {
             it.ping(data)
             initialize(it)
@@ -140,7 +140,6 @@ class MagickImageInfo() : IMagickImageInfo {
      *
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
-    @OptIn(ExperimentalStdlibApi::class, ExperimentalForeignApi::class)
     @Throws(MagickException::class)
     override fun read(file: Path) {
         MagickImage().use {
@@ -156,7 +155,6 @@ class MagickImageInfo() : IMagickImageInfo {
      *
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
-    @OptIn(ExperimentalStdlibApi::class, ExperimentalForeignApi::class)
     @Throws(MagickException::class)
     override fun read(stream: Source) {
         MagickImage().use {
@@ -172,7 +170,6 @@ class MagickImageInfo() : IMagickImageInfo {
      *
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
-    @OptIn(ExperimentalStdlibApi::class, ExperimentalForeignApi::class)
     @Throws(MagickException::class)
     override fun read(fileName: String) {
         MagickImage().use {

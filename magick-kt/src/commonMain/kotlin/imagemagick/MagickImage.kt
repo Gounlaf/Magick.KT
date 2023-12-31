@@ -6,7 +6,7 @@ import imagemagick.core.enums.CompressionMethod
 import imagemagick.core.enums.Interlace
 import imagemagick.core.enums.MagickFormat
 import imagemagick.core.types.Density
-import imagemagick.exceptions.MagickException
+import imagemagick.core.exceptions.MagickException
 import imagemagick.exceptions.Throw
 import imagemagick.native.NativeMagickImage
 import imagemagick.settings.MagickReadSettings
@@ -40,7 +40,7 @@ class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
     @Throws(MagickException::class)
-    constructor(data: ByteArray) : this() {
+    constructor(data: UByteArray) : this() {
         read(data, null)
     }
 
@@ -54,7 +54,7 @@ class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
     @Throws(MagickException::class)
-    constructor(data: ByteArray, offset: UInt, count: UInt) : this() {
+    constructor(data: UByteArray, offset: UInt, count: UInt) : this() {
         read(data, offset, count)
     }
 
@@ -69,7 +69,7 @@ class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
     @Throws(MagickException::class)
-    constructor(data: ByteArray, offset: UInt, count: UInt, format: MagickFormat) : this() {
+    constructor(data: UByteArray, offset: UInt, count: UInt, format: MagickFormat) : this() {
         read(data, offset, count, format)
     }
 
@@ -84,7 +84,7 @@ class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
     @Throws(MagickException::class)
-    constructor(data: ByteArray, offset: UInt, count: UInt, readSettings: IMagickReadSettings<QuantumType>) : this() {
+    constructor(data: UByteArray, offset: UInt, count: UInt, readSettings: IMagickReadSettings<QuantumType>) : this() {
         read(data, offset, count, readSettings)
     }
 
@@ -97,7 +97,7 @@ class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
     @Throws(MagickException::class)
-    constructor(data: ByteArray, format: MagickFormat) : this() {
+    constructor(data: UByteArray, format: MagickFormat) : this() {
         read(data, format)
     }
 
@@ -110,7 +110,7 @@ class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
     @Throws(MagickException::class)
-    constructor(data: ByteArray, readSettings: IMagickReadSettings<QuantumType>) : this() {
+    constructor(data: UByteArray, readSettings: IMagickReadSettings<QuantumType>) : this() {
         read(data, readSettings)
     }
 
@@ -171,11 +171,11 @@ class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
     override val width: UInt
         get() = TODO("Not yet implemented")
 
-    override fun ping(data: ByteArray) = ping(data, null)
+    override fun ping(data: UByteArray) = ping(data, null)
 
-    override fun ping(data: ByteArray, offset: UInt, count: UInt) = ping(data, offset, count, null)
+    override fun ping(data: UByteArray, offset: UInt, count: UInt) = ping(data, offset, count, null)
 
-    override fun ping(data: ByteArray, offset: UInt, count: UInt, readSettings: IMagickReadSettings<QuantumType>?) {
+    override fun ping(data: UByteArray, offset: UInt, count: UInt, readSettings: IMagickReadSettings<QuantumType>?) {
         Throw.ifEmpty(data)
         Throw.ifTrue("count", count < 1u, "The number of bytes should be at least 1.")
         Throw.ifTrue("offset", offset.toInt() >= data.size, "The offset should not exceed the length of the array.")
@@ -188,7 +188,7 @@ class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
         read(data, offset, count, readSettings, true)
     }
 
-    override fun ping(data: ByteArray, readSettings: IMagickReadSettings<QuantumType>?) {
+    override fun ping(data: UByteArray, readSettings: IMagickReadSettings<QuantumType>?) {
         Throw.ifEmpty(data)
 
         ping(data, 0u, data.size.toUInt(), readSettings)
@@ -210,18 +210,18 @@ class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
     override fun ping(fileName: String, readSettings: IMagickReadSettings<QuantumType>?) =
         read(fileName, readSettings, true)
 
-    // read ByteArray
+    // read UByteArray
 
-    override fun read(data: ByteArray) = read(data, null)
+    override fun read(data: UByteArray) = read(data, null)
 
-    override fun read(data: ByteArray, offset: UInt, count: UInt) = read(data, offset, count, null)
+    override fun read(data: UByteArray, offset: UInt, count: UInt) = read(data, offset, count, null)
 
-    override fun read(data: ByteArray, offset: UInt, count: UInt, format: MagickFormat) =
-        read(data, offset, count, MagickReadSettings().also {
+    override fun read(data: UByteArray, offset: UInt, count: UInt, format: MagickFormat) =
+        read(data, offset, count, MagickReadSettings(settings).also {
             it.format = format
         })
 
-    override fun read(data: ByteArray, offset: UInt, count: UInt, readSettings: IMagickReadSettings<QuantumType>?) {
+    override fun read(data: UByteArray, offset: UInt, count: UInt, readSettings: IMagickReadSettings<QuantumType>?) {
         Throw.ifEmpty(data)
         Throw.ifTrue("count", count < 1u, "The number of bytes should be at least 1.")
         Throw.ifTrue("offset", offset.toInt() >= data.size, "The offset should not exceed the length of the array.")
@@ -232,20 +232,20 @@ class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
         )
     }
 
-    override fun read(data: ByteArray, format: MagickFormat) {
+    override fun read(data: UByteArray, format: MagickFormat) {
         Throw.ifEmpty(data)
 
-        read(data, 0u, data.size.toUInt(), MagickReadSettings().also {
+        read(data, 0u, data.size.toUInt(), MagickReadSettings(settings).also {
             it.format = format
         })
     }
 
-    override fun read(data: ByteArray, readSettings: IMagickReadSettings<QuantumType>?) {
+    override fun read(data: UByteArray, readSettings: IMagickReadSettings<QuantumType>?) {
         Throw.ifEmpty(data)
         read(data, 0u, data.size.toUInt(), readSettings, false)
     }
 
-    // /read ByteArray
+    // /read UByteArray
 
     // read Path
 
@@ -253,7 +253,7 @@ class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
 
     override fun read(file: Path, width: UInt, height: UInt) = read(file.name, width, height)
 
-    override fun read(file: Path, format: MagickFormat) = read(file.name, MagickReadSettings().also {
+    override fun read(file: Path, format: MagickFormat) = read(file.name, MagickReadSettings(settings).also {
         it.format = format
     })
 
@@ -270,7 +270,7 @@ class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
 
     override fun read(stream: Source) = read(stream, MagickFormat.UNKNOWN)
 
-    override fun read(stream: Source, format: MagickFormat) = read(stream, MagickReadSettings().also {
+    override fun read(stream: Source, format: MagickFormat) = read(stream, MagickReadSettings(settings).also {
         it.format = format
     })
 
@@ -288,7 +288,7 @@ class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
         it.height = height
     })
 
-    override fun read(fileName: String, format: MagickFormat) = read(fileName, MagickReadSettings().also {
+    override fun read(fileName: String, format: MagickFormat) = read(fileName, MagickReadSettings(settings).also {
         it.format = format
     })
 
@@ -298,7 +298,7 @@ class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
     // /read FileName
 
     private fun read(
-        data: ByteArray,
+        data: UByteArray,
         offset: UInt,
         length: UInt,
         readSettings: IMagickReadSettings<QuantumType>?,
@@ -312,7 +312,9 @@ class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
         settings.fileName = fileName
 
 
-        native.readBlob(settings, data.toUByteArray(), offset = offset, length = length)
+        settings.createNativeInstance().use {
+            native.readBlob(it, data, offset = offset, length = length)
+        }
 
         resetSettings()
     }
@@ -343,7 +345,9 @@ class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
         settings.fileName = fileName
         settings.ping = ping
 
-        native.readFile(settings)
+        settings.createNativeInstance().use {
+            native.readFile(it)
+        }
 
         resetSettings()
     }

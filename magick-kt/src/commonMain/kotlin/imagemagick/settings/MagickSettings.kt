@@ -9,7 +9,7 @@ import imagemagick.core.enums.Endian
 import imagemagick.core.enums.Interlace
 import imagemagick.core.enums.MagickFormat
 import imagemagick.core.types.Density
-import imagemagick.core.types.MagickGeometry
+import imagemagick.core.types.MagickGeometry as IMagickGeometry
 import imagemagick.helpers.isNotNullOrEmpty
 import imagemagick.native.NativeMagickSettings
 import imagemagick.native.NativeMagickSettings.Companion.antiAlias
@@ -28,8 +28,10 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import imagemagick.core.settings.MagickSettings as IMagickSettings
 
 
-@OptIn(ExperimentalForeignApi::class, ExperimentalStdlibApi::class)
-open class MagickSettings internal constructor() : IMagickSettings<QuantumType> {
+
+@ExperimentalStdlibApi
+@ExperimentalForeignApi
+open class MagickSettings constructor() : IMagickSettings<QuantumType> {
     private val options: MutableMap<String, String?> = mutableMapOf()
 
     // TODO Take care of events
@@ -45,13 +47,13 @@ open class MagickSettings internal constructor() : IMagickSettings<QuantumType> 
     override var format: MagickFormat = MagickFormat.UNKNOWN
     override var verbose: Boolean = false
 
-    internal var colorFuzz: Double = 0.0
-    internal var fileName: String? = null
-    internal var interlace: Interlace = Interlace.UNDEFINED
-    internal var ping: Boolean = false
-    internal var quality: UInt = 0u
+    var colorFuzz: Double = 0.0
+    var fileName: String? = null
+    var interlace: Interlace = Interlace.UNDEFINED
+    var ping: Boolean = false
+    var quality: UInt = 0u
 
-    protected var extract: MagickGeometry? = null
+    protected var extract: IMagickGeometry? = null
 
     /** Gets or sets the number of scenes. */
     protected var numberScenes: UInt = 0u
@@ -115,7 +117,7 @@ open class MagickSettings internal constructor() : IMagickSettings<QuantumType> 
             density = it.density?.copy()
             depth = it.depth
             endian = it.endian
-            extract = it.extract?.copy()
+//            extract = it.extract?.clone() // TODO
 //            _font = it._font;
 //            _fontPointsize = it._fontPointsize;
             format = it.format
@@ -137,8 +139,10 @@ open class MagickSettings internal constructor() : IMagickSettings<QuantumType> 
         }
     }
 
+    fun createNativeInstance(): NativeMagickSettings = Companion.createNativeInstance(this)
+
     companion object {
-        internal fun createNativeInstance(instance: IMagickSettings<QuantumType>?): NativeMagickSettings =
+        fun createNativeInstance(instance: IMagickSettings<QuantumType>?): NativeMagickSettings =
             (instance as MagickSettings?)?.let { settings ->
                 val format = settings.format()?.uppercase()
 

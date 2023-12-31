@@ -1,15 +1,15 @@
 package imagemagick.settings
 
 import imagemagick.QuantumType
-import imagemagick.core.types.MagickGeometry
+import imagemagick.core.types.MagickGeometry as IMagickGeometry
+import imagemagick.types.MagickGeometry
 import kotlinx.cinterop.ExperimentalForeignApi
-import net.sergeych.sprintf.format
 import imagemagick.core.settings.MagickReadSettings as IMagickReadSettings
 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
 class MagickReadSettings() : MagickSettings(), IMagickReadSettings<QuantumType> {
-    override var extractArea: MagickGeometry = MagickGeometry()
+    override var extractArea: IMagickGeometry = MagickGeometry()
     override var frameIndex: UInt? = null
     override var frameCount: UInt? = null
     override var height: UInt? = null
@@ -17,11 +17,11 @@ class MagickReadSettings() : MagickSettings(), IMagickReadSettings<QuantumType> 
     override var useMonochrome: Boolean = false
     override var width: UInt? = null
 
-    internal constructor(settings: MagickSettings) : this() {
+    constructor(settings: MagickSettings) : this() {
         copyFrom(settings)
     }
 
-    internal constructor(settings: IMagickReadSettings<QuantumType>) : this() {
+    constructor(settings: IMagickReadSettings<QuantumType>) : this() {
         copy(settings)
 
         applyDefines()
@@ -29,7 +29,7 @@ class MagickReadSettings() : MagickSettings(), IMagickReadSettings<QuantumType> 
         applyFrame()
     }
 
-    internal fun forceSingleFrame() {
+    fun forceSingleFrame() {
         frameCount = 1u
         applyFrame()
     }

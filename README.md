@@ -10,8 +10,8 @@ Magick.KT humbly try to port it to the JVM with the power of [Kotlin Native](htt
 
 Everything...
 
-[ ] Support Quantum
-[ ] Support library variations
+* [ ] Support Quantum
+* [ ] Support library variations
 
 ## HOW
 
