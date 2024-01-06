@@ -3,6 +3,8 @@ plugins {
 }
 
 kotlin {
+    explicitApiWarning()
+
     linuxX64()
 
     sourceSets {
@@ -17,6 +19,8 @@ kotlin {
             dependencies {
                 implementation(project.dependencies.platform("org.jetbrains.kotlinx:kotlinx-coroutines-bom:_"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
+
+                implementation("com.ionspin.kotlin:bignum:_")
 
                 implementation(project(":magick-kt-common"))
 

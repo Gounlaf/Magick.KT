@@ -3,6 +3,8 @@ package imagemagick
 import imagemagick.core.QuantumQuantum
 import imagemagick.native.NativeQuantum
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlin.math.max
+import kotlin.math.min
 
 enum class BitDepth {
     Q8,
@@ -14,7 +16,7 @@ val Q = BitDepth.Q8
 
 
 @ExperimentalForeignApi
-object QuantumImpl : QuantumQuantum<QuantumType> {
+object  QuantumImpl : QuantumQuantum<QuantumType> {
     override val depth: UShort = NativeQuantum.depth.toUShort()
     override val max: QuantumType = NativeQuantum.max
 
@@ -52,4 +54,12 @@ object QuantumImpl : QuantumQuantum<QuantumType> {
     }
 
     fun scaleToUbyte(value: QuantumType): UByte = NativeQuantum.scaleToUByte(value)
+
+    fun scaleToQuantum(value: Double): QuantumType {
+        val maxDouble = max.toDouble()
+
+        return convert(min(max(0.0, value * maxDouble), maxDouble))
+    }
+
+    fun scaleToDouble(value: QuantumType): Double = (1.0 / max.toDouble()) * value.toDouble()
 }

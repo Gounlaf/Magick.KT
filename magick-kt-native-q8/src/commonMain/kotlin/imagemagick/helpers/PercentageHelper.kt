@@ -15,5 +15,5 @@ object PercentageHelper {
 
     // TODO Check this nightmare
     fun toQuantumType(value: Percentage): QuantumType =
-        QuantumImpl.max.toDouble().times(value.toDouble().div(100)).toFloat().toUInt().toUByte()
+        QuantumImpl.max.toDouble().times(value.toDouble().div(100)).toUInt().toUByte()
 }

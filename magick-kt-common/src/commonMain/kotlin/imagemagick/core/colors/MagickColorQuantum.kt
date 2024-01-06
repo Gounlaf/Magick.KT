@@ -2,7 +2,7 @@ package imagemagick.core.colors
 
 import imagemagick.core.types.Percentage
 
-interface MagickColorQuantum<TQuantumType> where TQuantumType : Any {
+interface MagickColorQuantum<TQuantumType> : Comparable<MagickColorQuantum<TQuantumType>?> where TQuantumType : Any {
     /**
      * Gets or sets the alpha component value of this color.
      */
