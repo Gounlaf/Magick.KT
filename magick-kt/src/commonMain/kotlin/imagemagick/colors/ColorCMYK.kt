@@ -1,6 +1,6 @@
 package imagemagick.colors
 
-import imagemagick.QuantumImpl
+import imagemagick.Quantum
 import imagemagick.QuantumType
 import imagemagick.core.types.Percentage
 import imagemagick.exceptions.Throw
@@ -63,7 +63,7 @@ public class ColorCMYK : ColorBase {
             PercentageHelper.toQuantumType(magenta),
             PercentageHelper.toQuantumType(yellow),
             PercentageHelper.toQuantumType(key),
-            QuantumImpl.max,
+            Quantum.max,
         ),
     )
 
@@ -101,7 +101,7 @@ public class ColorCMYK : ColorBase {
      * @param key Key (black) component value of this color.
      */
     public constructor(cyan: QuantumType, magenta: QuantumType, yellow: QuantumType, key: QuantumType) : super(
-        MagickColor(cyan, magenta, yellow, key, QuantumImpl.max),
+        MagickColor(cyan, magenta, yellow, key, Quantum.max),
     )
 
     /**
@@ -149,7 +149,7 @@ public class ColorCMYK : ColorBase {
                 magenta = colors[1],
                 yellow = colors[2],
                 black = colors[3],
-                alpha = QuantumImpl.max,
+                alpha = Quantum.max,
             )
         }
     }

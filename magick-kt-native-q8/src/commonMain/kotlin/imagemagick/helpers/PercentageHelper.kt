@@ -1,6 +1,6 @@
 package imagemagick.helpers
 
-import imagemagick.QuantumImpl
+import imagemagick.Quantum
 import imagemagick.QuantumType
 import imagemagick.core.types.Percentage
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -8,12 +8,12 @@ import kotlinx.cinterop.ExperimentalForeignApi
 @ExperimentalForeignApi
 object PercentageHelper {
     // TODO Check this nightmare
-    fun fromQuantum(value: Double): Percentage = Percentage(value.div(QuantumImpl.max.toDouble()).times(100))
+    fun fromQuantum(value: Double): Percentage = Percentage(value.div(Quantum.max.toDouble()).times(100))
 
     // TODO Check this nightmare
-    fun toQuantum(value: Percentage): Double = QuantumImpl.max.toDouble().times(value.toDouble().div(100))
+    fun toQuantum(value: Percentage): Double = Quantum.max.toDouble().times(value.toDouble().div(100))
 
     // TODO Check this nightmare
     fun toQuantumType(value: Percentage): QuantumType =
-        QuantumImpl.max.toDouble().times(value.toDouble().div(100)).toUInt().toUByte()
+        Quantum.max.toDouble().times(value.toDouble().div(100)).toUInt().toUByte()
 }

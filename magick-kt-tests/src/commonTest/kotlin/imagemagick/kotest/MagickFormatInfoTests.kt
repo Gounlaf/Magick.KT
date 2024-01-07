@@ -19,17 +19,17 @@ import okio.Path.Companion.toPath
 class MagickFormatInfoTests : ShouldSpec() {
     companion object {
         fun shouldReport(format: MagickFormat): Boolean {
-            if (isDisabledThroughPolicy(format))
+            if (isDisabledThroughPolicy(format)) {
                 return false
+            }
 
             return when (format) {
-                MagickFormat.CLIPBOARD, MagickFormat.EMF, MagickFormat.WMF -> false//!Runtime.IsWindows
+                MagickFormat.CLIPBOARD, MagickFormat.EMF, MagickFormat.WMF -> false // !Runtime.IsWindows
                 else -> true
             }
         }
 
-        private fun isDisabledThroughPolicy(format: MagickFormat): Boolean =
-            format == MagickFormat.SUN || format == MagickFormat.RAS
+        private fun isDisabledThroughPolicy(format: MagickFormat): Boolean = format == MagickFormat.SUN || format == MagickFormat.RAS
     }
 
     init {
@@ -179,13 +179,14 @@ class MagickFormatInfoTests : ShouldSpec() {
 
                     should("return format info for all formats") {
                         checkGcUsage {
-                            val missingFormats = MagickFormat.entries.filter {
-                                if (it == MagickFormat.UNKNOWN) {
-                                    return@filter false
-                                }
+                            val missingFormats =
+                                MagickFormat.entries.filter {
+                                    if (it == MagickFormat.UNKNOWN) {
+                                        return@filter false
+                                    }
 
-                                MagickFormatInfo.create(it)?.let { false } ?: shouldReport(it)
-                            }
+                                    MagickFormatInfo.create(it)?.let { false } ?: shouldReport(it)
+                                }
 
                             if (missingFormats.isNotEmpty()) {
                                 error {

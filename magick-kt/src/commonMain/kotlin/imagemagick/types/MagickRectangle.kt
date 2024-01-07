@@ -6,29 +6,29 @@ import imagemagick.native.NativeMagickRectangle.height
 import imagemagick.native.NativeMagickRectangle.width
 import imagemagick.native.NativeMagickRectangle.x
 import imagemagick.native.NativeMagickRectangle.y
-
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.ExperimentalForeignApi
 import libMagickNative.RectangleInfo
-import platform.linux.free
 
 data class MagickRectangle(val x: Int, val y: Int, val width: UInt, val height: UInt) {
     companion object {
         @ExperimentalForeignApi
-        fun fromPageSize(pageSize: String): MagickRectangle? = NativeMagickRectangle.fromPageSize(pageSize)?.let {
-            val rectangle = it.toMagickRectangle()
+        fun fromPageSize(pageSize: String): MagickRectangle? =
+            NativeMagickRectangle.fromPageSize(pageSize)?.let {
+                val rectangle = it.toMagickRectangle()
 
-            it.dispose()
+                it.dispose()
 
-            rectangle
-        }
+                rectangle
+            }
 
         @ExperimentalForeignApi
-        private inline fun CPointer<RectangleInfo>.toMagickRectangle(): MagickRectangle = MagickRectangle(
-            x = x().toInt(),
-            y = y().toInt(),
-            width = width().toUInt(),
-            height = height().toUInt()
-        )
+        private inline fun CPointer<RectangleInfo>.toMagickRectangle(): MagickRectangle =
+            MagickRectangle(
+                x = x().toInt(),
+                y = y().toInt(),
+                width = width().toUInt(),
+                height = height().toUInt(),
+            )
     }
 }

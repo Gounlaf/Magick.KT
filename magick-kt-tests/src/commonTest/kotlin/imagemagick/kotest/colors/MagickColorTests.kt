@@ -1,12 +1,15 @@
 package imagemagick.kotest.colors
 
-import imagemagick.QuantumImpl
+import imagemagick.Quantum
 import imagemagick.QuantumType
 import imagemagick.asserts.ColorAssert
 import imagemagick.colors.MagickColor
 import imagemagick.colors.MagickColors
 import imagemagick.core.types.Percentage
+import imagemagick.core.types.Percentage.Companion.percent
 import imagemagick.helpers.empty
+import imagemagick.helpers.shouldBeIn
+import imagemagick.quantum
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.shouldBe
@@ -32,14 +35,9 @@ class MagickColorTests : ShouldSpec() {
         ) {
             val color = MagickColor(hexValue)
 
-            (red - delta..red + delta).contains(color.r.toDouble()) shouldBe true
-            (green - delta..green + delta).contains(color.g.toDouble()) shouldBe true
-            (blue - delta..blue + delta).contains(color.b.toDouble()) shouldBe true
-
-            // Not yet supported by Kotest
-//            color.r.toDouble().shouldBeIn(red - delta..red + delta)
-//            color.g.toDouble().shouldBeIn( green - delta..green + delta)
-//            color.b.toDouble().shouldBeIn( blue - delta..blue + delta)
+            color.r.toDouble() shouldBeIn red - delta..red + delta
+            color.g.toDouble() shouldBeIn green - delta..green + delta
+            color.b.toDouble() shouldBeIn blue - delta..blue + delta
 
             if (isTransparent) {
                 ColorAssert.transparent(color.a.toFloat())
@@ -58,20 +56,17 @@ class MagickColorTests : ShouldSpec() {
                     }
                 }
 
-
                 should("throw exception when color does not start with hash") {
                     shouldThrow<IllegalArgumentException> {
                         MagickColor("FFFFFF")
                     }
                 }
 
-
                 should("throw exception when color has invalid length") {
                     shouldThrow<IllegalArgumentException> {
                         MagickColor("#FFFFF")
                     }
                 }
-
 
                 should("throw exception when color has invalid hex value") {
                     shouldThrow<IllegalArgumentException> {
@@ -87,9 +82,8 @@ class MagickColorTests : ShouldSpec() {
                     }
                 }
 
-
                 should("initialize the instance correctly") {
-                    val max = QuantumImpl.max.toDouble()
+                    val max = Quantum.max.toDouble()
 
                     testColor("#FF", max, max, max, false)
                     testColor("#F00", max, 0.0, 0.0, false)
@@ -120,7 +114,6 @@ class MagickColorTests : ShouldSpec() {
                     first.compareTo(null) shouldBe 1
                 }
 
-
                 should("return zero when values are equal") {
                     val first = MagickColors.White
                     val second = MagickColor(MagickColors.White)
@@ -128,39 +121,37 @@ class MagickColorTests : ShouldSpec() {
                     first.compareTo(second) shouldBe 0
                 }
 
-
                 should("return minus one when value is higher") {
-                    val half: QuantumType = QuantumImpl.convert(QuantumImpl.max.toDouble() / 2.0)
+                    val half: QuantumType = (Quantum.max.toDouble() / 2.0).quantum()
                     val first = MagickColor(half, half, half, half, half)
 
-                    var second = MagickColor(half, half, QuantumImpl.max, half, half)
+                    var second = MagickColor(half, half, Quantum.max, half, half)
                     first.compareTo(second) shouldBe -1
 
-                    second = MagickColor(half, half, QuantumImpl.max, half, half)
+                    second = MagickColor(half, half, Quantum.max, half, half)
                     first.compareTo(second) shouldBe -1
 
-                    second = MagickColor(half, half, half, QuantumImpl.max, half)
+                    second = MagickColor(half, half, half, Quantum.max, half)
                     first.compareTo(second) shouldBe -1
 
-                    second = MagickColor(half, half, half, half, QuantumImpl.max)
+                    second = MagickColor(half, half, half, half, Quantum.max)
                     first.compareTo(second) shouldBe -1
                 }
 
-
                 should("return one when value is lower") {
-                    val half: QuantumType = QuantumImpl.convert(QuantumImpl.max.toDouble() / 2.0)
+                    val half: QuantumType = (Quantum.max.toDouble() / 2.0).quantum()
                     val first = MagickColors.White
 
-                    var second = MagickColor(half, QuantumImpl.convert(0), half, half, half)
+                    var second = MagickColor(half, 0.quantum(), half, half, half)
                     first.compareTo(second) shouldBe 1
 
-                    second = MagickColor(half, half, QuantumImpl.convert(0), half, half)
+                    second = MagickColor(half, half, 0.quantum(), half, half)
                     first.compareTo(second) shouldBe 1
 
-                    second = MagickColor(half, half, half, QuantumImpl.convert(0), half)
+                    second = MagickColor(half, half, half, 0.quantum(), half)
                     first.compareTo(second) shouldBe 1
 
-                    second = MagickColor(half, half, half, half, QuantumImpl.convert(0))
+                    second = MagickColor(half, half, half, half, 0.quantum())
                     first.compareTo(second) shouldBe 1
                 }
             }
@@ -169,28 +160,26 @@ class MagickColorTests : ShouldSpec() {
                 should("return true when values are same") {
                     val first = MagickColors.White
 
-                    first.fuzzyEquals(first, Percentage(0)) shouldBe true
+                    first.fuzzyEquals(first, 0.percent()) shouldBe true
                 }
-
 
                 should("return true when values are equal") {
                     val first = MagickColors.White
-                    val second = MagickColor(QuantumImpl.max, QuantumImpl.max, QuantumImpl.max)
+                    val second = MagickColor(Quantum.max, Quantum.max, Quantum.max)
 
-                    first.fuzzyEquals(second, Percentage(0)) shouldBe true
+                    first.fuzzyEquals(second, 0.percent()) shouldBe true
                 }
 
-
                 should("return the correct value") {
-                    val first = MagickColor(QuantumImpl.max, QuantumImpl.max, QuantumImpl.max)
+                    val first = MagickColor(Quantum.max, Quantum.max, Quantum.max)
 
-                    val half = QuantumImpl.convert(QuantumImpl.max.toDouble() / 2.0)
-                    val second = MagickColor(QuantumImpl.max, half, QuantumImpl.max)
+                    val half = (Quantum.max.toDouble() / 2.0).quantum()
+                    val second = MagickColor(Quantum.max, half, Quantum.max)
 
-                    first.fuzzyEquals(second, Percentage(0)) shouldBe false
-                    first.fuzzyEquals(second, Percentage(20)) shouldBe false
-                    first.fuzzyEquals(second, Percentage(10)) shouldBe false
-                    first.fuzzyEquals(second, Percentage(30)) shouldBe true
+                    first.fuzzyEquals(second, 0.percent()) shouldBe false
+                    first.fuzzyEquals(second, 20.percent()) shouldBe false
+                    first.fuzzyEquals(second, 10.percent()) shouldBe false
+                    first.fuzzyEquals(second, 30.percent()) shouldBe true
                 }
             }
 
@@ -207,7 +196,6 @@ class MagickColorTests : ShouldSpec() {
                         (first > second) shouldBe true
                         (first >= second) shouldBe true
                     }
-
 
                     should("return the correct value when instance are equal") {
                         val first = MagickColors.Red
@@ -230,39 +218,37 @@ class MagickColorTests : ShouldSpec() {
                         val result = color * percentage
 
                         result shouldNotBe null
-                        result.r shouldBe QuantumImpl.max
-                        result.g shouldBe QuantumImpl.max
-                        result.b shouldBe QuantumImpl.max
-                        result.a shouldBe QuantumImpl.max
+                        result.r shouldBe Quantum.max
+                        result.g shouldBe Quantum.max
+                        result.b shouldBe Quantum.max
+                        result.a shouldBe Quantum.max
                     }
 
-
-                    should("multply all non alpha channels for rgb color") {
+                    should("multiply all non alpha channels for rgb color") {
                         val color = MagickColors.White
                         val percentage = Percentage(50)
 
                         val result = color * percentage
 
                         result shouldNotBe null
-                        result.r shouldBe QuantumImpl.convert(QuantumImpl.max.toDouble() / 2)
-                        result.g shouldBe QuantumImpl.convert(QuantumImpl.max.toDouble() / 2)
-                        result.b shouldBe QuantumImpl.convert(QuantumImpl.max.toDouble() / 2)
-                        result.a shouldBe QuantumImpl.convert(QuantumImpl.max)
+                        result.r shouldBe (Quantum.max.toDouble() / 2).quantum()
+                        result.g shouldBe (Quantum.max.toDouble() / 2).quantum()
+                        result.b shouldBe (Quantum.max.toDouble() / 2).quantum()
+                        result.a shouldBe (Quantum.max).quantum()
                     }
 
-
-                    should("multply all non alpha channels for cmyk color") {
+                    should("multiply all non alpha channels for cmyk color") {
                         val color = MagickColor("cmyka(100%,100%,100%,100%)")
                         val percentage = Percentage(50)
 
                         val result = color * percentage
 
                         result shouldNotBe null
-                        result.r shouldBe QuantumImpl.convert(QuantumImpl.max.toDouble() / 2)
-                        result.g shouldBe QuantumImpl.convert(QuantumImpl.max.toDouble() / 2)
-                        result.b shouldBe QuantumImpl.convert(QuantumImpl.max.toDouble() / 2)
-                        result.k shouldBe QuantumImpl.convert(QuantumImpl.max.toDouble() / 2)
-                        result.a shouldBe QuantumImpl.convert(QuantumImpl.max)
+                        result.r shouldBe (Quantum.max.toDouble() / 2).quantum()
+                        result.g shouldBe (Quantum.max.toDouble() / 2).quantum()
+                        result.b shouldBe (Quantum.max.toDouble() / 2).quantum()
+                        result.k shouldBe (Quantum.max.toDouble() / 2).quantum()
+                        result.a shouldBe (Quantum.max).quantum()
                     }
                 }
             }
@@ -273,21 +259,20 @@ class MagickColorTests : ShouldSpec() {
                     color.toHexString() shouldBe "#B0E0E6"
                 }
 
-
                 should("include the alpha channel when not fully opquery") {
                     val color = MagickColor("#b0e0e680")
                     color.toHexString() shouldBe "#B0E0E680"
                 }
 
-
                 should("throw exception for cmyk color") {
-                    val color = MagickColor(
-                        QuantumImpl.convert(0),
-                        QuantumImpl.max,
-                        QuantumImpl.convert(0),
-                        QuantumImpl.convert(0),
-                        QuantumImpl.max
-                    )
+                    val color =
+                        MagickColor(
+                            0.quantum(),
+                            Quantum.max,
+                            0.quantum(),
+                            0.quantum(),
+                            Quantum.max,
+                        )
                     shouldThrow<UnsupportedOperationException> {
                         color.toHexString()
                     }
@@ -304,11 +289,11 @@ class MagickColorTests : ShouldSpec() {
 //                        #endif
                 }
 
-
                 should("include the alpha channel when not fully opquery") {
-                    val color = MagickColor(MagickColors.Red).apply {
-                        a = QuantumImpl.convert(0)
-                    }
+                    val color =
+                        MagickColor(MagickColors.Red).apply {
+                            a = 0.quantum()
+                        }
 
 //                        #if Q8
                     color.toShortString() shouldBe "#FF000000"
@@ -317,15 +302,15 @@ class MagickColorTests : ShouldSpec() {
 //                        #endif
                 }
 
-
                 should("return the correct string for cmyk color") {
-                    val color = MagickColor(
-                        QuantumImpl.convert(0),
-                        QuantumImpl.max,
-                        QuantumImpl.convert(0),
-                        QuantumImpl.convert(0),
-                        QuantumImpl.max
-                    )
+                    val color =
+                        MagickColor(
+                            0.quantum(),
+                            Quantum.max,
+                            0.quantum(),
+                            0.quantum(),
+                            Quantum.max,
+                        )
                     color.toShortString() shouldBe "cmyk(0,255,0,0)"
                 }
             }
@@ -340,24 +325,25 @@ class MagickColorTests : ShouldSpec() {
 //                    #endif
                 }
 
-
                 should("return the correct string for cmyk color") {
-                    var color = MagickColor(
-                        QuantumImpl.convert(0),
-                        QuantumImpl.max,
-                        QuantumImpl.convert(0),
-                        QuantumImpl.convert(0),
-                        QuantumImpl.convert(QuantumImpl.max.toDouble() / 3.0)
-                    )
+                    var color =
+                        MagickColor(
+                            0.quantum(),
+                            Quantum.max,
+                            0.quantum(),
+                            0.quantum(),
+                            (Quantum.max.toDouble() / 3.0).quantum(),
+                        )
                     color.toString() shouldBe "cmyka(0,255,0,0,0.3333)"
 
-                    color = MagickColor(
-                        QuantumImpl.convert(0),
-                        QuantumImpl.max,
-                        QuantumImpl.convert(0),
-                        QuantumImpl.convert(0),
-                        QuantumImpl.max
-                    )
+                    color =
+                        MagickColor(
+                            0.quantum(),
+                            Quantum.max,
+                            0.quantum(),
+                            0.quantum(),
+                            Quantum.max,
+                        )
                     color.toString() shouldBe "cmyka(0,255,0,0,1.0)"
                 }
             }

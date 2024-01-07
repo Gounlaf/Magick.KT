@@ -1,6 +1,6 @@
 package imagemagick.colors
 
-import imagemagick.QuantumImpl
+import imagemagick.Quantum
 import imagemagick.QuantumType
 import imagemagick.exceptions.Throw
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -29,13 +29,13 @@ public class ColorGray : ColorBase {
     }
 
     private constructor(color: IMagickColor<QuantumType>) : super(color) {
-        shade = (0.212656 * QuantumImpl.scaleToDouble(color.r)) +
-            (0.715158 * QuantumImpl.scaleToDouble(color.g)) +
-            (0.072186 * QuantumImpl.scaleToDouble(color.b))
+        shade = (0.212656 * Quantum.scaleToDouble(color.r)) +
+            (0.715158 * Quantum.scaleToDouble(color.g)) +
+            (0.072186 * Quantum.scaleToDouble(color.b))
     }
 
     override fun updateColor() {
-        QuantumImpl.scaleToQuantum(shade).let {
+        Quantum.scaleToQuantum(shade).let {
             color.r = it
             color.g = it
             color.b = it

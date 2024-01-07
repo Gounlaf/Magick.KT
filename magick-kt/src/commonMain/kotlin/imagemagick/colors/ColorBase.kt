@@ -13,7 +13,7 @@ import imagemagick.core.colors.MagickColorQuantum as IMagickColor
 @ExperimentalForeignApi
 public abstract class ColorBase(
     /** Actual color of this instance. */
-    public open val color: IMagickColor<QuantumType>,
+    protected open val color: IMagickColor<QuantumType>,
 ) : Comparable<ColorBase?> {
     override fun compareTo(other: ColorBase?): Int {
         if (other == null) {

@@ -1,6 +1,6 @@
 package imagemagick.asserts
 
-import imagemagick.QuantumImpl
+import imagemagick.Quantum
 import io.kotest.matchers.shouldBe
 
 object ColorAssert {
@@ -9,6 +9,6 @@ object ColorAssert {
     }
 
     fun notTransparent(alpha: Float) {
-        alpha shouldBe QuantumImpl.max.toFloat()
+        alpha shouldBe Quantum.max.toFloat()
     }
 }

@@ -28,7 +28,7 @@ data class MagickFormatInfo private constructor(
     override val moduleFormat: MagickFormat,
     override val supportsMultipleFrames: Boolean,
     override val supportsReading: Boolean,
-    override val supportsWriting: Boolean
+    override val supportsWriting: Boolean,
 ) : Interface {
     @ExperimentalStdlibApi
     @ExperimentalForeignApi
@@ -66,23 +66,24 @@ data class MagickFormatInfo private constructor(
                             "3GP" -> "THREEGP"
                             else -> it
                         }
-                    } ?: "UNKNOWN"
+                    } ?: "UNKNOWN",
                 )
             } catch (e: Exception) {
                 MagickFormat.UNKNOWN
             }
 
-        private inline fun CPointer<MagickInfo>.toMagickFormatInfo(): MagickFormatInfo = MagickFormatInfo(
-            canReadMultithreaded = this.canReadMultithreaded(),
-            canWriteMultithreaded = this.canWriteMultithreaded(),
-            description = this.description(),
-            format = formatCleaner(this.format()),
-            mimeType = this.mimeType(),
-            moduleFormat = formatCleaner(this.moduleFormat()),
-            supportsMultipleFrames = this.supportsMultipleFrames(),
-            supportsReading = this.supportsReading(),
-            supportsWriting = this.supportsWriting()
-        )
+        private inline fun CPointer<MagickInfo>.toMagickFormatInfo(): MagickFormatInfo =
+            MagickFormatInfo(
+                canReadMultithreaded = this.canReadMultithreaded(),
+                canWriteMultithreaded = this.canWriteMultithreaded(),
+                description = this.description(),
+                format = formatCleaner(this.format()),
+                mimeType = this.mimeType(),
+                moduleFormat = formatCleaner(this.moduleFormat()),
+                supportsMultipleFrames = this.supportsMultipleFrames(),
+                supportsReading = this.supportsReading(),
+                supportsWriting = this.supportsWriting(),
+            )
 
         /**
          * Returns the format information. The extension of the supplied [file] is used to determine the format.
@@ -98,10 +99,11 @@ data class MagickFormatInfo private constructor(
          * @param format The image format.
          * @return The format information.
          */
-        fun create(format: MagickFormat): Interface? = when (format) {
-            MagickFormat.UNKNOWN -> null
-            else -> allFormats[format]
-        }
+        fun create(format: MagickFormat): Interface? =
+            when (format) {
+                MagickFormat.UNKNOWN -> null
+                else -> allFormats[format]
+            }
 
         @Throws(IllegalArgumentException::class)
         fun create(data: UByteArray): Interface? {
@@ -129,12 +131,13 @@ data class MagickFormatInfo private constructor(
     }
 
     // "{Format}: {Description} ({SupportReading}R{SupportWriting}W{SupportMultipleFrames}M)"
-    override fun toString(): String = "$format: $description ({${supportsReading.toString("+", "-")}}R{${
-    supportsWriting.toString(
-        "+",
-        "-"
-    )
-    }W{${supportsMultipleFrames.toString("+", "-")}}M)"
+    override fun toString(): String =
+        "$format: $description ({${supportsReading.toString("+", "-")}}R{${
+            supportsWriting.toString(
+                "+",
+                "-",
+            )
+        }W{${supportsMultipleFrames.toString("+", "-")}}M)"
 
     override fun unregister(): Boolean {
         TODO("Not yet implemented")

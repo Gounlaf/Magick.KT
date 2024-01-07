@@ -1,10 +1,9 @@
 package imagemagick.colors
 
-import com.ionspin.kotlin.bignum.decimal.BigDecimal
-import com.ionspin.kotlin.bignum.decimal.toBigDecimal
-import imagemagick.QuantumImpl
+import imagemagick.Quantum
 import imagemagick.QuantumType
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.convert
 import imagemagick.core.colors.MagickColorQuantum as IMagickColor
 
 /**
@@ -29,20 +28,14 @@ public class ColorYUV : ColorBase {
      * @param u U component value of this color.
      * @param v V component value of this color.
      */
-    public constructor(y: Double, u: Double, v: Double) : super(
-        MagickColor(
-            QuantumImpl.convert(0),
-            QuantumImpl.convert(0),
-            QuantumImpl.convert(0),
-        ),
-    ) {
+    public constructor(y: Double, u: Double, v: Double) : super(MagickColor(0.convert(), 0.convert(), 0.convert())) {
         this.y = y
         this.u = u
         this.v = v
     }
 
     private constructor(color: IMagickColor<QuantumType>) : super(color) {
-        val max = QuantumImpl.max.toDouble()
+        val max = Quantum.max.toDouble()
         val maxRatio = 1.0 / max
         val r = color.r.toDouble()
         val g = color.g.toDouble()
@@ -54,25 +47,15 @@ public class ColorYUV : ColorBase {
     }
 
     override fun updateColor() {
-        val yBig = y.toBigDecimal()
-        val uBig = (u - 0.5).toBigDecimal()
-        val vBig = (v - 0.5).toBigDecimal()
-
-        color.r = QuantumImpl.scaleToQuantum((yBig - (ruFactor * uBig) + (rvFactor * vBig)).doubleValue())
-        color.g = QuantumImpl.scaleToQuantum((yBig - (guFactor * uBig) - (gvFactor * vBig)).doubleValue())
-        color.b = QuantumImpl.scaleToQuantum((yBig + (buFactor * uBig) - (bvFactor * vBig)).doubleValue())
+        color.r =
+            Quantum.scaleToQuantum((y - (3.945707070708279e-05 * (u - 0.5)) + (1.1398279671717170825 * (v - 0.5))))
+        color.g =
+            Quantum.scaleToQuantum((y - (0.3946101641414141437 * (u - 0.5)) - (0.5805003156565656797 * (v - 0.5))))
+        color.b =
+            Quantum.scaleToQuantum((y + (2.0319996843434342537 * (u - 0.5)) - (4.813762626262513e-04 * (v - 0.5))))
     }
 
     public companion object {
-        private val ruFactor: BigDecimal = BigDecimal.parseString("3.945707070708279e-05")
-        private val rvFactor: BigDecimal = BigDecimal.parseString("1.1398279671717170825")
-
-        private val guFactor: BigDecimal = BigDecimal.parseString("0.3946101641414141437")
-        private val gvFactor: BigDecimal = BigDecimal.parseString("0.5805003156565656797")
-
-        private val buFactor: BigDecimal = BigDecimal.parseString("2.0319996843434342537")
-        private val bvFactor: BigDecimal = BigDecimal.parseString("4.813762626262513e-04")
-
         /**
          * Converts the specified [IMagickColor] to an instance of this type.
          *

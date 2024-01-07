@@ -14,7 +14,10 @@ class GcTestListener : BeforeEachListener, AfterEachListener, Extension {
         memConsumed[testCase] = getUsage()
     }
 
-    override suspend fun afterEach(testCase: TestCase, result: TestResult) {
+    override suspend fun afterEach(
+        testCase: TestCase,
+        result: TestResult,
+    ) {
         val after = getUsage()
         val before = memConsumed.remove(testCase) ?: 0
 

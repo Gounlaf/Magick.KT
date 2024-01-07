@@ -3,7 +3,7 @@ package imagemagick.core
 /**
  * Interface that represents the quantum information of ImageMagick.
  */
-interface Quantum {
+interface QuantumContract {
     /**
      * Gets the quantum depth.
      */

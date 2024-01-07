@@ -14,22 +14,56 @@ enum class BitDepth {
 
 val Q = BitDepth.Q8
 
+@ExperimentalForeignApi
+inline fun UShort.quantum(): QuantumType = Quantum.convert(this)
 
 @ExperimentalForeignApi
-object  QuantumImpl : QuantumQuantum<QuantumType> {
+inline fun UInt.quantum(): QuantumType = Quantum.convert(this)
+
+@ExperimentalForeignApi
+inline fun Int.quantum(): QuantumType = Quantum.convert(this)
+
+@ExperimentalForeignApi
+inline fun Long.quantum(): QuantumType = Quantum.convert(this)
+
+@ExperimentalForeignApi
+inline fun Float.quantum(): QuantumType = Quantum.convert(this)
+
+@ExperimentalForeignApi
+inline fun Double.quantum(): QuantumType = Quantum.convert(this)
+
+@ExperimentalForeignApi
+inline fun QuantumType.quantum(): QuantumType = this
+
+@ExperimentalForeignApi
+object Quantum : QuantumQuantum<QuantumType> {
     override val depth: UShort = NativeQuantum.depth.toUShort()
     override val max: QuantumType = NativeQuantum.max
 
-    fun convert(value: UByte): QuantumType {
-        return value
-    }
+    private val maxd: Double = NativeQuantum.max.toDouble()
 
-    fun convert(value: Double): QuantumType {
-        if (value < 0) {
+    inline fun convert(value: UByte): QuantumType = value
+
+    inline fun convert(value: UInt): QuantumType = convert(value.toUByte())
+
+    fun convert(value: Float): QuantumType {
+        if (value < 0.0) {
             return 0u
         }
 
-        if (value > max.toDouble()) {
+        if (value > maxd) {
+            return max
+        }
+
+        return value.toUInt().toUByte()
+    }
+
+    fun convert(value: Double): QuantumType {
+        if (value < 0.0) {
+            return 0u
+        }
+
+        if (value > maxd) {
             return max
         }
 
@@ -41,7 +75,19 @@ object  QuantumImpl : QuantumQuantum<QuantumType> {
             return 0u
         }
 
-        if (value > max.toDouble()) {
+        if (value > maxd) {
+            return max
+        }
+
+        return value.toUByte()
+    }
+
+    fun convert(value: Long): QuantumType {
+        if (value < 0) {
+            return 0u
+        }
+
+        if (value > maxd) {
             return max
         }
 
@@ -50,16 +96,12 @@ object  QuantumImpl : QuantumQuantum<QuantumType> {
 
     fun convert(value: UShort): QuantumType {
         // https://github.com/dlemstra/Magick.NET/discussions/1497
-        return (value.plus(128u)).div(257u).toUByte()
+        return ((value + 128u) / 257u).toUByte()
     }
 
-    fun scaleToUbyte(value: QuantumType): UByte = NativeQuantum.scaleToUByte(value)
+    inline fun scaleToUbyte(value: QuantumType): UByte = NativeQuantum.scaleToUByte(value)
 
-    fun scaleToQuantum(value: Double): QuantumType {
-        val maxDouble = max.toDouble()
-
-        return convert(min(max(0.0, value * maxDouble), maxDouble))
-    }
+    fun scaleToQuantum(value: Double): QuantumType = convert(min(max(0.0, value * maxd), maxd))
 
     fun scaleToDouble(value: QuantumType): Double = (1.0 / max.toDouble()) * value.toDouble()
 }

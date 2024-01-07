@@ -1,11 +1,9 @@
 package imagemagick.helpers
 
 import io.kotest.core.test.TestScope
-import io.kotest.engine.test.logging.warn
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.native.runtime.GC
-
 
 fun getUsage(): Long {
     GC.collect()
@@ -22,7 +20,10 @@ inline fun <reified R> TestScope.checkGcUsage(block: () -> R) {
     }
 }
 
-inline fun <reified T : TestScope, reified R> checkGcUsage(receiver: T, block: T.() -> R) {
+inline fun <reified T : TestScope, reified R> checkGcUsage(
+    receiver: T,
+    block: T.() -> R,
+) {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
@@ -40,7 +41,6 @@ inline fun <reified T : TestScope, reified R> checkGcUsage(receiver: T, block: T
 //        receiver.warn { "⚠ you may have a memory leak; before: $before - after: $after; ${receiver.testCase.name}" }
 //    }
 }
-
 
 inline fun <R> checkGcUsage(block: () -> R) {
     contract {

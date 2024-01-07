@@ -3,6 +3,9 @@ package imagemagick.helpers
 inline fun CharSequence?.isNotNullOrEmpty(): Boolean = !isNullOrEmpty()
 inline fun CharSequence?.isNotNullOrBlank(): Boolean = !isNullOrBlank()
 
+@ExperimentalStdlibApi
+public inline fun CharSequence.hexToUByte(format: HexFormat = HexFormat.Default): UByte = toString().hexToByte(format).toUByte()
+
 inline fun Boolean.toString(trueStr: String, falseStr: String) = if (this) trueStr else falseStr
 
 /**

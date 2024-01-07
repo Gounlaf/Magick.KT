@@ -1,7 +1,7 @@
 package imagemagick.kotest.types
 
 import imagemagick.core.types.Percentage
-import imagemagick.core.types.Percentage.Companion.toPercentage
+import imagemagick.core.types.Percentage.Companion.percent
 import imagemagick.helpers.checkGcUsage
 import imagemagick.helpers.empty
 import imagemagick.types.MagickGeometry
@@ -192,7 +192,7 @@ class MagickGeometryTests : ShouldSpec({
 
             should("set x and y and is percentage") {
                 checkGcUsage {
-                    val geometry = MagickGeometry(5, 10, 15.0.toPercentage(), 20.0.toPercentage())
+                    val geometry = MagickGeometry(5, 10, 15.0.percent(), 20.0.percent())
 
                     geometry.x shouldBe 5
                     geometry.y shouldBe 10
@@ -312,9 +312,10 @@ class MagickGeometryTests : ShouldSpec({
 
             should("throw exception when page size is invalid") {
                 checkGcUsage {
-                    val exception = shouldThrow<IllegalStateException> {
-                        MagickGeometry.fromPageSize("invalid")
-                    }
+                    val exception =
+                        shouldThrow<IllegalStateException> {
+                            MagickGeometry.fromPageSize("invalid")
+                        }
 
                     exception.message shouldBe "Invalid page size specified."
                 }
@@ -345,23 +346,10 @@ class MagickGeometryTests : ShouldSpec({
             should("return the correct value when instance is null") {
                 val geometry = MagickGeometry(10u, 5u)
 
-                @Suppress("SENSELESS_COMPARISON")
-                (geometry == null) shouldBe false
-                @Suppress("SENSELESS_COMPARISON")
-                (geometry != null) shouldBe true
                 (geometry < null) shouldBe false
                 (geometry <= null) shouldBe false
                 (geometry > null) shouldBe true
                 (geometry >= null) shouldBe true
-                @Suppress("SENSELESS_COMPARISON")
-                (null == geometry) shouldBe false
-                @Suppress("SENSELESS_COMPARISON")
-                (null != geometry) shouldBe true
-                // the following can't happens in Kotlin
-//            (null < geometry) shouldBe true
-//            (null <= geometry) shouldBe true
-//            (null > geometry) shouldBe false
-//            (null >= geometry) shouldBe false
             }
 
             should("return the correct value when instance is specified") {
@@ -428,9 +416,10 @@ class MagickGeometryTests : ShouldSpec({
 
             should("return correct value for ignore aspect ratio") {
                 checkGcUsage {
-                    val geometry = MagickGeometry(5u, 10u).apply {
-                        ignoreAspectRatio = true
-                    }
+                    val geometry =
+                        MagickGeometry(5u, 10u).apply {
+                            ignoreAspectRatio = true
+                        }
 
                     geometry.toString() shouldBe "5x10!"
                 }
@@ -438,9 +427,10 @@ class MagickGeometryTests : ShouldSpec({
 
             should("return correct value for less") {
                 checkGcUsage {
-                    val geometry = MagickGeometry(2, 1, 10u, 5u).apply {
-                        less = true
-                    }
+                    val geometry =
+                        MagickGeometry(2, 1, 10u, 5u).apply {
+                            less = true
+                        }
 
                     geometry.toString() shouldBe "10x5+2+1<"
                 }
@@ -448,9 +438,10 @@ class MagickGeometryTests : ShouldSpec({
 
             should("return correct value for greater") {
                 checkGcUsage {
-                    val geometry = MagickGeometry(0u, 10u).apply {
-                        greater = true
-                    }
+                    val geometry =
+                        MagickGeometry(0u, 10u).apply {
+                            greater = true
+                        }
 
                     geometry.toString() shouldBe "x10>"
                 }
@@ -458,9 +449,10 @@ class MagickGeometryTests : ShouldSpec({
 
             should("return correct value for fill area") {
                 checkGcUsage {
-                    val geometry = MagickGeometry(10u, 15u).apply {
-                        fillArea = true
-                    }
+                    val geometry =
+                        MagickGeometry(10u, 15u).apply {
+                            fillArea = true
+                        }
 
                     geometry.toString() shouldBe "10x15^"
                 }
@@ -468,9 +460,10 @@ class MagickGeometryTests : ShouldSpec({
 
             should("return correct value for limit pixels") {
                 checkGcUsage {
-                    val geometry = MagickGeometry(10u, 0u).apply {
-                        limitPixels = true
-                    }
+                    val geometry =
+                        MagickGeometry(10u, 0u).apply {
+                            limitPixels = true
+                        }
 
                     geometry.toString() shouldBe "10x@"
                 }
@@ -478,9 +471,10 @@ class MagickGeometryTests : ShouldSpec({
 
             should("return correct value for aspect ration") {
                 checkGcUsage {
-                    val geometry = MagickGeometry(3u, 2u).apply {
-                        aspectRatio = true
-                    }
+                    val geometry =
+                        MagickGeometry(3u, 2u).apply {
+                            aspectRatio = true
+                        }
 
                     geometry.toString() shouldBe "3:2"
                 }
@@ -488,9 +482,10 @@ class MagickGeometryTests : ShouldSpec({
 
             should("set greater and is percentage") {
                 checkGcUsage {
-                    val geometry = MagickGeometry(Percentage(50), Percentage(0)).apply {
-                        greater = true
-                    }
+                    val geometry =
+                        MagickGeometry(Percentage(50), Percentage(0)).apply {
+                            greater = true
+                        }
 
                     geometry.toString() shouldBe "50%>"
                 }

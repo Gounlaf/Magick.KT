@@ -1,7 +1,8 @@
 package imagemagick.colors
 
-import imagemagick.QuantumImpl
+import imagemagick.Quantum
 import imagemagick.QuantumType
+import imagemagick.quantum
 import kotlinx.cinterop.ExperimentalForeignApi
 import imagemagick.core.colors.MagickColorQuantum as IMagickColor
 
@@ -14,13 +15,13 @@ public class ColorMono : ColorBase {
     /** Gets or sets a value indicating whether the color is black or white. */
     public var isBlack: Boolean = false
 
-    private constructor(isBlack: Boolean) : super(if (isBlack) MagickColors.Black else MagickColors.White)
+    private constructor(isBlack: Boolean) : this(if (isBlack) MagickColors.Black else MagickColors.White)
 
     private constructor(color: IMagickColor<QuantumType>) : super(color) {
         isBlack =
             when (color) {
                 MagickColors.Black -> true
-                MagickColors.White -> true
+                MagickColors.White -> false
                 else -> error("Invalid color specified.")
             }
     }
@@ -28,9 +29,9 @@ public class ColorMono : ColorBase {
     override fun updateColor() {
         val c: QuantumType =
             if (isBlack) {
-                QuantumImpl.convert(0.0)
+                0.0.quantum()
             } else {
-                QuantumImpl.max
+                Quantum.max
             }
 
         color.r = c

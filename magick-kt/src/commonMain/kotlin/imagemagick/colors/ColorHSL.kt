@@ -1,6 +1,6 @@
 package imagemagick.colors
 
-import imagemagick.QuantumImpl
+import imagemagick.Quantum
 import imagemagick.QuantumType
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlin.math.abs
@@ -45,7 +45,7 @@ public class ColorHSL : ColorBase {
         val blue = color.b.toDouble()
         val green = color.g.toDouble()
 
-        val quantumScale = 1.0 / QuantumImpl.max.toDouble()
+        val quantumScale = 1.0 / Quantum.max.toDouble()
         val max = max(red, max(green, blue)) * quantumScale
         val min = min(red, min(green, blue)) * quantumScale
         val c = max - min
@@ -103,9 +103,9 @@ public class ColorHSL : ColorBase {
 
         val x = c * (1.0 - abs(h - (2.0 * floor(h / 2.0)) - 1.0))
 
-        val mcScaled = QuantumImpl.scaleToQuantum(min + c)
-        val mxScaled = QuantumImpl.scaleToQuantum(min + x)
-        val mScaled = QuantumImpl.scaleToQuantum(min + x)
+        val mcScaled = Quantum.scaleToQuantum(min + c)
+        val mxScaled = Quantum.scaleToQuantum(min + x)
+        val mScaled = Quantum.scaleToQuantum(min + x)
 
         when (floor(h).toInt()) {
             0 -> {

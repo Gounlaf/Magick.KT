@@ -5,8 +5,8 @@ import imagemagick.core.enums.ColorSpace
 import imagemagick.core.enums.CompressionMethod
 import imagemagick.core.enums.Interlace
 import imagemagick.core.enums.MagickFormat
-import imagemagick.core.types.Density
 import imagemagick.core.exceptions.MagickException
+import imagemagick.core.types.Density
 import kotlinx.cinterop.ExperimentalForeignApi
 import okio.Path
 import okio.Source
@@ -126,7 +126,11 @@ class MagickImageInfo() : IMagickImageInfo {
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
     @Throws(MagickException::class)
-    override fun read(data: UByteArray, offset: UInt, count: UInt) {
+    override fun read(
+        data: UByteArray,
+        offset: UInt,
+        count: UInt,
+    ) {
         MagickImage().use {
             it.ping(data)
             initialize(it)

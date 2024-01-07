@@ -107,7 +107,6 @@ class PercentageTests : ShouldSpec({
                 (first >= second) shouldBe false
             }
 
-
             should("should return correct value when values first is lower") {
                 val first = Percentage(100)
                 val second = Percentage(50)

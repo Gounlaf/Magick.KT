@@ -7,11 +7,12 @@ plugins {
     id("com.goncalossilva.resources")
 }
 
-val localProperties = Properties().apply {
-    file("${rootProject.projectDir}/local.properties").takeIf { it.isFile }?.let {
-        it.inputStream().use { stream -> load(stream) }
+val localProperties =
+    Properties().apply {
+        file("${rootProject.projectDir}/local.properties").takeIf { it.isFile }?.let {
+            it.inputStream().use { stream -> load(stream) }
+        }
     }
-}
 
 val localLib = file(localProperties.getProperty("local.lib", "/usr/lib"))
 val localInclude = file(localProperties.getProperty("local.include", "/usr/include"))
@@ -42,7 +43,7 @@ kotlin {
                 "kotlin.experimental.ExperimentalNativeApi",
                 "kotlin.contracts.ExperimentalContracts",
                 "kotlinx.cinterop.ExperimentalForeignApi",
-                "io.kotest.common.ExperimentalKotest"
+                "io.kotest.common.ExperimentalKotest",
             ).forEach { languageSettings.optIn(it) }
         }
 

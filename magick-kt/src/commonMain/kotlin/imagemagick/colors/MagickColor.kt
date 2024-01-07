@@ -1,12 +1,13 @@
 package imagemagick.colors
 
-import imagemagick.QuantumImpl
+import imagemagick.Quantum
 import imagemagick.QuantumType
 import imagemagick.core.colors.MagickColorQuantum
 import imagemagick.core.types.Percentage
 import imagemagick.exceptions.Throw
 import imagemagick.helpers.PercentageHelper
 import imagemagick.native.colors.NativeMagickColor
+import imagemagick.quantum
 import kotlinx.cinterop.ExperimentalForeignApi
 import imagemagick.core.colors.MagickColorQuantum as IMagickColor
 
@@ -18,12 +19,12 @@ import imagemagick.core.colors.MagickColorQuantum as IMagickColor
 @ExperimentalStdlibApi
 @ExperimentalForeignApi
 public data class MagickColor constructor(
-    override var a: QuantumType = QuantumImpl.convert(0u),
-    override var b: QuantumType = QuantumImpl.convert(0u),
-    override var g: QuantumType = QuantumImpl.convert(0u),
+    override var a: QuantumType = 0u.quantum(),
+    override var b: QuantumType = 0u.quantum(),
+    override var g: QuantumType = 0u.quantum(),
     override var isCmyk: Boolean = false,
-    override var k: QuantumType = QuantumImpl.convert(0u),
-    override var r: QuantumType = QuantumImpl.convert(0u),
+    override var k: QuantumType = 0u.quantum(),
+    override var r: QuantumType = 0u.quantum(),
 ) : IMagickColor<QuantumType> {
     /**
      * Initializes a new instance of the [MagickColor] class.
@@ -93,7 +94,7 @@ public data class MagickColor constructor(
         Throw.ifEmpty(color)
 
         if (color.contentEquals("transparent", ignoreCase = true)) {
-            initialize(QuantumType.MAX_VALUE, QuantumType.MAX_VALUE, QuantumType.MAX_VALUE, QuantumImpl.convert(0))
+            initialize(QuantumType.MAX_VALUE, QuantumType.MAX_VALUE, QuantumType.MAX_VALUE, 0.quantum())
             return
         }
 
@@ -114,29 +115,29 @@ public data class MagickColor constructor(
         blue: UByte,
         alpha: UByte,
     ) {
-        r = QuantumImpl.convert(red)
-        g = QuantumImpl.convert(green)
-        b = QuantumImpl.convert(blue)
-        a = QuantumImpl.convert(alpha)
-        k = QuantumImpl.convert(0)
+        r = Quantum.convert(red)
+        g = Quantum.convert(green)
+        b = Quantum.convert(blue)
+        a = Quantum.convert(alpha)
+        k = Quantum.convert(0)
         isCmyk = false
     }
 
     override fun toUByteArray(): UByteArray =
         if (isCmyk) {
             ubyteArrayOf(
-                QuantumImpl.scaleToUbyte(r),
-                QuantumImpl.scaleToUbyte(g),
-                QuantumImpl.scaleToUbyte(b),
-                QuantumImpl.scaleToUbyte(k),
-                QuantumImpl.scaleToUbyte(a),
+                Quantum.scaleToUbyte(r),
+                Quantum.scaleToUbyte(g),
+                Quantum.scaleToUbyte(b),
+                Quantum.scaleToUbyte(k),
+                Quantum.scaleToUbyte(a),
             )
         } else {
             ubyteArrayOf(
-                QuantumImpl.scaleToUbyte(r),
-                QuantumImpl.scaleToUbyte(g),
-                QuantumImpl.scaleToUbyte(b),
-                QuantumImpl.scaleToUbyte(a),
+                Quantum.scaleToUbyte(r),
+                Quantum.scaleToUbyte(g),
+                Quantum.scaleToUbyte(b),
+                Quantum.scaleToUbyte(a),
             )
         }
 
@@ -145,41 +146,41 @@ public data class MagickColor constructor(
             throw UnsupportedOperationException("This method only works for non cmyk colors.")
         }
 
-        val red = QuantumImpl.scaleToUbyte(r)
-        val green = QuantumImpl.scaleToUbyte(g)
-        val blue = QuantumImpl.scaleToUbyte(b)
+        val red = Quantum.scaleToUbyte(r)
+        val green = Quantum.scaleToUbyte(g)
+        val blue = Quantum.scaleToUbyte(b)
 
         val f = HexFormat.UpperCase
 
         val rgb = "#${red.toHexString(f)}${green.toHexString(f)}${blue.toHexString(f)}"
 
-        if (a == QuantumImpl.max) {
+        if (a == Quantum.max) {
             return rgb
         }
 
-        val alpha = QuantumImpl.scaleToUbyte(a)
+        val alpha = Quantum.scaleToUbyte(a)
 
         return "${rgb}${alpha.toHexString(f)}"
     }
 
     override fun toShortString(): String {
-        if (a != QuantumImpl.max) {
+        if (a != Quantum.max) {
             return toString()
         }
 
         if (isCmyk) {
-            val red = QuantumImpl.scaleToUbyte(r)
-            val green = QuantumImpl.scaleToUbyte(g)
-            val blue = QuantumImpl.scaleToUbyte(b)
-            val black = QuantumImpl.scaleToUbyte(k)
+            val red = Quantum.scaleToUbyte(r)
+            val green = Quantum.scaleToUbyte(g)
+            val blue = Quantum.scaleToUbyte(b)
+            val black = Quantum.scaleToUbyte(k)
 
             return "cmyk($red,$green,$blue,$black)"
         }
 
         // TODO Q8/Q16
-        val red = QuantumImpl.convert(r)
-        val green = QuantumImpl.convert(g)
-        val blue = QuantumImpl.convert(b)
+        val red = r.quantum()
+        val green = g.quantum()
+        val blue = b.quantum()
 
         return HexFormat.UpperCase.let {
             "#${red.toHexString(it)}${blue.toHexString(it)}${green.toHexString(it)}"
@@ -203,37 +204,37 @@ public data class MagickColor constructor(
         }
 
     public operator fun times(percentage: Percentage): MagickColor {
-        val red = QuantumImpl.convert(percentage.times(r.toDouble()))
-        val green = QuantumImpl.convert(percentage.times(g.toDouble()))
-        val blue = QuantumImpl.convert(percentage.times(b.toDouble()))
+        val red = percentage.times(r.toDouble()).quantum()
+        val green = percentage.times(g.toDouble()).quantum()
+        val blue = percentage.times(b.toDouble()).quantum()
 
         if (!isCmyk) {
             return MagickColor(red, green, blue, a)
         }
 
-        val key = QuantumImpl.convert(percentage.times(k.toDouble()))
+        val key = percentage.times(k.toDouble()).quantum()
 
         return MagickColor(red, green, blue, key, a)
     }
 
     override fun toString(): String {
         if (isCmyk) {
-            val red = QuantumImpl.scaleToUbyte(r)
-            val green = QuantumImpl.scaleToUbyte(g)
-            val blue = QuantumImpl.scaleToUbyte(b)
-            val black = QuantumImpl.scaleToUbyte(k)
+            val red = Quantum.scaleToUbyte(r)
+            val green = Quantum.scaleToUbyte(g)
+            val blue = Quantum.scaleToUbyte(b)
+            val black = Quantum.scaleToUbyte(k)
 
-            val alpha = a.toDouble().div(QuantumImpl.max.toDouble()).toString()
+            val alpha = a.toDouble().div(Quantum.max.toDouble()).toString()
 
             // C# cmyka({0},{1},{2},{3},{4:0.0###})
             return "cmyka($red,$green,$blue,$black,${alpha.take(6)})"
         }
 
         // TODO Q8/Q16
-        val red = QuantumImpl.convert(r)
-        val green = QuantumImpl.convert(g)
-        val blue = QuantumImpl.convert(b)
-        val alpha = QuantumImpl.convert(a)
+        val red = r.quantum()
+        val green = g.quantum()
+        val blue = b.quantum()
+        val alpha = a.quantum()
 
         return HexFormat.UpperCase.let {
             "#${red.toHexString(it)}${blue.toHexString(it)}${green.toHexString(it)}${alpha.toHexString(it)}"
@@ -274,7 +275,7 @@ public data class MagickColor constructor(
         g = green
         b = blue
         a = alpha
-        k = QuantumImpl.convert(0)
+        k = Quantum.convert(0)
         isCmyk = false
     }
 
@@ -286,8 +287,8 @@ public data class MagickColor constructor(
         }
 
         when (colors.size) {
-            1 -> initialize(colors[0], colors[0], colors[0], QuantumImpl.max)
-            3 -> initialize(colors[0], colors[1], colors[2], QuantumImpl.max)
+            1 -> initialize(colors[0], colors[0], colors[0], Quantum.max)
+            3 -> initialize(colors[0], colors[1], colors[2], Quantum.max)
             4 -> initialize(colors[0], colors[1], colors[2], colors[3])
             else -> throw IllegalArgumentException("Invalid hex value (incorrect number of colors).")
         }

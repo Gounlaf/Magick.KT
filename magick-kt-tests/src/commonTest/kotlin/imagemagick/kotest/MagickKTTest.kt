@@ -6,7 +6,6 @@ import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldNotBe
 
-
 class MagickKTTest : FunSpec({
     test("Features detected correctly") {
 

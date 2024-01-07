@@ -19,13 +19,14 @@ class DensityTests : ShouldSpec({
             }
 
             should("throw exception when value is invalid") {
-                val values = listOf(
-                    "1.0x",
-                    "x1.0",
-                    "ax1.0",
-                    "1.0xb",
-                    "1.0x6 magick",
-                )
+                val values =
+                    listOf(
+                        "1.0x",
+                        "x1.0",
+                        "ax1.0",
+                        "1.0xb",
+                        "1.0x6 magick",
+                    )
 
                 forAll(*values.map { row(it) }.toTypedArray()) {
                     shouldThrow<IllegalArgumentException> {
@@ -139,7 +140,6 @@ class DensityTests : ShouldSpec({
         }
 
         context("TheChangeUnitsMethod") {
-
         }
     }
 })

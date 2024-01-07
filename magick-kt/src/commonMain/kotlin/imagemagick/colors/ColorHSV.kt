@@ -1,6 +1,6 @@
 package imagemagick.colors
 
-import imagemagick.QuantumImpl
+import imagemagick.Quantum
 import imagemagick.QuantumType
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlin.math.abs
@@ -58,7 +58,7 @@ public class ColorHSV : ColorBase {
 
         val delta = max - min
         saturation = delta / max
-        value = (1.0 / QuantumImpl.max.toDouble()) * max
+        value = (1.0 / Quantum.max.toDouble()) * max
 
         if (abs(delta) < Double.MIN_VALUE) {
             return
@@ -96,7 +96,7 @@ public class ColorHSV : ColorBase {
     }
 
     override fun updateColor() {
-        val valueScaled = QuantumImpl.scaleToQuantum(value)
+        val valueScaled = Quantum.scaleToQuantum(value)
 
         if (abs(saturation) < Double.MIN_VALUE) {
             color.r = valueScaled
@@ -108,9 +108,9 @@ public class ColorHSV : ColorBase {
         val h = 6.0 * (hue - floor(hue))
         val f = h - floor(h)
 
-        val p = QuantumImpl.scaleToQuantum(value * (1.0 - saturation))
-        val q = QuantumImpl.scaleToQuantum(value * (1.0 - (saturation * f)))
-        val t = QuantumImpl.scaleToQuantum(value * (1.0 - (saturation * (1.0 - f))))
+        val p = Quantum.scaleToQuantum(value * (1.0 - saturation))
+        val q = Quantum.scaleToQuantum(value * (1.0 - (saturation * f)))
+        val t = Quantum.scaleToQuantum(value * (1.0 - (saturation * (1.0 - f))))
 
         when (h.toInt()) {
             0 -> {

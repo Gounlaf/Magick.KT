@@ -7,7 +7,6 @@ import imagemagick.native.NativeMagickGeometry
 import kotlinx.cinterop.ExperimentalForeignApi
 import imagemagick.core.types.MagickGeometry as IMagickGeometry
 
-
 /**
  * Encapsulation of the ImageMagick geometry object.
  *
@@ -15,7 +14,7 @@ import imagemagick.core.types.MagickGeometry as IMagickGeometry
  */
 @ExperimentalStdlibApi
 @ExperimentalForeignApi
-data class MagickGeometry(
+public data class MagickGeometry(
     override var aspectRatio: Boolean = false,
     override var fillArea: Boolean = false,
     override var greater: Boolean = false,
@@ -26,20 +25,21 @@ data class MagickGeometry(
     override var width: UInt = 0u,
     override var limitPixels: Boolean = false,
     override var x: Int = 0,
-    override var y: Int = 0
+    override var y: Int = 0,
 ) : IMagickGeometry {
-    companion object {
-        inline fun String.toMagickGeometry() = fromString(this)
+    public companion object {
+        public inline fun String.toMagickGeometry(): MagickGeometry? = fromString(this)
 
-        inline fun fromString(value: String?): MagickGeometry? = value?.let {
-            MagickGeometry(it)
-        }
+        public inline fun fromString(value: String?): MagickGeometry? =
+            value?.let {
+                MagickGeometry(it)
+            }
 
         private inline fun fromRectangle(rectangle: MagickRectangle): MagickGeometry =
             MagickGeometry(rectangle.x, rectangle.y, rectangle.width, rectangle.height)
 
         @Throws(IllegalStateException::class)
-        fun fromPageSize(pageSize: String): MagickGeometry {
+        public fun fromPageSize(pageSize: String): MagickGeometry {
             Throw.ifEmpty(pageSize)
 
             val rectangle = MagickRectangle.fromPageSize(pageSize) ?: error("Invalid page size specified.")
@@ -65,7 +65,7 @@ data class MagickGeometry(
      *
      * @param widthAndHeight The width and height
      */
-    constructor(widthAndHeight: UInt) : this(0, 0, widthAndHeight, widthAndHeight)
+    public constructor(widthAndHeight: UInt) : this(0, 0, widthAndHeight, widthAndHeight)
 
     /**
      * Initializes a new instance of the [MagickGeometry] class using the specified width and height.
@@ -73,7 +73,7 @@ data class MagickGeometry(
      * @param width The width.
      * @param height The height.
      */
-    constructor(width: UInt, height: UInt) : this(0, 0, width, height)
+    public constructor(width: UInt, height: UInt) : this(0, 0, width, height)
 
     /**
      * Initializes a new instance of the [MagickGeometry] class using the specified offsets, width and height.
@@ -83,7 +83,7 @@ data class MagickGeometry(
      * @param width The width.
      * @param height The height.
      */
-    constructor(x: Int, y: Int, width: UInt, height: UInt) : this() {
+    public constructor(x: Int, y: Int, width: UInt, height: UInt) : this() {
         initialize(x, y, width, height)
     }
 
@@ -93,7 +93,7 @@ data class MagickGeometry(
      * @param percentageWith The percentage of the width.
      * @param percentageHeight The percentage of the height.
      */
-    constructor(percentageWith: Percentage, percentageHeight: Percentage) : this(0, 0, percentageWith, percentageHeight)
+    public constructor(percentageWith: Percentage, percentageHeight: Percentage) : this(0, 0, percentageWith, percentageHeight)
 
     /**
      * Initializes a new instance of the [MagickGeometry] class using the specified offsets, width and height.
@@ -140,7 +140,12 @@ data class MagickGeometry(
      * @param width The width.
      * @param height The height.
      */
-    override fun initialize(x: Int, y: Int, width: UInt, height: UInt) {
+    override fun initialize(
+        x: Int,
+        y: Int,
+        width: UInt,
+        height: UInt,
+    ) {
         this.x = x
         this.y = y
         this.width = width
@@ -195,7 +200,12 @@ data class MagickGeometry(
         return result
     }
 
-    private fun initializeFromPercentage(x: Int, y: Int, width: UInt, height: UInt) {
+    private fun initializeFromPercentage(
+        x: Int,
+        y: Int,
+        width: UInt,
+        height: UInt,
+    ) {
         initialize(x, y, width, height)
         isPercentage = true
     }
@@ -207,7 +217,10 @@ data class MagickGeometry(
         height = instance.height.toUInt()
     }
 
-    private fun initialize(instance: NativeMagickGeometry, flags: List<GeometryFlags>) {
+    private fun initialize(
+        instance: NativeMagickGeometry,
+        flags: List<GeometryFlags>,
+    ) {
         if (flags.size == 1) {
             require(!flags.contains(GeometryFlags.NO_VALUE)) {
                 "Invalid geometry specified."
@@ -224,7 +237,10 @@ data class MagickGeometry(
         limitPixels = flags.contains(GeometryFlags.LIMIT_PIXELS)
     }
 
-    private fun initializeFromAspectRation(instance: NativeMagickGeometry, value: String) {
+    private fun initializeFromAspectRation(
+        instance: NativeMagickGeometry,
+        value: String,
+    ) {
         aspectRatio = true
 
         val ratio = value.split(':', limit = 2)

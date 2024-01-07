@@ -1,14 +1,14 @@
 package imagemagick.settings
 
 import imagemagick.QuantumType
-import imagemagick.core.types.MagickGeometry as IMagickGeometry
 import imagemagick.types.MagickGeometry
 import kotlinx.cinterop.ExperimentalForeignApi
 import imagemagick.core.settings.MagickReadSettings as IMagickReadSettings
+import imagemagick.core.types.MagickGeometry as IMagickGeometry
 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
-class MagickReadSettings() : MagickSettings(), IMagickReadSettings<QuantumType> {
+public class MagickReadSettings() : MagickSettings(), IMagickReadSettings<QuantumType> {
     override var extractArea: IMagickGeometry = MagickGeometry()
     override var frameIndex: UInt? = null
     override var frameCount: UInt? = null
@@ -17,11 +17,11 @@ class MagickReadSettings() : MagickSettings(), IMagickReadSettings<QuantumType> 
     override var useMonochrome: Boolean = false
     override var width: UInt? = null
 
-    constructor(settings: MagickSettings) : this() {
+    public constructor(settings: MagickSettings) : this() {
         copyFrom(settings)
     }
 
-    constructor(settings: IMagickReadSettings<QuantumType>) : this() {
+    public constructor(settings: IMagickReadSettings<QuantumType>) : this() {
         copy(settings)
 
         applyDefines()
@@ -29,7 +29,7 @@ class MagickReadSettings() : MagickSettings(), IMagickReadSettings<QuantumType> 
         applyFrame()
     }
 
-    fun forceSingleFrame() {
+    public fun forceSingleFrame() {
         frameCount = 1u
         applyFrame()
     }
@@ -48,7 +48,7 @@ class MagickReadSettings() : MagickSettings(), IMagickReadSettings<QuantumType> 
         val frame = frameIndex ?: 0u
         val count = frameCount ?: 1u
 
-        return "${frame}-${frame + count}"
+        return "$frame-${frame + count}"
     }
 
     private fun applyDefines() {

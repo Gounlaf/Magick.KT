@@ -9,7 +9,6 @@ import imagemagick.core.enums.Endian
 import imagemagick.core.enums.Interlace
 import imagemagick.core.enums.MagickFormat
 import imagemagick.core.types.Density
-import imagemagick.core.types.MagickGeometry as IMagickGeometry
 import imagemagick.helpers.isNotNullOrEmpty
 import imagemagick.native.NativeMagickSettings
 import imagemagick.native.NativeMagickSettings.Companion.antiAlias
@@ -26,8 +25,7 @@ import imagemagick.native.NativeMagickSettings.Companion.monochrome
 import imagemagick.native.NativeMagickSettings.Companion.verbose
 import kotlinx.cinterop.ExperimentalForeignApi
 import imagemagick.core.settings.MagickSettings as IMagickSettings
-
-
+import imagemagick.core.types.MagickGeometry as IMagickGeometry
 
 @ExperimentalStdlibApi
 @ExperimentalForeignApi
@@ -96,15 +94,16 @@ open class MagickSettings constructor() : IMagickSettings<QuantumType> {
         }
     }
 
-    private fun format(): String? = when (format) {
-        MagickFormat.UNKNOWN -> null
-        MagickFormat.THREEFR -> "3FR"
-        MagickFormat.THREEG2 -> "3G2"
-        MagickFormat.THREEGP -> "3GP"
-        MagickFormat.RADIALGRADIENT -> "RADIAL-GRADIENT"
-        MagickFormat.SPARSECOLOR -> "SPARSE-COLOR"
-        else -> format.toString()
-    }
+    private fun format(): String? =
+        when (format) {
+            MagickFormat.UNKNOWN -> null
+            MagickFormat.THREEFR -> "3FR"
+            MagickFormat.THREEG2 -> "3G2"
+            MagickFormat.THREEGP -> "3GP"
+            MagickFormat.RADIALGRADIENT -> "RADIAL-GRADIENT"
+            MagickFormat.SPARSECOLOR -> "SPARSE-COLOR"
+            else -> format.toString()
+        }
 
     protected fun copyFrom(settings: MagickSettings?) {
         settings?.let {
@@ -169,7 +168,7 @@ open class MagickSettings constructor() : IMagickSettings<QuantumType> {
                             } else {
                                 this
                             }
-                        }
+                        },
                     )
                     it.numberScenes(settings.numberScenes)
                     // it.page() TODO

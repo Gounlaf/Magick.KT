@@ -17,12 +17,16 @@ class KotestProjectConfig : AbstractProjectConfig() {
 
     override val duplicateTestNameMode: DuplicateTestNameMode = DuplicateTestNameMode.Error
 
-    override fun extensions(): List<Extension> = listOf(
-        object : LogExtension {
-            override suspend fun handleLogs(testCase: TestCase, logs: List<LogEntry>) {
-                logs.forEach { println(it.level.name + " - " + it.message) }
-            }
-        },
+    override fun extensions(): List<Extension> =
+        listOf(
+            object : LogExtension {
+                override suspend fun handleLogs(
+                    testCase: TestCase,
+                    logs: List<LogEntry>,
+                ) {
+                    logs.forEach { println(it.level.name + " - " + it.message) }
+                }
+            },
 //        GcTestListener()
-    )
+        )
 }
