@@ -16,6 +16,7 @@ import okio.Path
 import okio.Source
 import okio.buffer
 import imagemagick.core.MagickImageQuantum as IMagickImage
+import imagemagick.core.colors.MagickColorQuantum as IMagickColor
 import imagemagick.core.settings.MagickReadSettings as IMagickReadSettings
 
 /**
@@ -25,7 +26,7 @@ import imagemagick.core.settings.MagickReadSettings as IMagickReadSettings
  */
 @ExperimentalStdlibApi
 @ExperimentalForeignApi
-class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
+public class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
     private var settings: MagickSettings = MagickSettings()
 
     @ExperimentalStdlibApi
@@ -39,7 +40,7 @@ class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
     @Throws(MagickException::class)
-    constructor(data: UByteArray) : this() {
+    public constructor(data: UByteArray) : this() {
         read(data, null)
     }
 
@@ -53,7 +54,7 @@ class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
     @Throws(MagickException::class)
-    constructor(data: UByteArray, offset: UInt, count: UInt) : this() {
+    public constructor(data: UByteArray, offset: UInt, count: UInt) : this() {
         read(data, offset, count)
     }
 
@@ -68,7 +69,7 @@ class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
     @Throws(MagickException::class)
-    constructor(data: UByteArray, offset: UInt, count: UInt, format: MagickFormat) : this() {
+    public constructor(data: UByteArray, offset: UInt, count: UInt, format: MagickFormat) : this() {
         read(data, offset, count, format)
     }
 
@@ -83,7 +84,12 @@ class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
     @Throws(MagickException::class)
-    constructor(data: UByteArray, offset: UInt, count: UInt, readSettings: IMagickReadSettings<QuantumType>) : this() {
+    public constructor(
+        data: UByteArray,
+        offset: UInt,
+        count: UInt,
+        readSettings: IMagickReadSettings<QuantumType>,
+    ) : this() {
         read(data, offset, count, readSettings)
     }
 
@@ -96,7 +102,7 @@ class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
     @Throws(MagickException::class)
-    constructor(data: UByteArray, format: MagickFormat) : this() {
+    public constructor(data: UByteArray, format: MagickFormat) : this() {
         read(data, format)
     }
 
@@ -109,8 +115,12 @@ class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
     @Throws(MagickException::class)
-    constructor(data: UByteArray, readSettings: IMagickReadSettings<QuantumType>) : this() {
+    public constructor(data: UByteArray, readSettings: IMagickReadSettings<QuantumType>) : this() {
         read(data, readSettings)
+    }
+
+    public constructor(color: IMagickColor<QuantumType>, width: UInt, height: UInt) : this() {
+        read(color, width, height)
     }
 
     override fun close() {
@@ -169,13 +179,13 @@ class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
     override val width: UInt
         get() = TODO("Not yet implemented")
 
-    override fun ping(data: UByteArray) = ping(data, null)
+    override fun ping(data: UByteArray): Unit = ping(data, null)
 
     override fun ping(
         data: UByteArray,
         offset: UInt,
         count: UInt,
-    ) = ping(data, offset, count, null)
+    ): Unit = ping(data, offset, count, null)
 
     override fun ping(
         data: UByteArray,
@@ -204,14 +214,14 @@ class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
         ping(data, 0u, data.size.toUInt(), readSettings)
     }
 
-    override fun ping(file: Path) = ping(file, null)
+    override fun ping(file: Path): Unit = ping(file, null)
 
     override fun ping(
         file: Path,
         readSettings: IMagickReadSettings<QuantumType>?,
-    ) = read(file.toString(), readSettings, true)
+    ): Unit = read(file.toString(), readSettings, true)
 
-    override fun ping(stream: Source) = ping(stream, null)
+    override fun ping(stream: Source): Unit = ping(stream, null)
 
     override fun ping(
         stream: Source,
@@ -220,36 +230,37 @@ class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
         read(stream, readSettings, true)
     }
 
-    override fun ping(fileName: String) = ping(fileName, null)
+    override fun ping(fileName: String): Unit = ping(fileName, null)
 
     override fun ping(
         fileName: String,
         readSettings: IMagickReadSettings<QuantumType>?,
-    ) = read(fileName, readSettings, true)
+    ): Unit = read(fileName, readSettings, true)
 
     // read UByteArray
 
-    override fun read(data: UByteArray) = read(data, null)
+    override fun read(data: UByteArray): Unit = read(data, null)
 
     override fun read(
         data: UByteArray,
         offset: UInt,
         count: UInt,
-    ) = read(data, offset, count, null)
+    ): Unit = read(data, offset, count, null)
 
     override fun read(
         data: UByteArray,
         offset: UInt,
         count: UInt,
         format: MagickFormat,
-    ) = read(
-        data,
-        offset,
-        count,
-        MagickReadSettings(settings).also {
-            it.format = format
-        },
-    )
+    ): Unit =
+        read(
+            data,
+            offset,
+            count,
+            MagickReadSettings(settings).also {
+                it.format = format
+            },
+        )
 
     override fun read(
         data: UByteArray,
@@ -295,28 +306,29 @@ class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
 
     // read Path
 
-    override fun read(file: Path) = read(file, null)
+    override fun read(file: Path): Unit = read(file, null)
 
     override fun read(
         file: Path,
         width: UInt,
         height: UInt,
-    ) = read(file.name, width, height)
+    ): Unit = read(file.name, width, height)
 
     override fun read(
         file: Path,
         format: MagickFormat,
-    ) = read(
-        file.name,
-        MagickReadSettings(settings).also {
-            it.format = format
-        },
-    )
+    ): Unit =
+        read(
+            file.name,
+            MagickReadSettings(settings).also {
+                it.format = format
+            },
+        )
 
     override fun read(
         file: Path,
         readSettings: IMagickReadSettings<QuantumType>?,
-    ) = read(file.name, readSettings)
+    ): Unit = read(file.name, readSettings)
 
     // /read Path
 
@@ -331,55 +343,58 @@ class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
 
     // read Stream
 
-    override fun read(stream: Source) = read(stream, MagickFormat.UNKNOWN)
+    override fun read(stream: Source): Unit = read(stream, MagickFormat.UNKNOWN)
 
     override fun read(
         stream: Source,
         format: MagickFormat,
-    ) = read(
-        stream,
-        MagickReadSettings(settings).also {
-            it.format = format
-        },
-    )
+    ): Unit =
+        read(
+            stream,
+            MagickReadSettings(settings).also {
+                it.format = format
+            },
+        )
 
     override fun read(
         stream: Source,
         readSettings: IMagickReadSettings<QuantumType>?,
-    ) = read(stream, readSettings, false)
+    ): Unit = read(stream, readSettings, false)
 
     // read /Stream
 
     // read FileName
 
-    override fun read(fileName: String) = read(fileName, null)
+    override fun read(fileName: String): Unit = read(fileName, null)
 
     override fun read(
         fileName: String,
         width: UInt,
         height: UInt,
-    ) = read(
-        fileName,
-        MagickReadSettings(settings).also {
-            it.width = width
-            it.height = height
-        },
-    )
+    ): Unit =
+        read(
+            fileName,
+            MagickReadSettings(settings).also {
+                it.width = width
+                it.height = height
+            },
+        )
 
     override fun read(
         fileName: String,
         format: MagickFormat,
-    ) = read(
-        fileName,
-        MagickReadSettings(settings).also {
-            it.format = format
-        },
-    )
+    ): Unit =
+        read(
+            fileName,
+            MagickReadSettings(settings).also {
+                it.format = format
+            },
+        )
 
     override fun read(
         fileName: String,
         readSettings: IMagickReadSettings<QuantumType>?,
-    ) = read(fileName, readSettings, false)
+    ): Unit = read(fileName, readSettings, false)
 
     // /read FileName
 

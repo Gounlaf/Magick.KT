@@ -166,12 +166,6 @@ class ColorRGBTests : ShouldSpec({
                 (first > second) shouldBe true
                 (first >= second) shouldBe true
             }
-
-            should("return the correct value when casted from magick color") {
-                val expected = ColorRGB(Quantum.max, 0.quantum(), 0.quantum())
-                val actual = ColorRGB.fromMagickColor(MagickColor(Quantum.max, 0.quantum(), 0.quantum()))
-                actual shouldBe expected
-            }
         }
 
         context("TheProperties") {

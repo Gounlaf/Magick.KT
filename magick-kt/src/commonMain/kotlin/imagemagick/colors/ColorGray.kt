@@ -41,4 +41,14 @@ public class ColorGray : ColorBase {
             color.b = it
         }
     }
+
+    public companion object {
+        /**
+         * Converts the specified [IMagickColor] to an instance of this type.
+         *
+         * @param color The color to use.
+         * @return A [ColorGray] instance.
+         */
+        public fun fromMagickColor(color: IMagickColor<QuantumType>): ColorGray = ColorGray(color)
+    }
 }

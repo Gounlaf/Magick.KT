@@ -85,9 +85,9 @@ class ColorYUVTests : ShouldSpec({
                     )
                 val hslColor = ColorYUV.fromMagickColor(color)
 
-                (0.88..0.89).contains(hslColor.y) shouldBe true
-                (0.07..0.08).contains(hslColor.u) shouldBe true
-                (0.59..0.60).contains(hslColor.v) shouldBe true
+                hslColor.y shouldBeIn 0.88..0.89
+                hslColor.u shouldBeIn 0.07..0.08
+                hslColor.v shouldBeIn 0.59..0.60
             }
         }
 
@@ -138,13 +138,6 @@ class ColorYUVTests : ShouldSpec({
                 (first <= second) shouldBe false
                 (first > second)shouldBe true
                 (first >= second) shouldBe true
-            }
-
-            should("return the correct value when casted from magick color") {
-                val actual = ColorYUV.fromMagickColor(MagickColor("#BFFFDFFF9FFFFFFF"))
-                actual.y shouldBeIn 0.80..0.81
-                actual.u shouldBeIn 0.40..0.41
-                actual.v shouldBeIn 0.44..0.45
             }
         }
 

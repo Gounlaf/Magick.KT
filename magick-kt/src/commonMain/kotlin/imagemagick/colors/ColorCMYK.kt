@@ -121,6 +121,8 @@ public class ColorCMYK : ColorBase {
         alpha: QuantumType,
     ) : super(MagickColor(cyan, magenta, yellow, key, alpha))
 
+    public constructor(color: String) : super(createColor(color))
+
     private constructor(color: IMagickColor<QuantumType>) : super(color)
 
     public companion object {

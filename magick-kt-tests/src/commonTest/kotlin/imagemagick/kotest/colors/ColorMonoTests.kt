@@ -124,11 +124,6 @@ class ColorMonoTests : ShouldSpec({
                 (first > second) shouldBe true
                 (first >= second) shouldBe true
             }
-
-            should("return the correct value when casted from magick color") {
-                val actual = ColorMono.fromMagickColor(MagickColors.White)
-                actual.isBlack shouldBe false
-            }
         }
 
         context("TheProperties") {

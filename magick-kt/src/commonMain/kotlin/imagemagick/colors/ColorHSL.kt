@@ -105,7 +105,7 @@ public class ColorHSL : ColorBase {
 
         val mcScaled = Quantum.scaleToQuantum(min + c)
         val mxScaled = Quantum.scaleToQuantum(min + x)
-        val mScaled = Quantum.scaleToQuantum(min + x)
+        val mScaled = Quantum.scaleToQuantum(min)
 
         when (floor(h).toInt()) {
             0 -> {
