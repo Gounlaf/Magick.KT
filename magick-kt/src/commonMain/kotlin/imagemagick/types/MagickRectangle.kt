@@ -10,10 +10,10 @@ import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.ExperimentalForeignApi
 import libMagickNative.RectangleInfo
 
-data class MagickRectangle(val x: Int, val y: Int, val width: UInt, val height: UInt) {
-    companion object {
+public data class MagickRectangle(val x: Int, val y: Int, val width: UInt, val height: UInt) {
+    public companion object {
         @ExperimentalForeignApi
-        fun fromPageSize(pageSize: String): MagickRectangle? =
+        public fun fromPageSize(pageSize: String): MagickRectangle? =
             NativeMagickRectangle.fromPageSize(pageSize)?.let {
                 val rectangle = it.toMagickRectangle()
 

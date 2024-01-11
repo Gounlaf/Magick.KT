@@ -103,7 +103,7 @@ public data class MagickGeometry(
      * @param percentageWith The percentage of the width.
      * @param percentageHeight The percentage of the height.
      */
-    constructor(x: Int, y: Int, percentageWith: Percentage, percentageHeight: Percentage) : this() {
+    public constructor(x: Int, y: Int, percentageWith: Percentage, percentageHeight: Percentage) : this() {
         Throw.ifNegative("percentageWith", percentageWith)
         Throw.ifNegative("percentageHeight", percentageHeight)
 
@@ -118,7 +118,7 @@ public data class MagickGeometry(
      *  (where width, height, xoffset, and yoffset are numbers).
      */
     @ExperimentalStdlibApi
-    constructor(value: String) : this() {
+    public constructor(value: String) : this() {
         Throw.ifEmpty(value)
 
         NativeMagickGeometry().use {

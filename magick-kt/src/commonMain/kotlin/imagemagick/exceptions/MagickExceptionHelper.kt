@@ -1,3 +1,3 @@
 package imagemagick.exceptions
 
-object MagickExceptionHelper
+public object MagickExceptionHelper

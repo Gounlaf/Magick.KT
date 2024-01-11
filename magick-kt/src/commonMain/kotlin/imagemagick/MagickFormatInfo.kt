@@ -19,7 +19,7 @@ import okio.Path
 import platform.posix.free
 import imagemagick.core.MagickFormatInfo as Interface
 
-data class MagickFormatInfo private constructor(
+public data class MagickFormatInfo private constructor(
     override val canReadMultithreaded: Boolean,
     override val canWriteMultithreaded: Boolean,
     override val description: String?,
@@ -32,8 +32,8 @@ data class MagickFormatInfo private constructor(
 ) : Interface {
     @ExperimentalStdlibApi
     @ExperimentalForeignApi
-    companion object {
-        val allFormats: Map<MagickFormat, Interface> by lazy {
+    public companion object {
+        public val allFormats: Map<MagickFormat, Interface> by lazy {
             loadFormats()
         }
 
@@ -91,7 +91,7 @@ data class MagickFormatInfo private constructor(
          * @param file The file to check.
          * @return The format information.
          */
-        fun create(file: Path): Interface? = create(file.normalized().toString())
+        public fun create(file: Path): Interface? = create(file.normalized().toString())
 
         /**
          * Returns the format information of the specified [format].
@@ -99,14 +99,14 @@ data class MagickFormatInfo private constructor(
          * @param format The image format.
          * @return The format information.
          */
-        fun create(format: MagickFormat): Interface? =
+        public fun create(format: MagickFormat): Interface? =
             when (format) {
                 MagickFormat.UNKNOWN -> null
                 else -> allFormats[format]
             }
 
         @Throws(IllegalArgumentException::class)
-        fun create(data: UByteArray): Interface? {
+        public fun create(data: UByteArray): Interface? {
             require(data.isNotEmpty())
 
             return NativeMagickFormatInfo.getInfoWithBlob(data)?.let {
@@ -124,7 +124,7 @@ data class MagickFormatInfo private constructor(
          * @param fileName The name of the file to check.
          * @return The format information.
          */
-        fun create(fileName: String): Interface? {
+        public fun create(fileName: String): Interface? {
             require(fileName.isNotBlank()) // TODO Set error message
             return create(formatCleaner(fileName.substringAfterLast('.')))
         }

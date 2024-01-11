@@ -29,7 +29,7 @@ import imagemagick.core.types.MagickGeometry as IMagickGeometry
 
 @ExperimentalStdlibApi
 @ExperimentalForeignApi
-open class MagickSettings constructor() : IMagickSettings<QuantumType> {
+public open class MagickSettings constructor() : IMagickSettings<QuantumType> {
     private val options: MutableMap<String, String?> = mutableMapOf()
 
     // TODO Take care of events
@@ -45,11 +45,11 @@ open class MagickSettings constructor() : IMagickSettings<QuantumType> {
     override var format: MagickFormat = MagickFormat.UNKNOWN
     override var verbose: Boolean = false
 
-    var colorFuzz: Double = 0.0
-    var fileName: String? = null
-    var interlace: Interlace = Interlace.UNDEFINED
-    var ping: Boolean = false
-    var quality: UInt = 0u
+    public var colorFuzz: Double = 0.0
+    public var fileName: String? = null
+    public var interlace: Interlace = Interlace.UNDEFINED
+    public var ping: Boolean = false
+    public var quality: UInt = 0u
 
     protected var extract: IMagickGeometry? = null
 
@@ -138,10 +138,10 @@ open class MagickSettings constructor() : IMagickSettings<QuantumType> {
         }
     }
 
-    fun createNativeInstance(): NativeMagickSettings = Companion.createNativeInstance(this)
+    public fun createNativeInstance(): NativeMagickSettings = Companion.createNativeInstance(this)
 
-    companion object {
-        fun createNativeInstance(instance: IMagickSettings<QuantumType>?): NativeMagickSettings =
+    public companion object {
+        public fun createNativeInstance(instance: IMagickSettings<QuantumType>?): NativeMagickSettings =
             (instance as MagickSettings?)?.let { settings ->
                 val format = settings.format()?.uppercase()
 

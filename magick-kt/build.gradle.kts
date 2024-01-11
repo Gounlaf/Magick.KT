@@ -3,7 +3,7 @@ plugins {
 }
 
 kotlin {
-    explicitApiWarning()
+    explicitApi()
 
     linuxX64()
 

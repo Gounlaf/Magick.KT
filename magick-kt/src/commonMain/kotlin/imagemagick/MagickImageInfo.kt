@@ -19,7 +19,7 @@ import imagemagick.core.MagickImageInfo as IMagickImageInfo
  */
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
-class MagickImageInfo() : IMagickImageInfo {
+public class MagickImageInfo() : IMagickImageInfo {
     override lateinit var colorSpace: ColorSpace
         private set
     override lateinit var compression: CompressionMethod
@@ -47,7 +47,7 @@ class MagickImageInfo() : IMagickImageInfo {
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
     @Throws(MagickException::class)
-    constructor(data: UByteArray) : this() {
+    public constructor(data: UByteArray) : this() {
         read(data)
     }
 
@@ -61,7 +61,7 @@ class MagickImageInfo() : IMagickImageInfo {
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
     @Throws(MagickException::class)
-    constructor(data: UByteArray, offset: UInt, count: UInt) : this() {
+    public constructor(data: UByteArray, offset: UInt, count: UInt) : this() {
         read(data, offset, count)
     }
 
@@ -73,7 +73,7 @@ class MagickImageInfo() : IMagickImageInfo {
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
     @Throws(MagickException::class)
-    constructor(file: Path) : this() {
+    public constructor(file: Path) : this() {
         read(file)
     }
 
@@ -85,7 +85,7 @@ class MagickImageInfo() : IMagickImageInfo {
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
     @Throws(MagickException::class)
-    constructor(stream: Source) : this() {
+    public constructor(stream: Source) : this() {
         read(stream)
     }
 
@@ -97,7 +97,7 @@ class MagickImageInfo() : IMagickImageInfo {
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
     @Throws(MagickException::class)
-    constructor(fileName: String) : this() {
+    public constructor(fileName: String) : this() {
         read(fileName)
     }
 

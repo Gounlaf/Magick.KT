@@ -8,7 +8,7 @@ import imagemagick.core.MagickKT as Interface
 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
-object MagickKT : Interface {
+public object MagickKT : Interface {
     override val features: String by lazy { Magick_Features_Get()?.toKString() ?: "Unknown" }
 
     override val supportedFormats: List<MagickFormatInfo> by lazy {
