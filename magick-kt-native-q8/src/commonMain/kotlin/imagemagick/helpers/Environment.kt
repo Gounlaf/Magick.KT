@@ -7,17 +7,20 @@ import libMagickNative.Environment_Initialize
 import libMagickNative.Environment_SetEnv
 
 @ExperimentalForeignApi
-object Environment {
+public object Environment {
     init {
         Environment_Initialize()
     }
 
-    fun initialize() {
+    public fun initialize() {
         // NO-OP
     }
 
-    fun getEnv(name: String): String =
+    public fun getEnv(name: String): String =
         Environment_GetEnv(name)?.toKString() ?: throw RuntimeException("The string value should never be null.")
 
-    fun setEnv(name: String, value: String) = Environment_SetEnv(name, value)
+    public fun setEnv(
+        name: String,
+        value: String,
+    ) = Environment_SetEnv(name, value)
 }

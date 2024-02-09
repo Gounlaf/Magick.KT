@@ -9,33 +9,33 @@ import imagemagick.core.exceptions.MagickException
 import okio.Path
 import okio.Source
 
-interface MagickImageInfo {
+public interface MagickImageInfo {
     /** Gets the color space of the image. */
-    val colorSpace: ColorSpace
+    public val colorSpace: ColorSpace
 
     /** Gets the compression method of the image. */
-    val compression: CompressionMethod
+    public val compression: CompressionMethod
 
     /** Gets the density of the image. */
-    val density: Density?
+    public val density: Density?
 
     /** Gets the original file name of the image (only available if read from disk). */
-    val fileName: String?
+    public val fileName: String?
 
     /** Gets the format of the image. */
-    val format: MagickFormat
+    public val format: MagickFormat
 
     /** Gets the height of the image. */
-    val height: UInt
+    public val height: UInt
 
     /** Gets the type of interlacing. */
-    val interlace: Interlace
+    public val interlace: Interlace
 
     /** Gets the JPEG/MIFF/PNG compression level. */
-    val quality: UInt
+    public val quality: UInt
 
     /** Gets the width of the image. */
-    val width: UInt
+    public val width: UInt
 
     /**
      * Read basic information about an image.
@@ -45,7 +45,7 @@ interface MagickImageInfo {
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
     @Throws(MagickException::class)
-    fun read(data: UByteArray)
+    public fun read(data: UByteArray)
 
     /**
      * Read basic information about an image.
@@ -57,7 +57,7 @@ interface MagickImageInfo {
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
     @Throws(MagickException::class)
-    fun read(data: UByteArray, offset: UInt, count: UInt)
+    public fun read(data: UByteArray, offset: UInt, count: UInt)
 
     /**
      * Read basic information about an image.
@@ -67,7 +67,7 @@ interface MagickImageInfo {
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
     @Throws(MagickException::class)
-    fun read(file: Path)
+    public fun read(file: Path)
 
     /**
      * Read basic information about an image.
@@ -77,7 +77,7 @@ interface MagickImageInfo {
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
     @Throws(MagickException::class)
-    fun read(stream: Source)
+    public fun read(stream: Source)
 
     /**
      * Read basic information about an image.
@@ -87,5 +87,5 @@ interface MagickImageInfo {
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
     @Throws(MagickException::class)
-    fun read(fileName: String)
+    public fun read(fileName: String)
 }

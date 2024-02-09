@@ -7,7 +7,7 @@ package imagemagick.core.enums
 /**
  * Specifies the interlace types.
  */
-enum class Interlace {
+public enum class Interlace {
     /** Undefined */
     UNDEFINED,
 
@@ -30,5 +30,5 @@ enum class Interlace {
     JPEG,
 
     /** Png */
-    PNG
+    PNG,
 }

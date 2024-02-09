@@ -7,7 +7,7 @@ package imagemagick.core.enums
 /**
  * Specifies a kind of color space.
  */
-enum class ColorSpace {
+public enum class ColorSpace {
     /** Undefined. */
     UNDEFINED,
 
@@ -111,5 +111,5 @@ enum class ColorSpace {
     LINEARGRAY,
 
     /** Jzazbz. */
-    JZAZBZ
+    JZAZBZ,
 }

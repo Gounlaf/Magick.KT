@@ -7,7 +7,7 @@ package imagemagick.core.enums
 /**
  * Specifies endian.
  */
-enum class Endian {
+public enum class Endian {
     /** Undefined. */
     UNDEFINED,
 
@@ -15,5 +15,5 @@ enum class Endian {
     LSB,
 
     /** MSB. */
-    MSB
+    MSB,
 }

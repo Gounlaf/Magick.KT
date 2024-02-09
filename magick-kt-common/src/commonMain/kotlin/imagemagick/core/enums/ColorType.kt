@@ -7,7 +7,7 @@ package imagemagick.core.enums
 /**
  * Specifies the color type of the image.
  */
-enum class ColorType {
+public enum class ColorType {
     /** Undefined. */
     UNDEFINED,
 
@@ -42,5 +42,5 @@ enum class ColorType {
     OPTIMIZE,
 
     /** PaletteBilevelAlpha. */
-    PALETTE_BILEVEL_ALPHA
+    PALETTE_BILEVEL_ALPHA,
 }

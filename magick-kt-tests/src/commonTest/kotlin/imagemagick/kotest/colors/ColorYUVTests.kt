@@ -81,7 +81,7 @@ class ColorYUVTests : ShouldSpec({
                     MagickColor(
                         Quantum.max,
                         Quantum.max,
-                        (Quantum.max.toDouble() * 0.02).quantum(),
+                        (Quantum.maxd * 0.02).quantum(),
                     )
                 val hslColor = ColorYUV.fromMagickColor(color)
 

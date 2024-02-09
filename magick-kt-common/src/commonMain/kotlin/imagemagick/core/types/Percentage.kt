@@ -9,35 +9,39 @@ import kotlin.math.roundToInt
  *
  * @property value The value (0% = 0.0, 100% = 100.0)
  */
-data class Percentage(private val value: Double = 0.0) : Comparable<Percentage> {
+public data class Percentage(private val value: Double = 0.0) : Comparable<Percentage> {
 
     /**
      * Initializes a new instance of the [Percentage].
      *
      * @param value The value (0% = 0.0, 100% = 100.0).
      */
-    constructor(value: Int) : this(value.toDouble())
+    public constructor(value: Int) : this(value.toDouble())
 
-    companion object {
-        inline fun Int.percent(): Percentage = Percentage(this)
-        inline fun Double.percent(): Percentage = Percentage(this)
+    public constructor(value: UInt) : this(value.toDouble())
+
+    public companion object {
+        public inline fun Int.percent(): Percentage = Percentage(this)
+        public inline fun UInt.percent(): Percentage = Percentage(this)
+        public inline fun Double.percent(): Percentage = Percentage(this)
     }
 
-    operator fun times(other: Int): Int = ((other * value) / 100.0).toInt()
-    operator fun times(other: Double): Double = other * value / 100.0
-    operator fun times(other: Percentage): Double = times(other.value)
+    public operator fun times(other: Int): Int = ((other * value) / 100.0).toInt()
+    public operator fun times(other: UInt): UInt = ((other.toDouble() * value) / 100.0).toUInt()
+    public operator fun times(other: Double): Double = other * value / 100.0
+    public operator fun times(other: Percentage): Double = times(other.value)
 
     /**
      * Returns a double that represents the current percentage.
      *
      * @return A double that represents the current percentage.
      */
-    fun toDouble(): Double = value
+    public fun toDouble(): Double = value
 
     // FIXME: according to documentation, it's equivalent to System.MidpointRounding.ToPositiveInfinity
     // https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.math/round-to-int.html#roundtoint
-    fun toInt(): Int = value.roundToInt()
-    fun toUInt(): UInt = value.roundToInt().toUInt()
+    public fun toInt(): Int = value.roundToInt()
+    public fun toUInt(): UInt = value.roundToInt().toUInt()
 
     override fun compareTo(other: Percentage): Int = value.compareTo(other.value)
 

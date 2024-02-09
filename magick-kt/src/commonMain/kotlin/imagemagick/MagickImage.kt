@@ -1,36 +1,80 @@
 package imagemagick
 
+import imagemagick.colors.MagickColor.Companion.toMagick
+import imagemagick.colors.MagickColor.Companion.toNative
+import imagemagick.core.MagickImageQuantum
 import imagemagick.core.colors.MagickColorQuantum
+import imagemagick.core.drawables.DrawableAffine
+import imagemagick.core.enums.AlphaOption
+import imagemagick.core.enums.AutoThresholdMethod
+import imagemagick.core.enums.Channels
+import imagemagick.core.enums.ClassType
 import imagemagick.core.enums.ColorSpace
+import imagemagick.core.enums.ColorType
+import imagemagick.core.enums.CompositeOperator
 import imagemagick.core.enums.CompressionMethod
+import imagemagick.core.enums.Endian
+import imagemagick.core.enums.FilterType
+import imagemagick.core.enums.GifDisposeMethod
+import imagemagick.core.enums.Gravity
 import imagemagick.core.enums.Interlace
 import imagemagick.core.enums.MagickFormat
+import imagemagick.core.enums.NoiseType
+import imagemagick.core.enums.OrientationType
+import imagemagick.core.enums.PixelChannel
+import imagemagick.core.enums.PixelInterpolateMethod
+import imagemagick.core.enums.RenderingIntent
+import imagemagick.core.enums.VirtualPixelMethod
 import imagemagick.core.exceptions.MagickException
 import imagemagick.core.types.Density
+import imagemagick.core.types.Percentage
+import imagemagick.exceptions.MagickErrorException
 import imagemagick.exceptions.Throw
-import imagemagick.native.NativeMagickImage
+import imagemagick.helpers.PercentageHelper
+import imagemagick.helpers.enumValueOf
+import imagemagick.magicknative.NativeChannels.Companion.toNative
+import imagemagick.magicknative.NativeMagickImage
+import imagemagick.magicknative.NativeMagickImage.Companion.annotateGravity
 import imagemagick.settings.MagickReadSettings
 import imagemagick.settings.MagickSettings
+import imagemagick.types.ChromaticityInfo
+import imagemagick.types.MagickGeometry
+import imagemagick.types.MagickRectangle
+import imagemagick.types.MagickRectangle.Companion.toNative
+import imagemagick.types.PrimaryInfo.Companion.toMagick
+import imagemagick.types.PrimaryInfo.Companion.toNative
+import kotlin.contracts.ExperimentalContracts
+import kotlin.experimental.ExperimentalNativeApi
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.convert
 import okio.Path
 import okio.Source
 import okio.buffer
 import imagemagick.core.MagickImageQuantum as IMagickImage
 import imagemagick.core.colors.MagickColorQuantum as IMagickColor
 import imagemagick.core.settings.MagickReadSettings as IMagickReadSettings
+import imagemagick.core.types.ChromaticityInfo as IChromaticityInfo
+import imagemagick.core.types.MagickGeometry as IMagickGeometry
 
 /**
  * Class that represents an ImageMagick image.
  *
  * @constructor Initializes a new instance of the [MagickImage] class.
  */
+@ExperimentalNativeApi
+@ExperimentalContracts
 @ExperimentalStdlibApi
 @ExperimentalForeignApi
-public class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
-    private var settings: MagickSettings = MagickSettings()
+public class MagickImage : IMagickImage<QuantumType>, AutoCloseable {
+    public override var settings: MagickSettings
+        private set
 
-    @ExperimentalStdlibApi
-    private var native: NativeMagickImage = MagickSettings.createNativeInstance(settings).use { NativeMagickImage(it) }
+    private var nativeInstance: NativeMagickImage
+
+    public constructor() {
+        settings = MagickSettings()
+        nativeInstance = MagickSettings.createNativeInstance(settings).use { NativeMagickImage(it) }
+    }
 
     /**
      * Initializes a new instance of the [MagickImage] class.
@@ -123,8 +167,17 @@ public class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
         read(color, width, height)
     }
 
+    public constructor(image: IMagickImage<QuantumType>) {
+        if (image is MagickImage) {
+            settings = image.settings.clone()
+            nativeInstance = image.nativeInstance.clone()
+        } else {
+            throw UnsupportedOperationException()
+        }
+    }
+
     override fun close() {
-        native.dispose()
+        nativeInstance.dispose()
     }
 
     private fun createReadSettings(readSettings: IMagickReadSettings<QuantumType>?): MagickReadSettings {
@@ -143,41 +196,409 @@ public class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
         settings.format = MagickFormat.UNKNOWN
     }
 
-    override var backgroundColor: MagickColorQuantum<QuantumType>?
-        get() = TODO("Not yet implemented")
-        set(value) {}
+    override val artifactNames: Sequence<String>
+        get() = sequence {
+            nativeInstance.resetArtifactIterator()
+            var name = nativeInstance.getNextArtifactName()
+            while (name != null) {
+                yield(name)
+                name = nativeInstance.getNextArtifactName()
+            }
+        }
+
+    override val attributeNames: Sequence<String>
+        get() = sequence {
+            nativeInstance.resetAttributeIterator()
+            var name = nativeInstance.getNextAttributeName()
+            while (name != null) {
+                yield(name)
+                name = nativeInstance.getNextAttributeName()
+            }
+        }
+
+    override var animationDelay: UInt
+        get() = nativeInstance.animationDelay
+        set(value) {
+            nativeInstance.animationDelay = value
+        }
+
+    override var animationIterations: UInt
+        get() = nativeInstance.animationIterations
+        set(value) {
+            nativeInstance.animationIterations = value
+        }
+
+    override var animationTicksPerSecond: UInt
+        get() = nativeInstance.animationTicksPerSecond
+        set(value) {
+            nativeInstance.animationTicksPerSecond = value
+        }
+
+    override var backgroundColor: IMagickColor<QuantumType>?
+        get() = nativeInstance.backgroundColor.toMagick()
+        set(value) {
+            nativeInstance.backgroundColor = value.toNative()
+            settings.backgroundColor = value
+        }
+
+    override val baseHeight: UInt
+        get() = nativeInstance.baseHeight
+
+    override val baseWidth: UInt
+        get() = nativeInstance.baseWidth
+
+    override var blackPointCompensation: Boolean
+        get() = nativeInstance.blackPointCompensation
+        set(value) {
+            nativeInstance.blackPointCompensation = value
+        }
+
+    override var borderColor: MagickColorQuantum<QuantumType>?
+        get() = nativeInstance.borderColor.toMagick()
+        set(value) {
+            nativeInstance.borderColor = value.toNative()
+        }
+
+    override val boundingBox: IMagickGeometry?
+        get() {
+            val boundingBox = nativeInstance.boundingBox
+
+            return if (boundingBox.width == 0u || boundingBox.height == 0u) {
+                null
+            } else {
+                MagickGeometry.fromRectangle(boundingBox)
+            }
+        }
+
+    override val channelCount: UInt
+        get() = nativeInstance.channelCount
+
+    override val channels: Sequence<PixelChannel>
+        get() =
+            sequence {
+                listOf(
+                    PixelChannel.RED,
+                    PixelChannel.GREEN,
+                    PixelChannel.BLUE,
+                    PixelChannel.BLACK,
+                    PixelChannel.ALPHA,
+                    PixelChannel.INDEX,
+                ).forEach {
+                    if (nativeInstance.hasChannel(it)) {
+                        yield(it)
+                    }
+                }
+
+                enumValues<PixelChannel>()
+                    .filter { it.channel >= PixelChannel.META10.channel && it.channel <= PixelChannel.META52.channel }
+                    .forEach {
+                        if (nativeInstance.hasChannel(it)) {
+                            yield(it)
+                        } else {
+                            return@sequence
+                        }
+                    }
+            }
+
+    override var chromaticity: IChromaticityInfo
+        get() {
+            val red = nativeInstance.chromaRed ?: throw MagickErrorException("Unable to allocate primary info")
+            val green = nativeInstance.chromaGreen ?: throw MagickErrorException("Unable to allocate primary info")
+            val blue = nativeInstance.chromaBlue ?: throw MagickErrorException("Unable to allocate primary info")
+            val white = nativeInstance.chromaWhite ?: throw MagickErrorException("Unable to allocate primary info")
+
+            return ChromaticityInfo(red.toMagick(), green.toMagick(), blue.toMagick(), white.toMagick())
+        }
+        set(value) {
+            nativeInstance.chromaRed = value.red.toNative()
+            nativeInstance.chromaGreen = value.green.toNative()
+            nativeInstance.chromaBlue = value.blue.toNative()
+            nativeInstance.chromaWhite = value.white.toNative()
+        }
+
+    override var classType: ClassType
+        get() = nativeInstance.classType
+        set(value) {
+            nativeInstance.classType = value
+        }
+
+    override var colorFuzz: Percentage
+        get() = PercentageHelper.fromQuantum(nativeInstance.colorFuzz)
+        set(value) {
+            val quantumValue = PercentageHelper.toQuantum(value)
+            nativeInstance.colorFuzz = quantumValue
+            settings.colorFuzz = quantumValue
+        }
+
+    override var colormapSize: UInt
+        get() = nativeInstance.colormapSize
+        set(value) {
+            nativeInstance.colormapSize = value
+        }
 
     override var colorSpace: ColorSpace
-        get() = TODO("Not yet implemented")
-        set(value) {}
+        get() = nativeInstance.colorSpace
+        set(value) {
+            nativeInstance.colorSpace = value
+        }
+
+    override var colorType: ColorType
+        get() {
+            if (settings.colorType != ColorType.UNDEFINED) {
+                return settings.colorType
+            }
+
+            return nativeInstance.colorType
+        }
+        set(value) {
+            // https://github.com/dlemstra/Magick.NET/discussions/1543#discussioncomment-8381106
+            nativeInstance.colorType = value
+        }
+
+    override var comment: String?
+        get() = getAttribute("comment")
+        set(value) {
+            if (value != null) {
+                setAttribute("comment", value)
+            } else {
+                removeAttribute("comment")
+            }
+        }
+
+    override var compose: CompositeOperator
+        get() = nativeInstance.compose
+        set(value) {
+            nativeInstance.compose = value
+        }
 
     override val compression: CompressionMethod
-        get() = TODO("Not yet implemented")
+        get() = nativeInstance.compression
 
     override var density: Density
-        get() = TODO("Not yet implemented")
-        set(value) {}
+        get() = Density(nativeInstance.resolutionX, nativeInstance.resolutionY, nativeInstance.resolutionUnits)
+        set(value) {
+            nativeInstance.resolutionX = value.x
+            nativeInstance.resolutionY = value.y
+            nativeInstance.resolutionUnits = value.units
+        }
+
+    override var depth: UInt
+        get() = nativeInstance.depth.toUInt()
+        set(value) {
+            nativeInstance.depth = value.convert()
+        }
+
+    override val encodingGeometry: IMagickGeometry?
+        get() = MagickGeometry.fromString(nativeInstance.encodingGeometry)
+
+    override var endian: Endian
+        get() = nativeInstance.endian
+        set(value) {
+            nativeInstance.endian = value
+        }
 
     override val fileName: String?
-        get() = TODO("Not yet implemented")
+        get() = nativeInstance.fileName
+
+    override var filterType: FilterType
+        get() = nativeInstance.filterType
+        set(value) {
+            nativeInstance.filterType = value
+        }
 
     override var format: MagickFormat
-        get() = TODO("Not yet implemented")
-        set(value) {}
+        get() = enumValueOf(nativeInstance.format?.uppercase(), MagickFormat.UNKNOWN)
+        set(value) {
+            nativeInstance.format = value.name
+            settings.format = value
+        }
+
+    override val gamma: Double
+        get() = nativeInstance.gamma
+
+    override var gifDisposeMethod: GifDisposeMethod
+        get() = nativeInstance.gifDisposeMethod
+        set(value) {
+            nativeInstance.gifDisposeMethod = value
+        }
+
+    override var hasAlpha: Boolean
+        get() = nativeInstance.hasAlpha
+        set(value) {
+            if (nativeInstance.hasAlpha != value) {
+                if (value) {
+                    TODO("Alpha(AlphaOption.Opaque)")
+                }
+                nativeInstance.hasAlpha = value
+            }
+        }
 
     override val height: UInt
-        get() = TODO("Not yet implemented")
+        get() = nativeInstance.height
 
-    override var interlace: Interlace
-        get() = TODO("Not yet implemented")
-        set(value) {}
+    override val interlace: Interlace
+        get() = nativeInstance.interlace
+
+    override var interpolate: PixelInterpolateMethod
+        get() = nativeInstance.interpolate
+        set(value) {
+            nativeInstance.interpolate = value
+        }
+
+    override val isOpaque: Boolean
+        get() = nativeInstance.isOpaque
+
+    override var label: String?
+        get() = getAttribute("label")
+        set(value) {
+            if (value != null) {
+                setAttribute("label", value)
+            } else {
+                removeAttribute("label")
+            }
+        }
+
+    override var matteColor: MagickColorQuantum<QuantumType>?
+        get() = nativeInstance.matteColor.toMagick()
+        set(value) {
+            nativeInstance.matteColor = value.toNative()
+        }
+
+    override var orientation: OrientationType
+        get() = nativeInstance.orientation
+        set(value) {
+            nativeInstance.orientation = value
+        }
+
+    override var page: IMagickGeometry
+        get() {
+            return nativeInstance.page?.let {
+                MagickGeometry.fromRectangle(it)
+            } ?: throw MagickErrorException("Unable to allocate rectangle")
+        }
+        set(value) {
+            nativeInstance.page = MagickRectangle.fromGeometry(value, this).toNative()
+        }
+
+    override val profileNames: Sequence<String>
+        get() = sequence {
+            nativeInstance.resetProfileIterator()
+            var name = nativeInstance.getNextProfileName()
+            while (name != null) {
+                yield(name)
+                name = nativeInstance.getNextProfileName()
+            }
+        }
 
     override var quality: UInt
-        get() = TODO("Not yet implemented")
-        set(value) {}
+        get() = nativeInstance.quality.toUInt()
+        set(value) {
+            var bounded = if (value < 1u) 1u else value
+            bounded = if (bounded > 100u) 100u else bounded
+
+            nativeInstance.quality = bounded.convert()
+            settings.quality = bounded.convert()
+        }
+
+    override var renderingIntent: RenderingIntent
+        get() = nativeInstance.renderingIntent
+        set(value) {
+            nativeInstance.renderingIntent = value
+        }
+
+    override val signature: String
+        get() = nativeInstance.signature
+
+    override val totalColors: UInt
+        get() = nativeInstance.totalColors
+
+    override var virtualPixelMethod: VirtualPixelMethod
+        get() = nativeInstance.virtualPixelMethod
+        set(value) {
+            nativeInstance.virtualPixelMethod = value
+        }
 
     override val width: UInt
-        get() = TODO("Not yet implemented")
+        get() = nativeInstance.width
+
+
+    @Throws(MagickException::class)
+    override fun adaptiveBlur(radius: Double, sigma: Double): Unit = nativeInstance.adaptiveBlur(radius, sigma)
+
+    @Throws(MagickException::class)
+    override fun adaptiveResize(width: UInt, height: UInt): Unit =
+        nativeInstance.adaptiveResize(MagickGeometry(width, height))
+
+    @Throws(MagickException::class)
+    override fun adaptiveResize(geometry: IMagickGeometry): Unit = nativeInstance.adaptiveResize(geometry)
+
+    @Throws(MagickException::class)
+    override fun adaptiveSharpen(radius: Double, sigma: Double, channels: Channels): Unit =
+        nativeInstance.adaptiveSharpen(radius, sigma, channels)
+
+    @Throws(MagickException::class)
+    override fun adaptiveThreshold(width: UInt, height: UInt, bias: Double, channels: Channels): Unit =
+        nativeInstance.adaptiveThreshold(width, height, bias, channels)
+
+    @Throws(MagickException::class)
+    override fun adaptiveThreshold(width: UInt, height: UInt, biasPercentage: Percentage, channels: Channels): Unit =
+        adaptiveThreshold(width, height, PercentageHelper.toQuantum(biasPercentage), channels)
+
+    @Throws(MagickException::class)
+    override fun addNoise(noiseType: NoiseType, attenuate: Double, channels: Channels): Unit =
+        nativeInstance.addNoise(noiseType, attenuate, channels)
+
+    @Throws(MagickException::class)
+    override fun affineTransform(affineMatrix: DrawableAffine): Unit = nativeInstance.affineTransform(
+        affineMatrix.scaleX,
+        affineMatrix.scaleY,
+        affineMatrix.shearX,
+        affineMatrix.shearY,
+        affineMatrix.translateX,
+        affineMatrix.translateY
+    )
+
+    @Throws(MagickException::class)
+    override fun alpha(value: AlphaOption): Unit = nativeInstance.setAlpha(value)
+
+    @Throws(MagickException::class)
+    override fun annotate(
+        text: String,
+        boundingArea: IMagickGeometry,
+        gravity: Gravity,
+        angle: Double,
+    ) {
+        Throw.ifEmpty(text)
+
+        settings.drawing.createNativeInstance().use { drawingSettings ->
+            nativeInstance.annotate(drawingSettings, text, boundingArea.toString(), gravity, angle)
+        }
+    }
+
+    @Throws(MagickException::class)
+    override fun annotate(text: String, gravity: Gravity) {
+        Throw.ifEmpty(text)
+        settings.drawing.createNativeInstance().use { drawingSettings ->
+            nativeInstance.annotateGravity(drawingSettings, text, gravity)
+        }
+    }
+
+    @Throws(MagickException::class)
+    override fun autoGamma(channels: Channels): Unit = nativeInstance.autoGamma(channels)
+
+    @Throws(MagickException::class)
+    override fun autoLevel(channels: Channels): Unit = nativeInstance.autoLevel(channels)
+
+    @Throws(MagickException::class)
+    override fun autoOrient(): Unit = nativeInstance.autoOrient()
+
+    @Throws(MagickException::class)
+    override fun autoThreshold(method: AutoThresholdMethod): Unit = nativeInstance.autoThreshold(method)
+
+    override fun clone(): MagickImageQuantum<QuantumType> = MagickImage(this)
+
+    @Throws(MagickException::class)
+    override fun getAttribute(name: String): String? = nativeInstance.getAttribute(name)
 
     override fun ping(data: UByteArray): Unit = ping(data, null)
 
@@ -333,7 +754,7 @@ public class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
     // /read Path
 
     override fun read(
-        color: MagickColorQuantum<QuantumType>,
+        color: IMagickColor<QuantumType>,
         width: UInt,
         height: UInt,
     ) {
@@ -413,7 +834,7 @@ public class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
         settings.fileName = fileName
 
         settings.createNativeInstance().use {
-            native.readBlob(it, data, offset = offset, length = length)
+            nativeInstance.readBlob(it, data, offset = offset, length = length)
         }
 
         resetSettings()
@@ -439,7 +860,7 @@ public class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
         settings.ping = ping
         settings.fileName = null
 
-        native.readStream(stream.buffer(), settings)
+        nativeInstance.readStream(stream.buffer(), settings)
     }
 
     private fun read(
@@ -454,9 +875,33 @@ public class MagickImage() : IMagickImage<QuantumType>, AutoCloseable {
         settings.ping = ping
 
         settings.createNativeInstance().use {
-            native.readFile(it)
+            nativeInstance.readFile(it)
         }
 
         resetSettings()
+    }
+
+    override fun removeAttribute(name: String) {
+        Throw.ifEmpty("name", name)
+        nativeInstance.removeAttribute(name)
+    }
+
+    @Throws(MagickException::class)
+    override fun setAttribute(name: String, value: String) {
+        Throw.ifEmpty("name", name)
+        nativeInstance.setAttribute(name, value)
+    }
+
+    public companion object {
+        internal fun clone(image: IMagickImage<QuantumType>?): IMagickImage<QuantumType>? = image?.clone()
+
+        internal fun nativeInstance(image: imagemagick.core.MagickImage?): NativeMagickImage? =
+            image?.let {
+                if (it is MagickImage) {
+                    return it.nativeInstance
+                }
+
+                throw UnsupportedOperationException()
+            }
     }
 }

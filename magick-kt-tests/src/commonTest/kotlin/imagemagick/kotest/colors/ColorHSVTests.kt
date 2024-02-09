@@ -76,7 +76,7 @@ class ColorHSVTests : ShouldSpec({
 
         context("TheFromMagickColorMethod") {
             should("initialize the properties") {
-                val color = MagickColor(Quantum.max, Quantum.max, (Quantum.max.toDouble() * 0.02).quantum())
+                val color = MagickColor(Quantum.max, Quantum.max, (Quantum.maxd * 0.02).quantum())
                 val hslColor = ColorHSV.fromMagickColor(color)
 
                 hslColor.hue shouldBeIn 0.16..0.17

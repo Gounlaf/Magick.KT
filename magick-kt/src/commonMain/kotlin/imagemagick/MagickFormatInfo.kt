@@ -2,16 +2,16 @@ package imagemagick
 
 import imagemagick.core.enums.MagickFormat
 import imagemagick.helpers.toString
-import imagemagick.native.NativeMagickFormatInfo
-import imagemagick.native.NativeMagickFormatInfo.canReadMultithreaded
-import imagemagick.native.NativeMagickFormatInfo.canWriteMultithreaded
-import imagemagick.native.NativeMagickFormatInfo.description
-import imagemagick.native.NativeMagickFormatInfo.format
-import imagemagick.native.NativeMagickFormatInfo.mimeType
-import imagemagick.native.NativeMagickFormatInfo.moduleFormat
-import imagemagick.native.NativeMagickFormatInfo.supportsMultipleFrames
-import imagemagick.native.NativeMagickFormatInfo.supportsReading
-import imagemagick.native.NativeMagickFormatInfo.supportsWriting
+import imagemagick.magicknative.NativeMagickFormatInfo
+import imagemagick.magicknative.NativeMagickFormatInfo.canReadMultithreaded
+import imagemagick.magicknative.NativeMagickFormatInfo.canWriteMultithreaded
+import imagemagick.magicknative.NativeMagickFormatInfo.description
+import imagemagick.magicknative.NativeMagickFormatInfo.format
+import imagemagick.magicknative.NativeMagickFormatInfo.mimeType
+import imagemagick.magicknative.NativeMagickFormatInfo.moduleFormat
+import imagemagick.magicknative.NativeMagickFormatInfo.supportsMultipleFrames
+import imagemagick.magicknative.NativeMagickFormatInfo.supportsReading
+import imagemagick.magicknative.NativeMagickFormatInfo.supportsWriting
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.ExperimentalForeignApi
 import libMagickNative.MagickInfo

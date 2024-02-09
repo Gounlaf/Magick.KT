@@ -95,8 +95,8 @@ class ColorGrayTests : ShouldSpec({
                 val color =
                     MagickColor(
                         Quantum.max,
-                        (Quantum.max.toDouble() * 0.25).quantum(),
-                        (Quantum.max.toDouble() * 0.5).quantum(),
+                        (Quantum.maxd * 0.25).quantum(),
+                        (Quantum.maxd * 0.5).quantum(),
                     )
                 val grayColor = ColorGray.fromMagickColor(color)
 

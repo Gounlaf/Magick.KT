@@ -7,7 +7,7 @@ package imagemagick.core.enums
 /**
  * Specifies the different file formats that are supported by ImageMagick.
  */
-enum class MagickFormat {
+public enum class MagickFormat {
     /** Unknown. */
     UNKNOWN,
 
@@ -819,5 +819,5 @@ enum class MagickFormat {
     YCBCRA,
 
     /**CCIR 601 4:1:1 or 4:2:2. */
-    YUV
+    YUV,
 }

@@ -40,7 +40,10 @@ interface MagickColorQuantum<TQuantumType> : Comparable<MagickColorQuantum<TQuan
      * @param fuzz The fuzz factor.
      * @return True when the specified color is fuzzy equal to the current instance.
      */
-    fun fuzzyEquals(other: MagickColorQuantum<TQuantumType>, fuzz: Percentage): Boolean
+    fun fuzzyEquals(
+        other: MagickColorQuantum<TQuantumType>,
+        fuzz: Percentage,
+    ): Boolean
 
     /**
      * Initializes the color with the specified bytes.
@@ -50,7 +53,12 @@ interface MagickColorQuantum<TQuantumType> : Comparable<MagickColorQuantum<TQuan
      * @param blue Blue component value of this color.
      * @param alpha Alpha component value of this color.
      */
-    fun setFromUBytes(red: UByte, green: UByte, blue: UByte, alpha: UByte)
+    fun setFromUBytes(
+        red: UByte,
+        green: UByte,
+        blue: UByte,
+        alpha: UByte,
+    )
 
     /**
      * Converts the value of this instance to a [UByte] array (RGBA or CMYKA).
@@ -75,4 +83,11 @@ interface MagickColorQuantum<TQuantumType> : Comparable<MagickColorQuantum<TQuan
      * @return The [String].
      */
     fun toShortString(): String
+
+    /**
+     * Converts the value of this instance to a string representation.
+     *
+     * @return The [String].
+     */
+    override fun toString(): String
 }

@@ -80,14 +80,14 @@ class ColorRGBTests : ShouldSpec({
                 val color =
                     MagickColor(
                         Quantum.max,
-                        (Quantum.max.toDouble() * 0.75).quantum(),
-                        (Quantum.max.toDouble() * 0.5).quantum(),
+                        (Quantum.maxd * 0.75).quantum(),
+                        (Quantum.maxd * 0.5).quantum(),
                     )
                 val rgcColor = ColorRGB.fromMagickColor(color)
 
                 rgcColor.r shouldBe Quantum.max
-                rgcColor.g shouldBe (Quantum.max.toDouble() * 0.75).quantum()
-                rgcColor.b shouldBe (Quantum.max.toDouble() * 0.5).quantum()
+                rgcColor.g shouldBe (Quantum.maxd * 0.75).quantum()
+                rgcColor.b shouldBe (Quantum.maxd * 0.5).quantum()
             }
         }
 
@@ -113,7 +113,7 @@ class ColorRGBTests : ShouldSpec({
 
             should("use the percentage") {
                 val first = ColorRGB(Quantum.max, Quantum.max, Quantum.max)
-                val second = ColorRGB(Quantum.max, (Quantum.max.toDouble() / 2.0).quantum(), Quantum.max)
+                val second = ColorRGB(Quantum.max, (Quantum.maxd / 2.0).quantum(), Quantum.max)
 
                 first.fuzzyEquals(second, 0.percent()) shouldBe false
                 first.fuzzyEquals(second, 10.percent()) shouldBe false

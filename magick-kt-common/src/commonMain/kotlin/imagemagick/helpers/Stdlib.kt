@@ -1,18 +1,35 @@
 package imagemagick.helpers
 
-inline fun CharSequence?.isNotNullOrEmpty(): Boolean = !isNullOrEmpty()
-inline fun CharSequence?.isNotNullOrBlank(): Boolean = !isNullOrBlank()
+public inline fun CharSequence?.isNotNullOrEmpty(): Boolean = !isNullOrEmpty()
+
+public inline fun CharSequence?.isNotNullOrBlank(): Boolean = !isNullOrBlank()
 
 @ExperimentalStdlibApi
 public inline fun CharSequence.hexToUByte(format: HexFormat = HexFormat.Default): UByte = toString().hexToByte(format).toUByte()
 
-inline fun Boolean.toString(trueStr: String, falseStr: String) = if (this) trueStr else falseStr
+public inline fun Boolean.toString(
+    trueStr: String,
+    falseStr: String,
+): String = if (this) trueStr else falseStr
 
 /**
  * In CSharp, Double.toString() don't print the decimal if number is round
  */
-inline fun Double.toString(removeDecimalIfRound: Boolean = false) = toString().let {
-    if (removeDecimalIfRound) it.removeSuffix(".0") else it
-}
+public inline fun Double.toString(removeDecimalIfRound: Boolean = false): String =
+    toString().let {
+        if (removeDecimalIfRound) it.removeSuffix(".0") else it
+    }
 
-inline fun Double.isWhole(): Boolean = this % 1 == 0.0
+public inline fun Double.isWhole(): Boolean = this % 1 == 0.0
+
+public inline fun <reified T : Enum<T>> enumValueOf(
+    name: String?,
+    default: T,
+): T =
+    name.takeUnless { str -> str.isNullOrBlank() }?.let {
+        try {
+            enumValueOf<T>(it)
+        } catch (e: IllegalArgumentException) {
+            default
+        }
+    } ?: default

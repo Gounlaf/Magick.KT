@@ -4,15 +4,18 @@ plugins {
     kotlin("multiplatform")
 }
 
-val localProperties = Properties().apply {
-    file("${rootProject.projectDir}/local.properties").takeIf { it.isFile }?.let {
-        it.inputStream().use { stream -> load(stream) }
+val localProperties =
+    Properties().apply {
+        file("${rootProject.projectDir}/local.properties").takeIf { it.isFile }?.let {
+            it.inputStream().use { stream -> load(stream) }
+        }
     }
-}
 
 val localInclude = file(localProperties.getProperty("local.include", "/usr/include"))
 
 kotlin {
+    explicitApiWarning()
+
     linuxX64 {
         compilations.getByName("main") {
             cinterops {

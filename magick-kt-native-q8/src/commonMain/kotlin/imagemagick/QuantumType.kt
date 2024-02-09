@@ -3,5 +3,5 @@ package imagemagick
 import kotlinx.cinterop.ExperimentalForeignApi
 
 @ExperimentalForeignApi
-typealias QuantumType = libMagickNative.Quantum
-typealias QuantumName = BitDepth
+public typealias QuantumType = libMagickNative.Quantum
+public typealias QuantumName = BitDepth

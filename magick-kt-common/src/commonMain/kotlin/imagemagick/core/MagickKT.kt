@@ -1,9 +1,9 @@
 package imagemagick.core
 
-interface MagickKT {
+public interface MagickKT {
     /** * Gets the ImageMagick features. */
-    val features: String
+    public val features: String
 
     /** Gets the information about the supported formats. */
-    val supportedFormats: List<MagickFormatInfo>
+    public val supportedFormats: List<MagickFormatInfo>
 }

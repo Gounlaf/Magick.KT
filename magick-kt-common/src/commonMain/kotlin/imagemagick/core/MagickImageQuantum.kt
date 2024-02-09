@@ -1,39 +1,40 @@
 package imagemagick.core
 
-import imagemagick.core.colors.MagickColorQuantum
 import imagemagick.core.exceptions.MagickException
 import okio.Path
 import okio.Source
+import imagemagick.core.colors.MagickColorQuantum as IMagickColor
 import imagemagick.core.settings.MagickReadSettings as IMagickReadSettings
+import imagemagick.core.settings.MagickSettings as IMagickSettings
 
-
-interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumType : Any {
+public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumType : Any {
     /**
      * Gets or sets the background color of the image.
      */
-    var backgroundColor: MagickColorQuantum<TQuantumType>?
-//
-//    /**
-//     * Gets or sets the border color of the image.
-//     */
-//    var borderColor: IMagickColor<TQuantumType>?
-//
-//    /**
-//     * Gets or sets the matte color.
-//     */
-//    var matteColor: IMagickColor<TQuantumType>?
-//
-//    /**
-//     * Gets the settings for this instance.
-//     */
-//    val settings: IMagickSettings<TQuantumType>
-//
-//    /**
-//     * Creates a clone of the current image.
-//     *
-//     * @return A clone of the current image.
-//     */
-//    IMagickImage<TQuantumType> Clone();
+    public var backgroundColor: IMagickColor<TQuantumType>?
+
+    /**
+     * Gets or sets the border color of the image.
+     */
+    public var borderColor: IMagickColor<TQuantumType>?
+
+    /**
+     * Gets or sets the matte color.
+     */
+    public var matteColor: IMagickColor<TQuantumType>?
+
+    /**
+     * Gets the settings for this instance.
+     */
+    public val settings: IMagickSettings<TQuantumType>
+
+    /**
+     * Creates a clone of the current image.
+     *
+     * @return A clone of the current image.
+     */
+    public fun clone(): MagickImageQuantum<TQuantumType>
+
 //
 //    /**
 //     * Creates a clone of the current image with the specified geometry.
@@ -594,6 +595,7 @@ interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumType : An
 //     */
 //    fun opaque(target: IMagickColor<TQuantumType>, fill: IMagickColor<TQuantumType>)
 //
+
     /**
      * Reads only metadata and not the pixel data.
      *
@@ -606,7 +608,12 @@ interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumType : An
      * @throws IllegalArgumentException Thrown when offset or count
      */
     @Throws(MagickException::class, IllegalArgumentException::class)
-    fun ping(data: UByteArray, offset: UInt, count: UInt, readSettings: IMagickReadSettings<TQuantumType>?)
+    fun ping(
+        data: UByteArray,
+        offset: UInt,
+        count: UInt,
+        readSettings: IMagickReadSettings<TQuantumType>?,
+    )
 
     /**
      * Reads only metadata and not the pixel data.
@@ -615,7 +622,10 @@ interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumType : An
      * @param readSettings The settings to use when reading the image.
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
-    fun ping(data: UByteArray, readSettings: IMagickReadSettings<TQuantumType>?)
+    fun ping(
+        data: UByteArray,
+        readSettings: IMagickReadSettings<TQuantumType>?,
+    )
 
     /**
      * Reads only metadata and not the pixel data.
@@ -624,7 +634,10 @@ interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumType : An
      * @param readSettings The settings to use when reading the image.
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
-    fun ping(file: Path, readSettings: IMagickReadSettings<TQuantumType>?)
+    fun ping(
+        file: Path,
+        readSettings: IMagickReadSettings<TQuantumType>?,
+    )
 
     /**
      * Reads only metadata and not the pixel data.
@@ -633,7 +646,10 @@ interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumType : An
      * @param readSettings The settings to use when reading the image.
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
-    fun ping(stream: Source, readSettings: IMagickReadSettings<TQuantumType>?)
+    fun ping(
+        stream: Source,
+        readSettings: IMagickReadSettings<TQuantumType>?,
+    )
 
     /**
      * Reads only metadata and not the pixel data.
@@ -642,7 +658,10 @@ interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumType : An
      * @param readSettings The settings to use when reading the image.
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
-    fun ping(fileName: String, readSettings: IMagickReadSettings<TQuantumType>?)
+    fun ping(
+        fileName: String,
+        readSettings: IMagickReadSettings<TQuantumType>?,
+    )
 //
 //    /**
 //     * Changes the value of individual pixels based on the intensity of each pixel compared to a
@@ -676,6 +695,7 @@ interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumType : An
 //     */
 //    fun rangeThreshold(lowBlack: TQuantumType, lowWhite: TQuantumType, highWhite: TQuantumType, highBlack: TQuantumType)
 //
+
     /**
      * Read single image frame.
      *
@@ -685,7 +705,12 @@ interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumType : An
      * @param readSettings The settings to use when reading the image.
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
-    fun read(data: UByteArray, offset: UInt, count: UInt, readSettings: IMagickReadSettings<TQuantumType>?)
+    fun read(
+        data: UByteArray,
+        offset: UInt,
+        count: UInt,
+        readSettings: IMagickReadSettings<TQuantumType>?,
+    )
 
     /**
      * Read single image frame.
@@ -696,7 +721,10 @@ interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumType : An
      * @throws IllegalArgumentException Thrown when [data] is empty
      */
     @Throws(MagickException::class, IllegalArgumentException::class)
-    fun read(data: UByteArray, readSettings: IMagickReadSettings<TQuantumType>?)
+    fun read(
+        data: UByteArray,
+        readSettings: IMagickReadSettings<TQuantumType>?,
+    )
 
     /**
      * Read single image frame.
@@ -705,7 +733,10 @@ interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumType : An
      * @param readSettings The settings to use when reading the image.
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
-    fun read(file: Path, readSettings: IMagickReadSettings<TQuantumType>?)
+    fun read(
+        file: Path,
+        readSettings: IMagickReadSettings<TQuantumType>?,
+    )
 
     /**
      * Read single image frame.
@@ -715,7 +746,11 @@ interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumType : An
      * @param height The height.
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
-    fun read(color: MagickColorQuantum<TQuantumType>, width: UInt, height: UInt)
+    fun read(
+        color: IMagickColor<TQuantumType>,
+        width: UInt,
+        height: UInt,
+    )
 
     /**
      * Read single image frame.
@@ -724,7 +759,10 @@ interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumType : An
      * @param readSettings The settings to use when reading the image.
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
-    fun read(stream: Source, readSettings: IMagickReadSettings<TQuantumType>?)
+    fun read(
+        stream: Source,
+        readSettings: IMagickReadSettings<TQuantumType>?,
+    )
 
     /**
      * Read single image frame.
@@ -733,7 +771,10 @@ interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumType : An
      * @param readSettings The settings to use when reading the image.
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
-    fun read(fileName: String, readSettings: IMagickReadSettings<TQuantumType>?)
+    fun read(
+        fileName: String,
+        readSettings: IMagickReadSettings<TQuantumType>?,
+    )
 //
 //    /**
 //     * Read single image frame.
@@ -743,7 +784,7 @@ interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumType : An
 //     * @return A [Task] representing the asynchronous operation.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-////     fun readAsync(file: Path, readSettings: IMagickReadSettings<TQuantumType>?): Task
+// //     fun readAsync(file: Path, readSettings: IMagickReadSettings<TQuantumType>?): Task
 //
 //    /**
 //     * Read single image frame.
@@ -754,7 +795,7 @@ interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumType : An
 //     * @param cancellationToken The token to monitor for cancellation requests.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-////     fun readAsync(file: Path, readSettings: IMagickReadSettings<TQuantumType>?, cancellationToken: CancellationToken): Task
+// //     fun readAsync(file: Path, readSettings: IMagickReadSettings<TQuantumType>?, cancellationToken: CancellationToken): Task
 //
 //    /**
 //     * Read single image frame.
@@ -764,7 +805,7 @@ interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumType : An
 //     * @return A [Task] representing the asynchronous operation.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-////     fun readAsync(stream: Source, readSettings: IMagickReadSettings<TQuantumType>?): Task
+// //     fun readAsync(stream: Source, readSettings: IMagickReadSettings<TQuantumType>?): Task
 //
 //    /**
 //     * Read single image frame.
@@ -775,7 +816,7 @@ interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumType : An
 //     * @return A [Task] representing the asynchronous operation.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-////     fun readAsync(stream: Source, readSettings: IMagickReadSettings<TQuantumType>?, cancellationToken: CancellationToken): Task
+// //     fun readAsync(stream: Source, readSettings: IMagickReadSettings<TQuantumType>?, cancellationToken: CancellationToken): Task
 //
 //    /**
 //     * Read single image frame.
@@ -785,7 +826,7 @@ interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumType : An
 //     * @return A [Task] representing the asynchronous operation.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-////     fun readAsync(fileName: String, readSettings: IMagickReadSettings<TQuantumType>?): Task
+// //     fun readAsync(fileName: String, readSettings: IMagickReadSettings<TQuantumType>?): Task
 //
 //    /**
 //     * Read single image frame.
@@ -796,7 +837,7 @@ interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumType : An
 //     * @return A [Task] representing the asynchronous operation.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-////     fun readAsync(fileName: String, readSettings: IMagickReadSettings<TQuantumType>?, cancellationToken: CancellationToken): Task
+// //     fun readAsync(fileName: String, readSettings: IMagickReadSettings<TQuantumType>?, cancellationToken: CancellationToken): Task
 //
 //    /**
 //     * Read single image frame.
@@ -876,7 +917,7 @@ interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumType : An
 //     * @return A [Task] representing the asynchronous operation.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-////     fun readPixelsAsync(file: Path, settings: IPixelReadSettings<TQuantumType>): Task
+// //     fun readPixelsAsync(file: Path, settings: IPixelReadSettings<TQuantumType>): Task
 //
 //    /**
 //     * Read single image frame from pixel data.
@@ -887,7 +928,7 @@ interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumType : An
 //     * @return A [Task] representing the asynchronous operation.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-////     fun readPixelsAsync(file: Path, settings: IPixelReadSettings<TQuantumType>, cancellationToken: CancellationToken): Task
+// //     fun readPixelsAsync(file: Path, settings: IPixelReadSettings<TQuantumType>, cancellationToken: CancellationToken): Task
 //
 //    /**
 //     * Read single image frame from pixel data.
@@ -897,7 +938,7 @@ interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumType : An
 //     * @return A [Task] representing the asynchronous operation.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-////     fun readPixelsAsync(stream: Source, settings: IPixelReadSettings<TQuantumType>): Task
+// //     fun readPixelsAsync(stream: Source, settings: IPixelReadSettings<TQuantumType>): Task
 //
 //    /**
 //     * Read single image frame from pixel data.
@@ -908,7 +949,7 @@ interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumType : An
 //     * @return A [Task] representing the asynchronous operation.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-////     fun readPixelsAsync(stream: Source, settings: IPixelReadSettings<TQuantumType>, cancellationToken: CancellationToken): Task
+// //     fun readPixelsAsync(stream: Source, settings: IPixelReadSettings<TQuantumType>, cancellationToken: CancellationToken): Task
 //
 //    /**
 //     * Read single image frame from pixel data.
@@ -918,7 +959,7 @@ interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumType : An
 //     * @return A [Task] representing the asynchronous operation.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-////     fun readPixelsAsync(fileName: String, settings: IPixelReadSettings<TQuantumType>): Task
+// //     fun readPixelsAsync(fileName: String, settings: IPixelReadSettings<TQuantumType>): Task
 //
 //    /**
 //     * Read single image frame from pixel data.
@@ -929,7 +970,7 @@ interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumType : An
 //     * @return A [Task] representing the asynchronous operation.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-////     fun readPixelsAsync(fileName: String, settings: IPixelReadSettings<TQuantumType>, cancellationToken: CancellationToken): Task
+// //     fun readPixelsAsync(fileName: String, settings: IPixelReadSettings<TQuantumType>, cancellationToken: CancellationToken): Task
 //
 //    /**
 //     * Separates the channels from the image and returns it as grayscale images.

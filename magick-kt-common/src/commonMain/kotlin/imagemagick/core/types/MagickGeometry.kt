@@ -1,7 +1,6 @@
 package imagemagick.core.types
 
-interface MagickGeometry : Comparable<MagickGeometry?>
-{
+interface MagickGeometry : Comparable<MagickGeometry?> {
     /**
      * Gets a value indicating whether the value is an aspect ratio.
      */
@@ -65,5 +64,17 @@ interface MagickGeometry : Comparable<MagickGeometry?>
      * @param width The width.
      * @param height The height.
      */
-    fun initialize(x: Int, y: Int, width: UInt, height: UInt)
+    fun initialize(
+        x: Int,
+        y: Int,
+        width: UInt,
+        height: UInt,
+    )
+
+    /**
+     * Returns a string that represents the current [MagickGeometry].
+     *
+     * @return A string that represents the current [MagickGeometry].
+     */
+    override fun toString(): String
 }

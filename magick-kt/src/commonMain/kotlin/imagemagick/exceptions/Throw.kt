@@ -4,6 +4,15 @@ import imagemagick.core.types.Percentage
 
 public object Throw {
     @Throws(IllegalArgumentException::class)
+    public inline fun ifEmpty(
+        parameterName: String,
+        value: String,
+    ): Unit =
+        require(value.isNotEmpty()) {
+            "$parameterName: Value cannot be empty."
+        }
+
+    @Throws(IllegalArgumentException::class)
     public inline fun ifEmpty(value: String): Unit =
         require(value.isNotEmpty()) {
             "Value cannot be empty."
@@ -27,7 +36,7 @@ public object Throw {
         value: Percentage,
     ): Unit =
         require(value.toDouble() >= 0.0) {
-            "Value should not be negative; parameter: $parameterName"
+            "$parameterName: Value should not be negative"
         }
 
     @Throws(IllegalArgumentException::class)
@@ -47,6 +56,6 @@ public object Throw {
         message: String,
     ): Unit =
         require(!condition) {
-            "$message; parameter: $parameterName"
+            "$parameterName: $message"
         }
 }

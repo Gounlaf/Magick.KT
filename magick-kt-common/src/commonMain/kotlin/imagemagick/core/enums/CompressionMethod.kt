@@ -7,7 +7,7 @@ package imagemagick.core.enums
 /**
  * Specifies compression methods.
  */
-enum class CompressionMethod {
+public enum class CompressionMethod {
     /** Undefined. */
     UNDEFINED,
 
@@ -93,5 +93,5 @@ enum class CompressionMethod {
     BC5,
 
     /** LERC. */
-    LERC
+    LERC,
 }

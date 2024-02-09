@@ -6,7 +6,7 @@ import imagemagick.core.colors.MagickColorQuantum
 import imagemagick.core.types.Percentage
 import imagemagick.exceptions.Throw
 import imagemagick.helpers.PercentageHelper
-import imagemagick.native.colors.NativeMagickColor
+import imagemagick.magicknative.colors.NativeMagickColor
 import imagemagick.quantum
 import kotlinx.cinterop.ExperimentalForeignApi
 import imagemagick.core.colors.MagickColorQuantum as IMagickColor
@@ -107,6 +107,10 @@ public data class MagickColor constructor(
             Throw.ifFalse("color", it.initialize(color), "Invalid color specified")
             initialize(it)
         }
+    }
+
+    private constructor(native: NativeMagickColor) : this() {
+        initialize(native)
     }
 
     override fun setFromUBytes(
@@ -217,6 +221,21 @@ public data class MagickColor constructor(
         return MagickColor(red, green, blue, key, a)
     }
 
+    override fun fuzzyEquals(
+        other: IMagickColor<QuantumType>,
+        fuzz: Percentage,
+    ): Boolean {
+        if (this === other) {
+            return true
+        }
+
+        return createNativeInstance(this).use { one ->
+            createNativeInstance(other).use {
+                one.fuzzyEquals(it, PercentageHelper.toQuantumType(fuzz))
+            }
+        }
+    }
+
     override fun toString(): String {
         if (isCmyk) {
             val red = Quantum.scaleToUbyte(r)
@@ -241,28 +260,13 @@ public data class MagickColor constructor(
         }
     }
 
-    override fun fuzzyEquals(
-        other: IMagickColor<QuantumType>,
-        fuzz: Percentage,
-    ): Boolean {
-        if (this === other) {
-            return true
-        }
-
-        return createNativeInstance(this).use { one ->
-            createNativeInstance(other).use {
-                one.fuzzyEquals(it, PercentageHelper.toQuantumType(fuzz))
-            }
-        }
-    }
-
     private fun initialize(native: NativeMagickColor) {
-        r = native.red()
-        g = native.green()
-        b = native.blue()
-        a = native.alpha()
-        k = native.black()
-        isCmyk = native.isCMYK()
+        r = native.red
+        g = native.green
+        b = native.blue
+        a = native.alpha
+        k = native.black
+        isCmyk = native.isCMYK
     }
 
     private fun initialize(
@@ -278,6 +282,8 @@ public data class MagickColor constructor(
         k = Quantum.convert(0)
         isCmyk = false
     }
+
+    public fun toNative(): NativeMagickColor = createNativeInstance(this)
 
     @ExperimentalStdlibApi
     private fun parseHexColor(color: String) {
@@ -295,14 +301,32 @@ public data class MagickColor constructor(
     }
 
     public companion object {
-        public fun createNativeInstance(color: IMagickColor<QuantumType>): NativeMagickColor =
-            NativeMagickColor().also {
-                it.red(color.r)
-                it.blue(color.b)
-                it.green(color.g)
-                it.alpha(color.a)
-                it.black(color.k)
-                it.isCMYK(color.isCmyk)
+        internal fun clone(value: IMagickColor<QuantumType>?): IMagickColor<QuantumType>? =
+            value?.let {
+                MagickColor().apply {
+                    r = value.r
+                    g = value.g
+                    b = value.b
+                    a = value.a
+                    k = value.k
+                    isCmyk = value.isCmyk
+                }
+            }
+
+        public fun createInstance(native: NativeMagickColor): IMagickColor<QuantumType> = MagickColor(native)
+
+        public fun NativeMagickColor?.toMagick(): IMagickColor<QuantumType>? = this?.let { MagickColor(this) }
+
+        public inline fun IMagickColor<QuantumType>?.toNative(): NativeMagickColor? = this?.let { createNativeInstance(it) }
+
+        public inline fun createNativeInstance(color: IMagickColor<QuantumType>): NativeMagickColor =
+            NativeMagickColor().apply {
+                red = color.r
+                blue = color.b
+                green = color.g
+                alpha = color.a
+                black = color.k
+                isCMYK = color.isCmyk
             }
 
         /**

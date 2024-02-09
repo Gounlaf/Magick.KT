@@ -156,9 +156,9 @@ class ColorCMYKTests : ShouldSpec({
                 val color =
                     MagickColor(
                         Quantum.max,
-                        (Quantum.max.toDouble() * 0.75).quantum(),
-                        (Quantum.max.toDouble() * 0.5).quantum(),
-                        (Quantum.max.toDouble() * 0.25).quantum(),
+                        (Quantum.maxd * 0.75).quantum(),
+                        (Quantum.maxd * 0.5).quantum(),
+                        (Quantum.maxd * 0.25).quantum(),
                     )
                 val cmykColor = ColorCMYK.fromMagickColor(color)
 

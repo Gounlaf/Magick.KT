@@ -2,33 +2,33 @@ package imagemagick.core
 
 import imagemagick.core.enums.MagickFormat
 
-interface MagickFormatInfo {
+public interface MagickFormatInfo {
     /** Gets a value indicating whether the format can be read multithreaded. */
-    val canReadMultithreaded: Boolean
+    public val canReadMultithreaded: Boolean
 
     /** Gets a value indicating whether the format can be written multithreaded. */
-    val canWriteMultithreaded: Boolean
+    public val canWriteMultithreaded: Boolean
 
     /** Gets the description of the format. */
-    val description: String?
+    public val description: String?
 
     /** Gets the format. */
-    val format: MagickFormat
+    public val format: MagickFormat
 
     /** Gets the mime type. */
-    val mimeType: String?
+    public val mimeType: String?
 
     /** Gets the module. */
-    val moduleFormat: MagickFormat
+    public val moduleFormat: MagickFormat
 
     /** Gets a value indicating whether the format supports multiple frames. */
-    val supportsMultipleFrames: Boolean
+    public val supportsMultipleFrames: Boolean
 
     /** Gets a value indicating whether the format can be read. */
-    val supportsReading: Boolean
+    public val supportsReading: Boolean
 
     /** Gets a value indicating whether the format can be written. */
-    val supportsWriting: Boolean
+    public val supportsWriting: Boolean
 
     /**
      * Returns a string that represents the current format.
@@ -42,5 +42,5 @@ interface MagickFormatInfo {
      *
      * @return True when the format was found and unregistered.
      */
-    fun unregister(): Boolean
+    public fun unregister(): Boolean
 }

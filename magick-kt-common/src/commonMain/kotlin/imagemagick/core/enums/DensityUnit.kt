@@ -1,9 +1,13 @@
 package imagemagick.core.enums
 
+//
+// /!\ do not modify order: it's directly linked to the underlying C library enum/order /!\
+//
+
 /**
  * Units of image resolution.
  */
-enum class DensityUnit {
+public enum class DensityUnit {
     /** Undefined. */
     UNDEFINED,
 
@@ -11,5 +15,5 @@ enum class DensityUnit {
     PIXELS_PER_INCH,
 
     /** Pixels per centimeter. */
-    PIXELS_PER_CENTIMETER
+    PIXELS_PER_CENTIMETER,
 }

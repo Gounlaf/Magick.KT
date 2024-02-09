@@ -51,7 +51,6 @@ kotlin {
             dependencies {
                 // THIS ONE SHOULD BE DYNAMIC
                 implementation(project(":magick-kt-native-q8"))
-
                 implementation(project(":magick-kt"))
 
                 implementation(project.dependencies.platform("io.kotest:kotest-bom:_"))

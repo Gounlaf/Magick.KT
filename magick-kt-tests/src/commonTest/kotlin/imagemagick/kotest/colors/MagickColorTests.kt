@@ -83,7 +83,7 @@ class MagickColorTests : ShouldSpec() {
                 }
 
                 should("initialize the instance correctly") {
-                    val max = Quantum.max.toDouble()
+                    val max = Quantum.maxd
 
                     testColor("#FF", max, max, max, false)
                     testColor("#F00", max, 0.0, 0.0, false)
@@ -122,7 +122,7 @@ class MagickColorTests : ShouldSpec() {
                 }
 
                 should("return minus one when value is higher") {
-                    val half: QuantumType = (Quantum.max.toDouble() / 2.0).quantum()
+                    val half: QuantumType = (Quantum.maxd / 2.0).quantum()
                     val first = MagickColor(half, half, half, half, half)
 
                     var second = MagickColor(half, half, Quantum.max, half, half)
@@ -139,7 +139,7 @@ class MagickColorTests : ShouldSpec() {
                 }
 
                 should("return one when value is lower") {
-                    val half: QuantumType = (Quantum.max.toDouble() / 2.0).quantum()
+                    val half: QuantumType = (Quantum.maxd / 2.0).quantum()
                     val first = MagickColors.White
 
                     var second = MagickColor(half, 0.quantum(), half, half, half)
@@ -173,7 +173,7 @@ class MagickColorTests : ShouldSpec() {
                 should("return the correct value") {
                     val first = MagickColor(Quantum.max, Quantum.max, Quantum.max)
 
-                    val half = (Quantum.max.toDouble() / 2.0).quantum()
+                    val half = (Quantum.maxd / 2.0).quantum()
                     val second = MagickColor(Quantum.max, half, Quantum.max)
 
                     first.fuzzyEquals(second, 0.percent()) shouldBe false
@@ -231,9 +231,9 @@ class MagickColorTests : ShouldSpec() {
                         val result = color * percentage
 
                         result shouldNotBe null
-                        result.r shouldBe (Quantum.max.toDouble() / 2).quantum()
-                        result.g shouldBe (Quantum.max.toDouble() / 2).quantum()
-                        result.b shouldBe (Quantum.max.toDouble() / 2).quantum()
+                        result.r shouldBe (Quantum.maxd / 2).quantum()
+                        result.g shouldBe (Quantum.maxd / 2).quantum()
+                        result.b shouldBe (Quantum.maxd / 2).quantum()
                         result.a shouldBe (Quantum.max).quantum()
                     }
 
@@ -244,10 +244,10 @@ class MagickColorTests : ShouldSpec() {
                         val result = color * percentage
 
                         result shouldNotBe null
-                        result.r shouldBe (Quantum.max.toDouble() / 2).quantum()
-                        result.g shouldBe (Quantum.max.toDouble() / 2).quantum()
-                        result.b shouldBe (Quantum.max.toDouble() / 2).quantum()
-                        result.k shouldBe (Quantum.max.toDouble() / 2).quantum()
+                        result.r shouldBe (Quantum.maxd / 2).quantum()
+                        result.g shouldBe (Quantum.maxd / 2).quantum()
+                        result.b shouldBe (Quantum.maxd / 2).quantum()
+                        result.k shouldBe (Quantum.maxd / 2).quantum()
                         result.a shouldBe (Quantum.max).quantum()
                     }
                 }
@@ -332,7 +332,7 @@ class MagickColorTests : ShouldSpec() {
                             Quantum.max,
                             0.quantum(),
                             0.quantum(),
-                            (Quantum.max.toDouble() / 3.0).quantum(),
+                            (Quantum.maxd / 3.0).quantum(),
                         )
                     color.toString() shouldBe "cmyka(0,255,0,0,0.3333)"
 

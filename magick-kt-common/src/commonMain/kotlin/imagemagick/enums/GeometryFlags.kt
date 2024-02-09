@@ -2,7 +2,7 @@ package imagemagick.enums
 
 import imagemagick.helpers.Flags
 
-enum class GeometryFlags(override val bit: ULong) : Flags {
+public enum class GeometryFlags(override val bit: ULong) : Flags {
     NO_VALUE(0u),
 
     /** '%' percentage of something */

@@ -7,7 +7,7 @@ package imagemagick.core.enums
 /**
  * Specifies the style of a font.
  */
-enum class FontStyleType {
+public enum class FontStyleType {
     /** Undefined. */
     UNDEFINED,
 
@@ -24,5 +24,5 @@ enum class FontStyleType {
     ANY,
 
     /** Bold. */
-    BOLD
+    BOLD,
 }

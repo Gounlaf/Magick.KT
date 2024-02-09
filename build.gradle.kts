@@ -1,6 +1,6 @@
 plugins {
     kotlin("multiplatform") apply false
-    id("org.jmailen.kotlinter") version "4.1.1" apply false
+    id("org.jmailen.kotlinter") apply false
     kotlin("jvm")
 }
 

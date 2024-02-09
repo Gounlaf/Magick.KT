@@ -3,7 +3,8 @@ package imagemagick.types
 import imagemagick.core.types.Percentage
 import imagemagick.enums.GeometryFlags
 import imagemagick.exceptions.Throw
-import imagemagick.native.NativeMagickGeometry
+import imagemagick.magicknative.types.NativeMagickGeometry
+import imagemagick.magicknative.types.NativeMagickRectangle
 import kotlinx.cinterop.ExperimentalForeignApi
 import imagemagick.core.types.MagickGeometry as IMagickGeometry
 
@@ -27,39 +28,6 @@ public data class MagickGeometry(
     override var x: Int = 0,
     override var y: Int = 0,
 ) : IMagickGeometry {
-    public companion object {
-        public inline fun String.toMagickGeometry(): MagickGeometry? = fromString(this)
-
-        public inline fun fromString(value: String?): MagickGeometry? =
-            value?.let {
-                MagickGeometry(it)
-            }
-
-        private inline fun fromRectangle(rectangle: MagickRectangle): MagickGeometry =
-            MagickGeometry(rectangle.x, rectangle.y, rectangle.width, rectangle.height)
-
-        @Throws(IllegalStateException::class)
-        public fun fromPageSize(pageSize: String): MagickGeometry {
-            Throw.ifEmpty(pageSize)
-
-            val rectangle = MagickRectangle.fromPageSize(pageSize) ?: error("Invalid page size specified.")
-
-            return fromRectangle(rectangle)
-        }
-
-        private fun parseInt(value: String): UInt {
-            // substring in Kotlin have a different API than C#
-
-            val start = value.indexOfFirst { c -> c.isDigit() }
-            var end = start
-
-            while (end < value.length && value[end].isDigit())
-                end++
-
-            return value.substring(start, end).toUInt()
-        }
-    }
-
     /**
      * Initializes a new instance of the [MagickGeometry] class using the specified width and height.
      *
@@ -251,5 +219,55 @@ public data class MagickGeometry(
 
         x = instance.x.toInt()
         y = instance.y.toInt()
+    }
+
+    public companion object {
+        public inline fun String.toMagickGeometry(): MagickGeometry? = fromString(this)
+
+        public inline fun fromString(value: String?): MagickGeometry? =
+            value?.let {
+                MagickGeometry(it)
+            }
+
+        @Throws(IllegalStateException::class)
+        public fun fromPageSize(pageSize: String): MagickGeometry {
+            Throw.ifEmpty(pageSize)
+
+            val rectangle = MagickRectangle.fromPageSize(pageSize) ?: error("Invalid page size specified.")
+
+            return fromRectangle(rectangle)
+        }
+
+        internal fun clone(value: IMagickGeometry?): MagickGeometry? =
+            value?.let {
+                MagickGeometry().apply {
+                    aspectRatio = it.aspectRatio
+                    fillArea = it.fillArea
+                    greater = it.greater
+                    height = it.height
+                    isPercentage = it.isPercentage
+                    less = it.less
+                    limitPixels = it.limitPixels
+                    width = it.width
+                    x = it.x
+                    y = it.y
+                }
+            }
+
+        internal inline fun fromRectangle(rectangle: MagickRectangle): MagickGeometry =
+            MagickGeometry(rectangle.x, rectangle.y, rectangle.width, rectangle.height)
+
+        internal inline fun fromRectangle(rectangle: NativeMagickRectangle): MagickGeometry =
+            MagickGeometry(rectangle.x, rectangle.y, rectangle.width, rectangle.height)
+
+        private fun parseInt(value: String): UInt {
+            val start = value.indexOfFirst { c -> c.isDigit() }
+            var end = start
+
+            while (end < value.length && value[end].isDigit())
+                end++
+
+            return value.substring(start, end).toUInt()
+        }
     }
 }
