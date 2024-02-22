@@ -23,128 +23,128 @@ import imagemagick.core.drawables.DrawableAffine as IDrawableAffine
 /**
  * Class that contains various settings.
  */
-interface MagickSettings<TQuantumType> where TQuantumType : Any {
+public interface MagickSettings<TQuantumType> where TQuantumType : Any {
     /**
      * Gets or sets the affine to use when annotating with text or drawing.
      */
-    var affine: IDrawableAffine?
+    public var affine: IDrawableAffine?
 
     /**
      * Gets or sets a value indicating whether anti-aliasing should be enabled (default true).
      */
-    var antiAlias: Boolean
+    public var antiAlias: Boolean
 
     /**
      * Gets or sets the background color.
      */
-    var backgroundColor: IMagickColor<TQuantumType>?
+    public var backgroundColor: IMagickColor<TQuantumType>?
 
     /**
      * Gets or sets the border color.
      */
-    var borderColor: IMagickColor<TQuantumType>?
+    public var borderColor: IMagickColor<TQuantumType>?
 
     /**
      * Gets or sets the color space.
      */
-    var colorSpace: ColorSpace
+    public var colorSpace: ColorSpace
 
     /**
      * Gets or sets the color type of the image.
      */
-    var colorType: ColorType
+    public var colorType: ColorType
 
     /**
      * Gets or sets the compression method to use.
      */
-    var compression: CompressionMethod
+    public var compression: CompressionMethod
 
     /**
      * Gets or sets a value indicating whether printing of debug messages from ImageMagick is enabled when a debugger is attached.
      */
-    var debug: Boolean
+    public var debug: Boolean
 
     /**
      * Gets or sets the vertical and horizontal resolution in pixels.
      */
-    var density: Density?
+    public var density: Density?
 
     /**
      * Gets or sets the depth (bits allocated to red/green/blue components).
      */
-    var depth: UInt
+    public var depth: UInt
 
     /**
      * Gets or sets the endianness (little like Intel or big like SPARC) for image formats which support
      * endian-specific options.
      *
      */
-    var endian: Endian
+    public var endian: Endian
 
     /**
      * Gets or sets the fill color.
      */
-    var fillColor: IMagickColor<TQuantumType>?
+    public var fillColor: IMagickColor<TQuantumType>?
 
     /**
      * Gets or sets the fill pattern.
      */
-    var fillPattern: IMagickImage<TQuantumType>?
+    public var fillPattern: IMagickImage<TQuantumType>?
 
     /**
      * Gets or sets the rule to use when filling drawn objects.
      */
-    var fillRule: FillRule
+    public var fillRule: FillRule
 
     /**
      * Gets or sets the text rendering font.
      */
-    var font: String?
+    public var font: String?
 
     /**
      * Gets or sets the text font family.
      */
-    var fontFamily: String?
+    public var fontFamily: String?
 
     /**
      * Gets or sets the font point size.
      */
-    var fontPointsize: Double
+    public var fontPointsize: Double
 
     /**
      * Gets or sets the font style.
      */
-    var fontStyle: FontStyleType
+    public var fontStyle: FontStyleType
 
     /**
      * Gets or sets the font weight.
      */
-    var fontWeight: FontWeight
+    public var fontWeight: FontWeight
 
     /**
      * Gets or sets the the format of the image.
      */
-    var format: MagickFormat
+    public var format: MagickFormat
 
     /**
      * Gets or sets the interlace method.
      */
-    var interlace: Interlace
+    public var interlace: Interlace
 
     /**
      * Gets or sets the preferred size and location of an image canvas.
      */
-    var page: MagickGeometry?
+    public var page: MagickGeometry?
 
     /**
      * Gets or sets a value indicating whether stroke anti-aliasing is enabled or disabled.
      */
-    var strokeAntiAlias: Boolean
+    public var strokeAntiAlias: Boolean
 
     /**
      * Gets or sets the color to use when drawing object outlines.
      */
-    var strokeColor: IMagickColor<TQuantumType>?
+    public var strokeColor: IMagickColor<TQuantumType>?
 
     /**
      * Gets or sets the pattern of dashes and gaps used to stroke paths. This represents a
@@ -152,24 +152,24 @@ interface MagickSettings<TQuantumType> where TQuantumType : Any {
      * in pixels. If a zero value is not found it will be added. If an odd number of values is
      * provided, then the list of values is repeated to yield an even number of values.
      */
-    var strokeDashArray: Iterable<Double>?
+    public var strokeDashArray: Iterable<Double>?
 
     /**
      * Gets or sets the distance into the dash pattern to start the dash (default 0) while
      * drawing using a dash pattern.
      */
-    var strokeDashOffset: Double
+    public var strokeDashOffset: Double
 
     /**
      * Gets or sets the shape to be used at the end of open subpaths when they are stroked.
      */
-    var strokeLineCap: LineCap
+    public var strokeLineCap: LineCap
 
     /**
      * Gets or sets the shape to be used at the corners of paths (or other vector shapes) when they
      * are stroked.
      */
-    var strokeLineJoin: LineJoin
+    public var strokeLineJoin: LineJoin
 
     /**
      * Gets or sets the miter limit. When two line segments meet at a sharp angle and miter joins have
@@ -177,63 +177,63 @@ interface MagickSettings<TQuantumType> where TQuantumType : Any {
      * of the line stroking the path. The miterLimit' imposes a limit on the ratio of the miter
      * length to the 'lineWidth'. The default value is 4.
      */
-    var strokeMiterLimit: UInt
+    public var strokeMiterLimit: UInt
 
     /**
      * Gets or sets the pattern image to use while stroking object outlines.
      */
-    var strokePattern: IMagickImage<TQuantumType>?
+    public var strokePattern: IMagickImage<TQuantumType>?
 
     /**
      * Gets or sets the stroke width for drawing lines, circles, ellipses, etc.
      */
-    var strokeWidth: Double
+    public var strokeWidth: Double
 
     /**
      * Gets or sets a value indicating whether Postscript and TrueType fonts should be anti-aliased (default true).
      */
-    var textAntiAlias: Boolean
+    public var textAntiAlias: Boolean
 
     /**
      * Gets or sets text direction (right-to-left or left-to-right).
      */
-    var textDirection: TextDirection
+    public var textDirection: TextDirection
 
     /**
      * Gets or sets the text annotation encoding (e.g. "UTF-16").
      */
-    var textEncoding: String?
+    public var textEncoding: String?
     // TODO Create Encoding equivalent
 
     /**
      * Gets or sets the text annotation gravity.
      */
-    var textGravity: Gravity
+    public var textGravity: Gravity
 
     /**
      * Gets or sets the text inter-line spacing.
      */
-    var textInterlineSpacing: Double
+    public var textInterlineSpacing: Double
 
     /**
      * Gets or sets the text inter-word spacing.
      */
-    var textInterwordSpacing: Double
+    public var textInterwordSpacing: Double
 
     /**
      * Gets or sets the text inter-character kerning.
      */
-    var textKerning: Double
+    public var textKerning: Double
 
     /**
      * Gets or sets the text undercolor box.
      */
-    var textUnderColor: IMagickColor<TQuantumType>?
+    public var textUnderColor: IMagickColor<TQuantumType>?
 
     /**
      * Gets or sets a value indicating whether verbose output os turned on or off.
      */
-    var verbose: Boolean
+    public var verbose: Boolean
 
     /**
      * Returns the value of a format-specific option.
@@ -243,7 +243,7 @@ interface MagickSettings<TQuantumType> where TQuantumType : Any {
      *
      * @return The value of a format-specific option.
      */
-    fun getDefine(
+    public fun getDefine(
         format: MagickFormat,
         name: String,
     ): String?
@@ -255,7 +255,7 @@ interface MagickSettings<TQuantumType> where TQuantumType : Any {
      *
      * @return The value of a format-specific option.
      */
-    fun getDefine(name: String): String?
+    public fun getDefine(name: String): String?
 
     /**
      * Removes the define with the specified name.
@@ -263,7 +263,7 @@ interface MagickSettings<TQuantumType> where TQuantumType : Any {
      * @param format The format to set the define for.
      * @param name The name of the define.
      */
-    fun removeDefine(
+    public fun removeDefine(
         format: MagickFormat,
         name: String,
     )
@@ -273,7 +273,7 @@ interface MagickSettings<TQuantumType> where TQuantumType : Any {
      *
      * @param name The name of the define.
      */
-    fun removeDefine(name: String)
+    public fun removeDefine(name: String)
 
     /**
      * Sets a format-specific option.
@@ -282,7 +282,7 @@ interface MagickSettings<TQuantumType> where TQuantumType : Any {
      * @param name The name of the define.
      * @param flag The value of the define.
      */
-    fun setDefine(
+    public fun setDefine(
         format: MagickFormat,
         name: String,
         flag: Boolean,
@@ -295,7 +295,7 @@ interface MagickSettings<TQuantumType> where TQuantumType : Any {
      * @param name The name of the option.
      * @param value The value of the option.
      */
-    fun setDefine(
+    public fun setDefine(
         format: MagickFormat,
         name: String,
         value: Int,
@@ -308,7 +308,7 @@ interface MagickSettings<TQuantumType> where TQuantumType : Any {
      * @param name The name of the option.
      * @param value The value of the option.
      */
-    fun setDefine(
+    public fun setDefine(
         format: MagickFormat,
         name: String,
         value: String,
@@ -320,7 +320,7 @@ interface MagickSettings<TQuantumType> where TQuantumType : Any {
      * @param name The name of the option.
      * @param value The value of the option.
      */
-    fun setDefine(
+    public fun setDefine(
         name: String,
         value: String,
     )
@@ -330,5 +330,5 @@ interface MagickSettings<TQuantumType> where TQuantumType : Any {
      *
      * @param defines The defines to set.
      */
-    fun setDefines(defines: IDefines)
+    public fun setDefines(defines: IDefines)
 }

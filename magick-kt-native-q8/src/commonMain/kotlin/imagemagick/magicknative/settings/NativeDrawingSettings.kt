@@ -88,9 +88,7 @@ import libMagickNative.DrawingSettings_TextUnderColor_Set
 public class NativeDrawingSettings : AutoCloseable {
     public val ptr: CPointer<DrawInfo> = create()
 
-    override fun close() {
-        ptr.dispose()
-    }
+    override fun close(): Unit = ptr.dispose()
 
     public var borderColor: NativeMagickColor?
         get() = ptr.borderColor()

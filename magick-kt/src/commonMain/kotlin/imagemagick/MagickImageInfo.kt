@@ -7,6 +7,8 @@ import imagemagick.core.enums.Interlace
 import imagemagick.core.enums.MagickFormat
 import imagemagick.core.exceptions.MagickException
 import imagemagick.core.types.Density
+import kotlin.contracts.ExperimentalContracts
+import kotlin.experimental.ExperimentalNativeApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import okio.Path
 import okio.Source
@@ -17,7 +19,9 @@ import imagemagick.core.MagickImageInfo as IMagickImageInfo
  *
  * @constructor Initializes a new instance of the [MagickImageInfo] class.
  */
+@ExperimentalContracts
 @ExperimentalForeignApi
+@ExperimentalNativeApi
 @ExperimentalStdlibApi
 public class MagickImageInfo() : IMagickImageInfo {
     override lateinit var colorSpace: ColorSpace

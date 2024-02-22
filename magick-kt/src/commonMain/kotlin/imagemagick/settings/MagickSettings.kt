@@ -22,7 +22,7 @@ import imagemagick.core.enums.LineJoin
 import imagemagick.core.enums.MagickFormat
 import imagemagick.core.enums.TextDirection
 import imagemagick.core.types.Density
-import imagemagick.exceptions.Throw
+import imagemagick.exceptions.throwIfEmpty
 import imagemagick.helpers.enumValueOf
 import imagemagick.helpers.isNotNullOrEmpty
 import imagemagick.magicknative.NativeMagickSettings
@@ -259,12 +259,12 @@ public open class MagickSettings : IMagickSettings<QuantumType> {
         format: MagickFormat,
         name: String,
     ): String? {
-        Throw.ifEmpty("name", name)
+        throwIfEmpty("name", name)
         return getOption(parseDefine(format, name))
     }
 
     override fun getDefine(name: String): String? {
-        Throw.ifEmpty("name", name)
+        throwIfEmpty("name", name)
         return getOption(name)
     }
 
@@ -272,13 +272,13 @@ public open class MagickSettings : IMagickSettings<QuantumType> {
         format: MagickFormat,
         name: String,
     ) {
-        Throw.ifEmpty("name", name)
+        throwIfEmpty("name", name)
         val key = parseDefine(format, name)
         options.remove(key)
     }
 
     override fun removeDefine(name: String) {
-        Throw.ifEmpty("name", name)
+        throwIfEmpty("name", name)
         options.remove(name)
     }
 
@@ -299,7 +299,7 @@ public open class MagickSettings : IMagickSettings<QuantumType> {
         name: String,
         value: String,
     ) {
-        Throw.ifEmpty("name", name)
+        throwIfEmpty("name", name)
         setOption(parseDefine(format, name), value)
     }
 
@@ -307,7 +307,7 @@ public open class MagickSettings : IMagickSettings<QuantumType> {
         name: String,
         value: String,
     ) {
-        Throw.ifEmpty("name", name)
+        throwIfEmpty("name", name)
         setOption(name, value)
     }
 

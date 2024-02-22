@@ -9,15 +9,15 @@ public interface Define {
     /**
      * Gets the format to set the define for.
      */
-    val format: MagickFormat
+    public val format: MagickFormat
 
     /**
      * Gets the name of the define.
      */
-    val name: String
+    public val name: String
 
     /**
      * Gets the value of the define.
      */
-    val value: String
+    public val value: String
 }

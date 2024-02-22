@@ -3,7 +3,7 @@ package imagemagick.core.enums
 /**
  * Specifies the pixel channels.
  */
-public enum class PixelChannel(val channel: Int) {
+public enum class PixelChannel(public val channel: Int) {
     /** Red. */
     RED(0),
 

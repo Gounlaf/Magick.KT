@@ -3,7 +3,7 @@ package imagemagick.colors
 import imagemagick.Quantum
 import imagemagick.QuantumType
 import imagemagick.core.types.Percentage
-import imagemagick.exceptions.Throw
+import imagemagick.exceptions.throwIfEmpty
 import imagemagick.helpers.PercentageHelper
 import kotlinx.cinterop.ExperimentalForeignApi
 import imagemagick.core.colors.MagickColorQuantum as IMagickColor
@@ -135,7 +135,7 @@ public class ColorCMYK : ColorBase {
         public fun fromMagickColor(color: IMagickColor<QuantumType>): ColorCMYK = ColorCMYK(color)
 
         private fun createColor(color: String): IMagickColor<QuantumType> {
-            Throw.ifEmpty(color)
+            throwIfEmpty(color)
 
             if (!color.startsWith('#')) {
                 throw IllegalArgumentException("Invalid color specified\"")

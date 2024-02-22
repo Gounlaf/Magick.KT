@@ -19,7 +19,7 @@ kotlin {
             dependencies {
                 implementation(project.dependencies.platform("org.jetbrains.kotlinx:kotlinx-coroutines-bom:_"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
-
+                implementation("org.jetbrains.kotlinx:multik-core:_")
                 implementation("com.ionspin.kotlin:bignum:_")
 
                 implementation(project(":magick-kt-common"))

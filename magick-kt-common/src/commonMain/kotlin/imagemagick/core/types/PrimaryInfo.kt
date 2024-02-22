@@ -3,19 +3,19 @@ package imagemagick.core.types
 /**
  * PrimaryInfo information.
  */
-interface PrimaryInfo {
+public interface PrimaryInfo {
     /**
      * Gets the X value.
      */
-    val x: Double
+    public val x: Double
 
     /**
      * Gets the Y value.
      */
-    val y: Double
+    public val y: Double
 
     /**
      * Gets the Z value.
      */
-    val z: Double
+    public val z: Double
 }

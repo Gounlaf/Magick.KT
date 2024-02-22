@@ -2,7 +2,7 @@ package imagemagick.colors
 
 import imagemagick.Quantum
 import imagemagick.QuantumType
-import imagemagick.exceptions.Throw
+import imagemagick.exceptions.throwIfTrue
 import kotlinx.cinterop.ExperimentalForeignApi
 import imagemagick.core.colors.MagickColorQuantum as IMagickColor
 
@@ -23,7 +23,7 @@ public class ColorGray : ColorBase {
         }
 
     public constructor(shade: Double) : super(MagickColor(0u, 0u, 0u)) {
-        Throw.ifTrue("shade", shade < 0.0 || shade > 1.0, "Invalid shade specified")
+        throwIfTrue("shade", shade < 0.0 || shade > 1.0, "Invalid shade specified")
 
         this.shade = shade
     }

@@ -2,6 +2,9 @@ package imagemagick.core
 
 import imagemagick.core.enums.MagickFormat
 
+/**
+ * Interface that contains information about an image format.
+ */
 public interface MagickFormatInfo {
     /** Gets a value indicating whether the format can be read multithreaded. */
     public val canReadMultithreaded: Boolean

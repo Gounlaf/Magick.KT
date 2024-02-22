@@ -2,9 +2,9 @@ package imagemagick
 
 import imagemagick.core.QuantumQuantum
 import imagemagick.magicknative.NativeQuantum
-import kotlinx.cinterop.ExperimentalForeignApi
 import kotlin.math.max
 import kotlin.math.min
+import kotlinx.cinterop.ExperimentalForeignApi
 
 public enum class BitDepth {
     Q8,

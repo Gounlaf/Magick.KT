@@ -4,41 +4,41 @@ package imagemagick.core.drawables
  * Adjusts the current affine transformation matrix with the specified affine transformation matrix.
  * Note that the current affine transform is adjusted rather than replaced.
  */
-interface DrawableAffine {
+public interface DrawableAffine {
     /**
      * Gets or sets the X coordinate scaling element.
      */
-    var scaleX: Double
+    public var scaleX: Double
 
     /**
      * Gets or sets the Y coordinate scaling element.
      */
-    var scaleY: Double
+    public var scaleY: Double
 
     /**
      * Gets or sets the X coordinate shearing element.
      */
-    var shearX: Double
+    public var shearX: Double
 
     /**
      * Gets or sets the Y coordinate shearing element.
      */
-    var shearY: Double
+    public var shearY: Double
 
     /**
      * Gets or sets the X coordinate of the translation element.
      */
-    var translateX: Double
+    public var translateX: Double
 
     /**
      * Gets or sets the Y coordinate of the translation element.
      */
-    var translateY: Double
+    public var translateY: Double
 
     /**
      * Reset to default.
      */
-    fun reset()
+    public fun reset()
 
     /**
      * Sets the origin of coordinate system.
@@ -46,7 +46,7 @@ interface DrawableAffine {
      * @param translateX The X coordinate of the translation element.
      * @param translateY The Y coordinate of the translation element.
      */
-    fun transformOrigin(
+    public fun transformOrigin(
         translateX: Double,
         translateY: Double,
     )
@@ -56,7 +56,7 @@ interface DrawableAffine {
      *
      * @param angle The angle of the rotation.
      */
-    fun transformRotation(angle: Double)
+    public fun transformRotation(angle: Double)
 
     /**
      * Sets the scale to use.
@@ -64,7 +64,7 @@ interface DrawableAffine {
      * @param scaleX The X coordinate scaling element.
      * @param scaleY The Y coordinate scaling element.
      */
-    fun transformScale(
+    public fun transformScale(
         scaleX: Double,
         scaleY: Double,
     )
@@ -74,12 +74,12 @@ interface DrawableAffine {
      *
      * @param skewX The X skewing element.
      */
-    fun transformSkewX(skewX: Double)
+    public fun transformSkewX(skewX: Double)
 
     /**
      * Skew to use in Y axis.
      *
      * @param skewY The Y skewing element.
      */
-    fun transformSkewY(skewY: Double)
+    public fun transformSkewY(skewY: Double)
 }

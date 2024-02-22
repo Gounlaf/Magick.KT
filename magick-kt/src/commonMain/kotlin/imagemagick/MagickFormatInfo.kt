@@ -12,6 +12,7 @@ import imagemagick.magicknative.NativeMagickFormatInfo.moduleFormat
 import imagemagick.magicknative.NativeMagickFormatInfo.supportsMultipleFrames
 import imagemagick.magicknative.NativeMagickFormatInfo.supportsReading
 import imagemagick.magicknative.NativeMagickFormatInfo.supportsWriting
+import kotlin.contracts.ExperimentalContracts
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.ExperimentalForeignApi
 import libMagickNative.MagickInfo
@@ -32,6 +33,7 @@ public data class MagickFormatInfo private constructor(
 ) : Interface {
     @ExperimentalStdlibApi
     @ExperimentalForeignApi
+    @ExperimentalContracts
     public companion object {
         public val allFormats: Map<MagickFormat, Interface> by lazy {
             loadFormats()

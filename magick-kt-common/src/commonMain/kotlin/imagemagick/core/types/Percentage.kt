@@ -9,8 +9,7 @@ import kotlin.math.roundToInt
  *
  * @property value The value (0% = 0.0, 100% = 100.0)
  */
-public data class Percentage(private val value: Double = 0.0) : Comparable<Percentage> {
-
+public value class Percentage(private val value: Double = 0.0) : Comparable<Percentage> {
     /**
      * Initializes a new instance of the [Percentage].
      *

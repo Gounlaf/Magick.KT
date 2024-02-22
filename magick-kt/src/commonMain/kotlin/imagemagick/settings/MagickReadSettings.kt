@@ -2,11 +2,15 @@ package imagemagick.settings
 
 import imagemagick.QuantumType
 import imagemagick.types.MagickGeometry
+import kotlin.contracts.ExperimentalContracts
+import kotlin.experimental.ExperimentalNativeApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import imagemagick.core.settings.MagickReadSettings as IMagickReadSettings
 import imagemagick.core.types.MagickGeometry as IMagickGeometry
 
+@ExperimentalContracts
 @ExperimentalForeignApi
+@ExperimentalNativeApi
 @ExperimentalStdlibApi
 public class MagickReadSettings() : MagickSettings(), IMagickReadSettings<QuantumType> {
     override var extractArea: IMagickGeometry = MagickGeometry()

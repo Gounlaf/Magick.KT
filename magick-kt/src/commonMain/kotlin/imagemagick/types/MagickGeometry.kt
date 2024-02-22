@@ -2,7 +2,8 @@ package imagemagick.types
 
 import imagemagick.core.types.Percentage
 import imagemagick.enums.GeometryFlags
-import imagemagick.exceptions.Throw
+import imagemagick.exceptions.throwIfEmpty
+import imagemagick.exceptions.throwIfNegative
 import imagemagick.magicknative.types.NativeMagickGeometry
 import imagemagick.magicknative.types.NativeMagickRectangle
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -72,8 +73,8 @@ public data class MagickGeometry(
      * @param percentageHeight The percentage of the height.
      */
     public constructor(x: Int, y: Int, percentageWith: Percentage, percentageHeight: Percentage) : this() {
-        Throw.ifNegative("percentageWith", percentageWith)
-        Throw.ifNegative("percentageHeight", percentageHeight)
+        throwIfNegative("percentageWith", percentageWith)
+        throwIfNegative("percentageHeight", percentageHeight)
 
         initializeFromPercentage(x, y, percentageWith.toUInt(), percentageHeight.toUInt())
     }
@@ -87,7 +88,7 @@ public data class MagickGeometry(
      */
     @ExperimentalStdlibApi
     public constructor(value: String) : this() {
-        Throw.ifEmpty(value)
+        throwIfEmpty(value)
 
         NativeMagickGeometry().use {
             val flags = it.initialize(value)
@@ -231,7 +232,7 @@ public data class MagickGeometry(
 
         @Throws(IllegalStateException::class)
         public fun fromPageSize(pageSize: String): MagickGeometry {
-            Throw.ifEmpty(pageSize)
+            throwIfEmpty(pageSize)
 
             val rectangle = MagickRectangle.fromPageSize(pageSize) ?: error("Invalid page size specified.")
 

@@ -4,7 +4,8 @@ import imagemagick.Quantum
 import imagemagick.QuantumType
 import imagemagick.core.colors.MagickColorQuantum
 import imagemagick.core.types.Percentage
-import imagemagick.exceptions.Throw
+import imagemagick.exceptions.throwIfEmpty
+import imagemagick.exceptions.throwIfFalse
 import imagemagick.helpers.PercentageHelper
 import imagemagick.magicknative.colors.NativeMagickColor
 import imagemagick.quantum
@@ -91,7 +92,7 @@ public data class MagickColor constructor(
      *  For example: #F000, #FF000000, #FFFF000000000000.
      */
     public constructor(color: String) : this() {
-        Throw.ifEmpty(color)
+        throwIfEmpty(color)
 
         if (color.contentEquals("transparent", ignoreCase = true)) {
             initialize(QuantumType.MAX_VALUE, QuantumType.MAX_VALUE, QuantumType.MAX_VALUE, 0.quantum())
@@ -104,7 +105,7 @@ public data class MagickColor constructor(
         }
 
         NativeMagickColor().use {
-            Throw.ifFalse("color", it.initialize(color), "Invalid color specified")
+            throwIfFalse("color", it.initialize(color), "Invalid color specified")
             initialize(it)
         }
     }

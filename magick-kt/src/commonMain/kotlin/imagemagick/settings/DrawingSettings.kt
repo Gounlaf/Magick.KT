@@ -157,11 +157,11 @@ public class DrawingSettings internal constructor() {
                 instance.setAffine(it.scaleX, it.scaleY, it.shearX, it.shearY, it.translateX, it.translateY)
             }
 
-            fillPattern?.let { MagickImage.nativeInstance(it) }?.let { instance.setFillPattern(it) }
+            fillPattern?.let { instance.setFillPattern(MagickImage.nativeInstance(it)) }
 
             strokeDashArray?.let { instance.setStrokeDashArray(it) }
 
-            strokePattern?.let { MagickImage.nativeInstance(it) }?.let { instance.setStrokePattern(it) }
+            strokePattern?.let { instance.setStrokePattern(MagickImage.nativeInstance(it)) }
 
             text.takeIf { it.isNotNullOrEmpty() }?.let { instance.setText(it) }
         }

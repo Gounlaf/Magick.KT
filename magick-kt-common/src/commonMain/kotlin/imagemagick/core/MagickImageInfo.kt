@@ -4,11 +4,14 @@ import imagemagick.core.enums.ColorSpace
 import imagemagick.core.enums.CompressionMethod
 import imagemagick.core.enums.Interlace
 import imagemagick.core.enums.MagickFormat
-import imagemagick.core.types.Density
 import imagemagick.core.exceptions.MagickException
+import imagemagick.core.types.Density
 import okio.Path
 import okio.Source
 
+/**
+ * Interface that contains basic information about an image.
+ */
 public interface MagickImageInfo {
     /** Gets the color space of the image. */
     public val colorSpace: ColorSpace

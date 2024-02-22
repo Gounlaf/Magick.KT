@@ -1,7 +1,7 @@
 package imagemagick.core.types
 
 import imagemagick.core.enums.DensityUnit
-import imagemagick.exceptions.Throw
+import imagemagick.exceptions.throwIfEmpty
 import imagemagick.helpers.toString
 
 /**
@@ -13,13 +13,13 @@ import imagemagick.helpers.toString
  * @property y The y resolution.
  * @property units The units.
  */
-data class Density(val x: Double, val y: Double, val units: DensityUnit) {
+public data class Density(val x: Double, val y: Double, val units: DensityUnit) {
     /**
      * Initializes a new instance of the [Density] class with the density set to inches.
      *
      * @param xy The x and y.
      */
-    constructor(xy: Number) : this(xy.toDouble(), xy.toDouble())
+    public constructor(xy: Number) : this(xy.toDouble(), xy.toDouble())
 
     /**
      * Initializes a new instance of the [Density] class.
@@ -27,7 +27,7 @@ data class Density(val x: Double, val y: Double, val units: DensityUnit) {
      * @param xy The x and y.
      * @param units The units.
      */
-    constructor(xy: Number, units: DensityUnit) : this(xy.toDouble(), xy.toDouble(), units)
+    public constructor(xy: Number, units: DensityUnit) : this(xy.toDouble(), xy.toDouble(), units)
 
     /**
      * Initializes a new instance of the [Density] class with the density set to [DensityUnit.PIXELS_PER_INCH].
@@ -35,7 +35,7 @@ data class Density(val x: Double, val y: Double, val units: DensityUnit) {
      * @param x The x.
      * @param y The y.
      */
-    constructor(x: Number, y: Number) : this(x.toDouble(), y.toDouble(), DensityUnit.PIXELS_PER_INCH)
+    public constructor(x: Number, y: Number) : this(x.toDouble(), y.toDouble(), DensityUnit.PIXELS_PER_INCH)
 
     /**
      * Initializes a new instance of the [Density] class.
@@ -44,7 +44,7 @@ data class Density(val x: Double, val y: Double, val units: DensityUnit) {
      * @param y The y.
      * @param units The units.
      */
-    constructor(x: Number, y: Number, units: DensityUnit) : this(x.toDouble(), y.toDouble(), units)
+    public constructor(x: Number, y: Number, units: DensityUnit) : this(x.toDouble(), y.toDouble(), units)
 
     /**
      * Returns a string that represents the current [Density].
@@ -60,7 +60,7 @@ data class Density(val x: Double, val y: Double, val units: DensityUnit) {
      *
      * @return A string that represents the current [Density].
      */
-    fun toString(units: DensityUnit): String = when {
+    public fun toString(units: DensityUnit): String = when {
         this.units == units || units == DensityUnit.UNDEFINED -> Companion.toString(x, y, units)
         this.units == DensityUnit.PIXELS_PER_CENTIMETER && units == DensityUnit.PIXELS_PER_INCH -> toString(
             x * 2.54,
@@ -71,7 +71,7 @@ data class Density(val x: Double, val y: Double, val units: DensityUnit) {
         else -> toString(x / 2.54, y / 2.54, units)
     }
 
-    companion object {
+    public companion object {
         private val REGEX = Regex(
             pattern = "(?<x>[0-9]*\\.[0-9]+)x(?<y>[0-9]*\\.[0-9]+)(?>\\s(?<unit>cm|inch))?",
             options = setOf(RegexOption.IGNORE_CASE)
@@ -83,8 +83,8 @@ data class Density(val x: Double, val y: Double, val units: DensityUnit) {
          * @param value Density specifications in the form: `<x>x<y>[inch/cm]` (where x, y are numbers).
          */
         @Throws(IllegalArgumentException::class)
-        fun create(value: String): Density {
-            Throw.ifEmpty(value)
+        public fun create(value: String): Density {
+            throwIfEmpty(value)
 
             val density = try {
                 val match = REGEX.matchEntire(value)

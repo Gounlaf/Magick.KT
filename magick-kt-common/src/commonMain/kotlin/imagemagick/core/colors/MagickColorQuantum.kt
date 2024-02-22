@@ -2,36 +2,36 @@ package imagemagick.core.colors
 
 import imagemagick.core.types.Percentage
 
-interface MagickColorQuantum<TQuantumType> : Comparable<MagickColorQuantum<TQuantumType>?> where TQuantumType : Any {
+public interface MagickColorQuantum<TQuantumType> : Comparable<MagickColorQuantum<TQuantumType>?> where TQuantumType : Any {
     /**
      * Gets or sets the alpha component value of this color.
      */
-    var a: TQuantumType
+    public var a: TQuantumType
 
     /**
      * Gets or sets the blue component value of this color.
      */
-    var b: TQuantumType
+    public var b: TQuantumType
 
     /**
      * Gets or sets the green component value of this color.
      */
-    var g: TQuantumType
+    public var g: TQuantumType
 
     /**
      * Gets a value indicating whether the color is a CMYK color.
      */
-    val isCmyk: Boolean
+    public val isCmyk: Boolean
 
     /**
      * Gets or sets the key (black) component value of this color.
      */
-    var k: TQuantumType
+    public var k: TQuantumType
 
     /**
      * Gets or sets the red component value of this color.
      */
-    var r: TQuantumType
+    public var r: TQuantumType
 
     /**
      * Determines whether the specified color is fuzzy equal to the current color.
@@ -40,7 +40,7 @@ interface MagickColorQuantum<TQuantumType> : Comparable<MagickColorQuantum<TQuan
      * @param fuzz The fuzz factor.
      * @return True when the specified color is fuzzy equal to the current instance.
      */
-    fun fuzzyEquals(
+    public fun fuzzyEquals(
         other: MagickColorQuantum<TQuantumType>,
         fuzz: Percentage,
     ): Boolean
@@ -53,7 +53,7 @@ interface MagickColorQuantum<TQuantumType> : Comparable<MagickColorQuantum<TQuan
      * @param blue Blue component value of this color.
      * @param alpha Alpha component value of this color.
      */
-    fun setFromUBytes(
+    public fun setFromUBytes(
         red: UByte,
         green: UByte,
         blue: UByte,
@@ -65,7 +65,7 @@ interface MagickColorQuantum<TQuantumType> : Comparable<MagickColorQuantum<TQuan
      *
      * @return The [UByte] array.
      */
-    fun toUByteArray(): UByteArray
+    public fun toUByteArray(): UByteArray
 
     /**
      * Converts the value of this instance to a hexadecimal string that will not include the alpha channel if it is opaque.
@@ -75,14 +75,14 @@ interface MagickColorQuantum<TQuantumType> : Comparable<MagickColorQuantum<TQuan
      * @throws UnsupportedOperationException for CMYK colors
      */
     @Throws(UnsupportedOperationException::class)
-    fun toHexString(): String
+    public fun toHexString(): String
 
     /**
      * Converts the value of this instance to a string representation that will not include the alpha channel if it is opaque.
      *
      * @return The [String].
      */
-    fun toShortString(): String
+    public fun toShortString(): String
 
     /**
      * Converts the value of this instance to a string representation.

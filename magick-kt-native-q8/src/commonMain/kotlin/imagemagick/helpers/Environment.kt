@@ -22,5 +22,5 @@ public object Environment {
     public fun setEnv(
         name: String,
         value: String,
-    ) = Environment_SetEnv(name, value)
+    ): Unit = Environment_SetEnv(name, value)
 }

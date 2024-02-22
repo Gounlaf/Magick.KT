@@ -1,6 +1,5 @@
 package imagemagick.colors
 
-import imagemagick.Quantum
 import imagemagick.QuantumType
 import imagemagick.helpers.hexToUByte
 import imagemagick.quantum

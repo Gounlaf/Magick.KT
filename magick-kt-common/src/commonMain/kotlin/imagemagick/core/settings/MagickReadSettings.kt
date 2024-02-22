@@ -6,34 +6,34 @@ import imagemagick.core.types.MagickGeometry
 /**
  * Class that contains setting for when an image is being read.
  */
-interface MagickReadSettings<TQuantumType> : MagickSettings<TQuantumType> where TQuantumType : Any {
+public interface MagickReadSettings<TQuantumType> : MagickSettings<TQuantumType> where TQuantumType : Any {
     /** Gets or sets the defines that should be set before the image is read. */
-//    var defines: IReadDefines?
+//    public var defines: IReadDefines?
 
     /** Gets or sets the specified area to extract from the image. */
-    var extractArea: MagickGeometry
+    public var extractArea: MagickGeometry
 
     /** Gets or sets the index of the image to read from a multi layer/frame image. */
-    var frameIndex: UInt?
+    public var frameIndex: UInt?
 //
     /** Gets or sets the number of images to read from a multi layer/frame image. */
-    var frameCount: UInt?
+    public var frameCount: UInt?
 
     /** Gets or sets the height. */
-    var height: UInt?
+    public var height: UInt?
 
     /**
      * Gets or sets a value indicating whether the exif profile should be used to update some of the
      * properties of the image (e.g. <see cref="IMagickImage.Density"/>, <see cref="IMagickImage.Orientation"/>).
      */
-    var syncImageWithExifProfile: Boolean
+    public var syncImageWithExifProfile: Boolean
 
     /**
      * Gets or sets a value indicating whether the monochrome reader shoul be used. This is
      * supported by: PCL, PDF, PS and XPS.
      */
-    var useMonochrome: Boolean
+    public var useMonochrome: Boolean
 
     /** Gets or sets the width. */
-    var width: UInt?
+    public var width: UInt?
 }

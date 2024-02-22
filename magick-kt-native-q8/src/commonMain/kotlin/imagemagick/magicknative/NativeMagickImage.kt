@@ -11,6 +11,7 @@ import imagemagick.core.enums.CompositeOperator
 import imagemagick.core.enums.CompressionMethod
 import imagemagick.core.enums.DensityUnit
 import imagemagick.core.enums.Endian
+import imagemagick.core.enums.ErrorMetric
 import imagemagick.core.enums.FilterType
 import imagemagick.core.enums.GifDisposeMethod
 import imagemagick.core.enums.Gravity
@@ -24,26 +25,29 @@ import imagemagick.core.enums.VirtualPixelMethod
 import imagemagick.core.exceptions.MagickException
 import imagemagick.core.toMagick
 import imagemagick.core.toNative
-import imagemagick.magicknative.NativeChannels.Companion.toNative
+import imagemagick.core.types.Percentage
+import imagemagick.magicknative.NativeChannels.toNative
 import imagemagick.magicknative.colors.NativeMagickColor
 import imagemagick.magicknative.exceptions.ExceptionInfoPtrVar
 import imagemagick.magicknative.exceptions.withException
+import imagemagick.magicknative.matrices.NativeDoubleMatrix
 import imagemagick.magicknative.settings.NativeDrawingSettings
 import imagemagick.magicknative.types.NativeMagickRectangle
 import imagemagick.magicknative.types.NativePrimaryInfo
 import kotlin.contracts.ExperimentalContracts
 import kotlin.experimental.ExperimentalNativeApi
 import kotlinx.cinterop.CPointer
+import kotlinx.cinterop.DoubleVar
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.convert
-import kotlinx.cinterop.cstr
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.pointed
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.toKString
 import kotlinx.cinterop.usePinned
+import kotlinx.cinterop.value
 import kotlinx.cinterop.zeroValue
 import libMagickNative.Image
 import libMagickNative.MagickImage_AdaptiveBlur
@@ -71,10 +75,18 @@ import libMagickNative.MagickImage_BaseWidth_Get
 import libMagickNative.MagickImage_BilateralBlur
 import libMagickNative.MagickImage_BlackPointCompensation_Get
 import libMagickNative.MagickImage_BlackPointCompensation_Set
+import libMagickNative.MagickImage_BlackThreshold
+import libMagickNative.MagickImage_BlueShift
+import libMagickNative.MagickImage_Blur
+import libMagickNative.MagickImage_Border
 import libMagickNative.MagickImage_BorderColor_Get
 import libMagickNative.MagickImage_BorderColor_Set
 import libMagickNative.MagickImage_BoundingBox_Get
+import libMagickNative.MagickImage_BrightnessContrast
+import libMagickNative.MagickImage_CannyEdge
 import libMagickNative.MagickImage_ChannelCount_Get
+import libMagickNative.MagickImage_Charcoal
+import libMagickNative.MagickImage_Chop
 import libMagickNative.MagickImage_ChromaBlue_Get
 import libMagickNative.MagickImage_ChromaBlue_Set
 import libMagickNative.MagickImage_ChromaGreen_Get
@@ -83,21 +95,32 @@ import libMagickNative.MagickImage_ChromaRed_Get
 import libMagickNative.MagickImage_ChromaRed_Set
 import libMagickNative.MagickImage_ChromaWhite_Get
 import libMagickNative.MagickImage_ChromaWhite_Set
+import libMagickNative.MagickImage_Clahe
+import libMagickNative.MagickImage_Clamp
 import libMagickNative.MagickImage_ClassType_Get
 import libMagickNative.MagickImage_ClassType_Set
+import libMagickNative.MagickImage_ClipPath
 import libMagickNative.MagickImage_Clone
+import libMagickNative.MagickImage_Clut
+import libMagickNative.MagickImage_ColorDecisionList
 import libMagickNative.MagickImage_ColorFuzz_Get
 import libMagickNative.MagickImage_ColorFuzz_Set
+import libMagickNative.MagickImage_ColorMatrix
 import libMagickNative.MagickImage_ColorSpace_Get
 import libMagickNative.MagickImage_ColorSpace_Set
 import libMagickNative.MagickImage_ColorType_Get
 import libMagickNative.MagickImage_ColorType_Set
 import libMagickNative.MagickImage_ColormapSize_Get
 import libMagickNative.MagickImage_ColormapSize_Set
+import libMagickNative.MagickImage_Compare
+import libMagickNative.MagickImage_CompareDistortion
 import libMagickNative.MagickImage_Compose_Get
 import libMagickNative.MagickImage_Compose_Set
+import libMagickNative.MagickImage_Composite
+import libMagickNative.MagickImage_CompositeGravity
 import libMagickNative.MagickImage_Compression_Get
 import libMagickNative.MagickImage_Compression_Set
+import libMagickNative.MagickImage_Contrast
 import libMagickNative.MagickImage_Create
 import libMagickNative.MagickImage_Depth_Get
 import libMagickNative.MagickImage_Depth_Set
@@ -155,7 +178,9 @@ import libMagickNative.MagickImage_ResolutionX_Set
 import libMagickNative.MagickImage_ResolutionY_Get
 import libMagickNative.MagickImage_ResolutionY_Set
 import libMagickNative.MagickImage_SetAlpha
+import libMagickNative.MagickImage_SetArtifact
 import libMagickNative.MagickImage_SetAttribute
+import libMagickNative.MagickImage_SetColorMetric
 import libMagickNative.MagickImage_Signature_Get
 import libMagickNative.MagickImage_TotalColors_Get
 import libMagickNative.MagickImage_VirtualPixelMethod_Get
@@ -182,7 +207,7 @@ public class NativeMagickImage : NativeInstance<Image>, AutoCloseable {
 
             return field
         }
-        private set(value) {
+        set(value) {
             if (field !== zero) {
                 field.dispose()
             }
@@ -348,6 +373,15 @@ public class NativeMagickImage : NativeInstance<Image>, AutoCloseable {
         get() = ptr.matteColor()
         set(value) = ptr.matteColor(value)
 
+    public inline val meanErrorPerPixel: Double
+        get() = ptr.meanErrorPerPixel()
+
+    public inline val normalizedMaximumError: Double
+        get() = ptr.normalizedMaximumError()
+
+    public inline val normalizedMeanError: Double
+        get() = ptr.normalizedMeanError()
+
     public inline var orientation: OrientationType
         get() = ptr.orientation()
         set(value) = ptr.orientation(value)
@@ -405,21 +439,21 @@ public class NativeMagickImage : NativeInstance<Image>, AutoCloseable {
 
     @Throws(MagickException::class)
     public fun adaptiveSharpen(radius: Double, sigma: Double, channels: Channels): Unit {
-        ptr.adaptiveSharpen(radius, sigma, channels.toNative())?.let {
+        ptr.adaptiveSharpen(radius, sigma, channels)?.let {
             ptr = it
         }
     }
 
     @Throws(MagickException::class)
     public fun adaptiveThreshold(with: UInt, height: UInt, bias: Double, channels: Channels): Unit {
-        ptr.adaptiveThreshold(with.toULong(), height.toULong(), bias, channels.toNative())?.let {
+        ptr.adaptiveThreshold(with.toULong(), height.toULong(), bias, channels)?.let {
             ptr = it
         }
     }
 
     @Throws(MagickException::class)
     public fun addNoise(noiseType: NoiseType, attenuate: Double, channels: Channels): Unit {
-        ptr.addNoise(noiseType, attenuate, channels.toNative())?.let {
+        ptr.addNoise(noiseType, attenuate, channels)?.let {
             ptr = it
         }
     }
@@ -452,10 +486,10 @@ public class NativeMagickImage : NativeInstance<Image>, AutoCloseable {
         ptr.annotateGravity(settings, text, gravity)
 
     @Throws(MagickException::class)
-    public inline fun autoGamma(channels: Channels): Unit = ptr.autoGamma(channels.toNative())
+    public inline fun autoGamma(channels: Channels): Unit = ptr.autoGamma(channels)
 
     @Throws(MagickException::class)
-    public inline fun autoLevel(channels: Channels): Unit = ptr.autoLevel(channels.toNative())
+    public inline fun autoLevel(channels: Channels): Unit = ptr.autoLevel(channels)
 
     @Throws(MagickException::class)
     public inline fun autoOrient(): Unit = ptr.autoOrient()
@@ -465,10 +499,101 @@ public class NativeMagickImage : NativeInstance<Image>, AutoCloseable {
 
     @Throws(MagickException::class)
     public fun bilateralBlur(width: UInt, height: UInt, intensitySigma: Double, spatialSigma: Double) {
-        ptr.bilateralBlur(width.toULong(), height.toULong(), intensitySigma, spatialSigma)?.let {
-            ptr = it
-        }
+        ptr.bilateralBlur(width.toULong(), height.toULong(), intensitySigma, spatialSigma)?.let { ptr = it }
     }
+
+    @Throws(MagickException::class)
+    public inline fun blackThreshold(threshold: String, channels: Channels): Unit =
+        ptr.blackThreshold(threshold, channels)
+
+    @Throws(MagickException::class)
+    public fun blueShift(factor: Double): Unit {
+        ptr.blueShift(factor)?.let { ptr = it }
+    }
+
+    @Throws(MagickException::class)
+    public fun blur(radius: Double, sigma: Double, channels: Channels): Unit {
+        ptr.blur(radius, sigma, channels)?.let { ptr = it }
+    }
+
+    @Throws(MagickException::class)
+    public fun border(value: NativeMagickRectangle): Unit {
+        ptr.border(value)?.let { ptr = it }
+    }
+
+    @Throws(MagickException::class)
+    public inline fun brightnessContrast(brigthness: Double, contrast: Double, channels: Channels): Unit =
+        ptr.brightnessContrast(brigthness, contrast, channels)
+
+    @Throws(MagickException::class)
+    public fun cannyEdge(radius: Double, sigma: Double, lower: Percentage, upper: Percentage): Unit {
+        ptr.cannyEdge(radius, sigma, lower.toDouble() / 100, upper.toDouble() / 100)?.let { ptr = it }
+    }
+
+    @Throws(MagickException::class)
+    public fun charcoal(radius: Double, sigma: Double): Unit {
+        ptr.charcoal(radius, sigma)?.let { ptr = it }
+    }
+
+    @Throws(MagickException::class)
+    public fun chop(geometry: NativeMagickRectangle): Unit {
+        ptr.chop(geometry)?.let { ptr = it }
+    }
+
+    @Throws(MagickException::class)
+    public inline fun clahe(xTiles: ULong, yTiles: ULong, numberBins: ULong, clipLimit: Double): Unit =
+        ptr.clahe(xTiles, yTiles, numberBins, clipLimit)
+
+    @Throws(MagickException::class)
+    public inline fun clamp(channels: Channels): Unit = ptr.clamp(channels)
+
+    @Throws(MagickException::class)
+    public inline fun clipPath(pathName: String, inside: Boolean): Unit = ptr.clipPath(pathName, inside)
+
+    @Throws(MagickException::class)
+    public inline fun clut(image: NativeMagickImage, method: PixelInterpolateMethod, channels: Channels): Unit =
+        ptr.clut(image, method, channels)
+
+    @Throws(MagickException::class)
+    public inline fun colorDecisionList(fileName: String): Unit = ptr.colorDecisionList(fileName)
+
+    @Throws(MagickException::class)
+    public fun colorMatrix(matrix: NativeDoubleMatrix): Unit {
+        ptr.colorMatrix(matrix)?.let { ptr = it }
+    }
+
+    @Throws(MagickException::class)
+    public inline fun compare(image: NativeMagickImage, metric: ErrorMetric, channels: Channels): CompareResult =
+        ptr.compare(image, metric, channels)
+
+    @Throws(MagickException::class)
+    public inline fun compareDistortion(
+        image: NativeMagickImage,
+        metric: ErrorMetric,
+        channels: Channels,
+    ): Double = ptr.compareDistortion(image, metric, channels)
+
+    @Throws(MagickException::class)
+    public inline fun composite(
+        image: NativeMagickImage,
+        x: Long,
+        y: Long,
+        compose: CompositeOperator,
+        channels: Channels,
+    ): Unit = ptr.composite(image, x, y, compose, channels)
+
+    @Throws(MagickException::class)
+    public inline fun compositeGravity(
+        image: NativeMagickImage,
+        gravity: Gravity,
+        x: Long,
+        y: Long,
+        compose: CompositeOperator,
+        channels: Channels,
+    ): Unit = ptr.compositeGravity(image, gravity, x, y, compose, channels)
+
+    @Throws(MagickException::class)
+    public inline fun contrast(enhance: Boolean): Unit = ptr.contrast(enhance)
 
     @Throws(MagickException::class)
     public inline fun getAttribute(name: String): String? = ptr.getAttribute(name)
@@ -631,10 +756,21 @@ public class NativeMagickImage : NativeInstance<Image>, AutoCloseable {
     @Throws(MagickException::class)
     public inline fun setAlpha(value: AlphaOption): Unit = ptr.setAlpha(value)
 
+    public inline fun setArtifact(name: String, value: String): Unit = ptr.setArtifact(name, value)
+
     @Throws(MagickException::class)
     public inline fun setAttribute(name: String, value: String): Unit = ptr.setAttribute(name, value)
 
+    @Throws(MagickException::class)
+    public inline fun setColorMetric(image: NativeMagickImage): Boolean = ptr.setColorMetric(image)
+
     public companion object {
+        public data class CompareResult(
+            /** Difference image instance */
+            public val result: CPointer<Image>?,
+            public val distortion: Double,
+        )
+
         internal val zero: CPointer<Image> = memScoped {
             zeroValue<Image>().ptr
         }
@@ -966,9 +1102,9 @@ public class NativeMagickImage : NativeInstance<Image>, AutoCloseable {
         public inline fun CPointer<Image>.adaptiveSharpen(
             radius: Double,
             sigma: Double,
-            channels: NativeChannels,
+            channels: Channels,
         ): CPointer<Image>? = withException { _, exceptionInfo ->
-            MagickImage_AdaptiveSharpen(this@adaptiveSharpen, radius, sigma, channels.value, exceptionInfo.ptr)
+            MagickImage_AdaptiveSharpen(this@adaptiveSharpen, radius, sigma, channels.toNative(), exceptionInfo.ptr)
         }
 
         @Throws(MagickException::class)
@@ -976,18 +1112,25 @@ public class NativeMagickImage : NativeInstance<Image>, AutoCloseable {
             with: ULong,
             height: ULong,
             bias: Double,
-            channels: NativeChannels,
+            channels: Channels,
         ): CPointer<Image>? = withException { _, exceptionInfo ->
-            MagickImage_AdaptiveThreshold(this@adaptiveThreshold, with, height, bias, channels.value, exceptionInfo.ptr)
+            MagickImage_AdaptiveThreshold(
+                this@adaptiveThreshold,
+                with,
+                height,
+                bias,
+                channels.toNative(),
+                exceptionInfo.ptr
+            )
         }
 
         @Throws(MagickException::class)
         public inline fun CPointer<Image>.addNoise(
             noiseType: NoiseType,
             attenuate: Double,
-            channels: NativeChannels,
+            channels: Channels,
         ): CPointer<Image>? = withException { _, exceptionInfo ->
-            MagickImage_AddNoise(this@addNoise, noiseType.toNative(), attenuate, channels.value, exceptionInfo.ptr)
+            MagickImage_AddNoise(this@addNoise, noiseType.toNative(), attenuate, channels.toNative(), exceptionInfo.ptr)
         }
 
         @Throws(MagickException::class)
@@ -1015,8 +1158,8 @@ public class NativeMagickImage : NativeInstance<Image>, AutoCloseable {
             MagickImage_Annotate(
                 this@annotate,
                 settings.ptr,
-                text.cstr,
-                boundingArea.cstr,
+                text,
+                boundingArea,
                 gravity.toNative(),
                 degrees,
                 exceptionInfo.ptr
@@ -1030,20 +1173,20 @@ public class NativeMagickImage : NativeInstance<Image>, AutoCloseable {
             gravity: Gravity,
         ): Unit = withException { _, exceptionInfo ->
             MagickImage_AnnotateGravity(
-                this@annotateGravity, settings.ptr, text.cstr, gravity.toNative(), exceptionInfo.ptr
+                this@annotateGravity, settings.ptr, text, gravity.toNative(), exceptionInfo.ptr
             )
         }
 
         @Throws(MagickException::class)
-        public inline fun CPointer<Image>.autoGamma(channels: NativeChannels): Unit =
+        public inline fun CPointer<Image>.autoGamma(channels: Channels): Unit =
             withException { _, exceptionInfo ->
-                MagickImage_AutoGamma(this@autoGamma, channels.value, exceptionInfo.ptr)
+                MagickImage_AutoGamma(this@autoGamma, channels.toNative(), exceptionInfo.ptr)
             }
 
         @Throws(MagickException::class)
-        public inline fun CPointer<Image>.autoLevel(channels: NativeChannels): Unit =
+        public inline fun CPointer<Image>.autoLevel(channels: Channels): Unit =
             withException { _, exceptionInfo ->
-                MagickImage_AutoLevel(this@autoLevel, channels.value, exceptionInfo.ptr)
+                MagickImage_AutoLevel(this@autoLevel, channels.toNative(), exceptionInfo.ptr)
             }
 
         @Throws(MagickException::class)
@@ -1054,7 +1197,7 @@ public class NativeMagickImage : NativeInstance<Image>, AutoCloseable {
         @Throws(MagickException::class)
         public inline fun CPointer<Image>.autoThreshold(method: AutoThresholdMethod): Unit =
             withException { _, exceptionInfo ->
-                MagickImage_AutoThreshold(this@autoThreshold, method.toNativeEnum(), exceptionInfo.ptr)
+                MagickImage_AutoThreshold(this@autoThreshold, method.toNative(), exceptionInfo.ptr)
             }
 
         @Throws(MagickException::class)
@@ -1072,6 +1215,187 @@ public class NativeMagickImage : NativeInstance<Image>, AutoCloseable {
                 spatialSigma,
                 exceptionInfo.ptr
             )
+        }
+
+        @Throws(MagickException::class)
+        public inline fun CPointer<Image>.blackThreshold(threshold: String, channels: Channels): Unit =
+            withException { _, exceptionInfo ->
+                MagickImage_BlackThreshold(this@blackThreshold, threshold, channels.toNative(), exceptionInfo.ptr)
+            }
+
+        @Throws(MagickException::class)
+        public inline fun CPointer<Image>.blueShift(factor: Double): CPointer<Image>? =
+            withException { _, exceptionInfo ->
+                MagickImage_BlueShift(this@blueShift, factor, exceptionInfo.ptr)
+            }
+
+        @Throws(MagickException::class)
+        public inline fun CPointer<Image>.blur(
+            radius: Double,
+            sigma: Double,
+            channels: Channels,
+        ): CPointer<Image>? =
+            withException { _, exceptionInfo ->
+                MagickImage_Blur(this@blur, radius, sigma, channels.toNative(), exceptionInfo.ptr)
+            }
+
+        @Throws(MagickException::class)
+        public inline fun CPointer<Image>.border(value: NativeMagickRectangle): CPointer<Image>? =
+            withException { _, exceptionInfo ->
+                MagickImage_Border(this@border, value.ptr, exceptionInfo.ptr)
+            }
+
+        @Throws(MagickException::class)
+        public inline fun CPointer<Image>.brightnessContrast(
+            brigthness: Double,
+            contrast: Double,
+            channels: Channels,
+        ): Unit = withException { _, exceptionInfo ->
+            MagickImage_BrightnessContrast(
+                this@brightnessContrast,
+                brigthness,
+                contrast,
+                channels.toNative(),
+                exceptionInfo.ptr
+            )
+        }
+
+        @Throws(MagickException::class)
+        public inline fun CPointer<Image>.cannyEdge(
+            radius: Double,
+            sigma: Double,
+            lower: Double,
+            upper: Double,
+        ): CPointer<Image>? = withException { _, exceptionInfo ->
+            MagickImage_CannyEdge(this@cannyEdge, radius, sigma, lower, upper, exceptionInfo.ptr)
+        }
+
+        @Throws(MagickException::class)
+        public inline fun CPointer<Image>.charcoal(radius: Double, sigma: Double): CPointer<Image>? =
+            withException { _, exceptionInfo ->
+                MagickImage_Charcoal(this@charcoal, radius, sigma, exceptionInfo.ptr)
+            }
+
+        @Throws(MagickException::class)
+        public inline fun CPointer<Image>.chop(geometry: NativeMagickRectangle): CPointer<Image>? =
+            withException { _, exceptionInfo ->
+                MagickImage_Chop(this@chop, geometry.ptr, exceptionInfo.ptr)
+            }
+
+        @Throws(MagickException::class)
+        public inline fun CPointer<Image>.clahe(
+            xTiles: size_t,
+            yTiles: size_t,
+            numberBins: size_t,
+            clipLimit: Double,
+        ): Unit = withException { _, exceptionInfo ->
+            MagickImage_Clahe(this@clahe, xTiles, yTiles, numberBins, clipLimit, exceptionInfo.ptr)
+        }
+
+        @Throws(MagickException::class)
+        public inline fun CPointer<Image>.clamp(channels: Channels): Unit = withException { _, exceptionInfo ->
+            MagickImage_Clamp(this@clamp, channels.toNative(), exceptionInfo.ptr)
+        }
+
+        @Throws(MagickException::class)
+        public inline fun CPointer<Image>.clipPath(pathName: String, inside: Boolean): Unit =
+            withException { _, exceptionInfo ->
+                MagickImage_ClipPath(this@clipPath, pathName, inside.toNative(), exceptionInfo.ptr)
+            }
+
+        @Throws(MagickException::class)
+        public inline fun CPointer<Image>.clut(
+            image: NativeMagickImage,
+            method: PixelInterpolateMethod,
+            channels: Channels,
+        ): Unit = withException { _, exceptionInfo ->
+            MagickImage_Clut(this@clut, image.ptr, method.toNative(), channels.toNative(), exceptionInfo.ptr)
+        }
+
+        @Throws(MagickException::class)
+        public inline fun CPointer<Image>.colorDecisionList(fileName: String): Unit =
+            withException { _, exceptionInfo ->
+                MagickImage_ColorDecisionList(this@colorDecisionList, fileName, exceptionInfo.ptr)
+            }
+
+        @Throws(MagickException::class)
+        public inline fun CPointer<Image>.colorMatrix(matrix: NativeDoubleMatrix): CPointer<Image>? =
+            withException { _, exceptionInfo ->
+                MagickImage_ColorMatrix(this@colorMatrix, matrix.ptr, exceptionInfo.ptr)
+            }
+
+        @Throws(MagickException::class)
+        public inline fun CPointer<Image>.compare(
+            image: NativeMagickImage,
+            metric: ErrorMetric,
+            channels: Channels,
+        ): CompareResult = withException { placement, exceptionInfo ->
+            val distortion = placement.alloc<DoubleVar>()
+
+            val differenceImage = MagickImage_Compare(
+                this,
+                image.ptr,
+                metric.toNative(),
+                channels.toNative(),
+                distortion.ptr,
+                exceptionInfo.ptr
+            )
+
+            CompareResult(differenceImage, distortion.value)
+        }
+
+        @Throws(MagickException::class)
+        public inline fun CPointer<Image>.compareDistortion(
+            image: NativeMagickImage,
+            metric: ErrorMetric,
+            channels: Channels,
+        ): Double = withException { _, exceptionInfo ->
+            MagickImage_CompareDistortion(this, image.ptr, metric.toNative(), channels.toNative(), exceptionInfo.ptr)
+        }
+
+        @Throws(MagickException::class)
+        public inline fun CPointer<Image>.composite(
+            image: NativeMagickImage,
+            x: Long,
+            y: Long,
+            compose: CompositeOperator,
+            channels: Channels,
+        ): Unit = withException { _, exceptionInfo ->
+            MagickImage_Composite(
+                this@composite,
+                image.ptr,
+                x,
+                y,
+                compose.toNative(),
+                channels.toNative(),
+                exceptionInfo.ptr
+            )
+        }
+
+        @Throws(MagickException::class)
+        public inline fun CPointer<Image>.compositeGravity(
+            image: NativeMagickImage,
+            gravity: Gravity,
+            x: Long,
+            y: Long,
+            compose: CompositeOperator,
+            channels: Channels,
+        ): Unit = withException { _, exceptionInfo ->
+            MagickImage_CompositeGravity(
+                this@compositeGravity,
+                image.ptr,
+                gravity.toNative(),
+                x,
+                y,
+                compose.toNative(),
+                channels.toNative(),
+                exceptionInfo.ptr
+            )
+        }
+
+        @Throws(MagickException::class)
+        public inline fun CPointer<Image>.contrast(enhance: Boolean): Unit = withException { _, exceptionInfo ->
+            MagickImage_Contrast(this@contrast, enhance.toNative(), exceptionInfo.ptr)
         }
 
         @Throws(MagickException::class)
@@ -1104,9 +1428,18 @@ public class NativeMagickImage : NativeInstance<Image>, AutoCloseable {
         public inline fun CPointer<Image>.resetProfileIterator(): Unit = MagickImage_ResetProfileIterator(this)
 
         @Throws(MagickException::class)
+        public inline fun CPointer<Image>.setColorMetric(image: NativeMagickImage): Boolean =
+            withException { _, exceptionInfo ->
+                MagickImage_SetColorMetric(this@setColorMetric, image.ptr, exceptionInfo.ptr).toPrimitive()
+            }
+
+        @Throws(MagickException::class)
         public inline fun CPointer<Image>.setAlpha(value: AlphaOption): Unit = withException { _, exceptionInfo ->
             MagickImage_SetAlpha(this@setAlpha, value.toNative(), exceptionInfo.ptr)
         }
+
+        public inline fun CPointer<Image>.setArtifact(name: String, value: String): Unit =
+            MagickImage_SetArtifact(this@setArtifact, name, value)
 
         @Throws(MagickException::class)
         public inline fun CPointer<Image>.setAttribute(name: String, value: String): Unit =

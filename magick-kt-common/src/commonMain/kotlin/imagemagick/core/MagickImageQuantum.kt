@@ -1,27 +1,35 @@
 package imagemagick.core
 
+import imagemagick.core.enums.Channels
 import imagemagick.core.exceptions.MagickException
 import okio.Path
 import okio.Source
-import imagemagick.core.colors.MagickColorQuantum as IMagickColor
+import imagemagick.core.MagickImage as IMagickImage
+import imagemagick.core.colors.MagickColorQuantum as IMagickColorQuantum
 import imagemagick.core.settings.MagickReadSettings as IMagickReadSettings
+import imagemagick.core.settings.CompareSettingsQuantum as ICompareSettingsQuantum
 import imagemagick.core.settings.MagickSettings as IMagickSettings
 
-public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumType : Any {
+/**
+ * Interface that represents an ImageMagick image.
+ *
+ * @param TQuantumType The quantum type.
+ */
+public interface MagickImageQuantum<TQuantumType> : IMagickImage where TQuantumType : Any {
     /**
      * Gets or sets the background color of the image.
      */
-    public var backgroundColor: IMagickColor<TQuantumType>?
+    public var backgroundColor: IMagickColorQuantum<TQuantumType>?
 
     /**
      * Gets or sets the border color of the image.
      */
-    public var borderColor: IMagickColor<TQuantumType>?
+    public var borderColor: IMagickColorQuantum<TQuantumType>?
 
     /**
      * Gets or sets the matte color.
      */
-    public var matteColor: IMagickColor<TQuantumType>?
+    public var matteColor: IMagickColorQuantum<TQuantumType>?
 
     /**
      * Gets the settings for this instance.
@@ -43,7 +51,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @return A clone of the current image.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    IMagickImage<TQuantumType> Clone(IMagickGeometry geometry);
+//    @Throws(MagickException::class)
+//    MagickImageQuantum<TQuantumType> Clone(IMagickGeometry geometry);
 //
 //    /**
 //     * Creates a clone of the current image.
@@ -52,7 +61,7 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param height The height of the area to clone.
 //     * @return A clone of the current image.
 //     */
-//    IMagickImage<TQuantumType> Clone(int width, int height);
+//    MagickImageQuantum<TQuantumType> Clone(int width, int height);
 //
 //    /**
 //     * Creates a clone of the current image.
@@ -63,7 +72,7 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param height The height of the area to clone.
 //     * @return A clone of the current image.
 //     */
-//    IMagickImage<TQuantumType> Clone(int x, int y, int width, int height);
+//    MagickImageQuantum<TQuantumType> Clone(int x, int y, int width, int height);
 //
 //    /**
 //     * Sets the alpha channel to the specified color.
@@ -71,7 +80,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param color The color to use.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun colorAlpha(color: IMagickColor<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun colorAlpha(color: IMagickColorQuantum<TQuantumType>)
 //
 //    /**
 //     * Colorize image with the specified color, using specified percent alpha.
@@ -80,7 +90,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param alpha The alpha percentage.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun colorize(color: IMagickColor<TQuantumType>, alpha: Percentage)
+//    @Throws(MagickException::class)
+//    public fun colorize(color: IMagickColorQuantum<TQuantumType>, alpha: Percentage)
 //
 //    /**
 //     * Colorize image with the specified color, using specified percent alpha for red, green,
@@ -92,7 +103,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param alphaBlue The alpha percentage for blue.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun colorize(color: IMagickColor<TQuantumType>, alphaRed: Percentage, alphaGreen: Percentage, alphaBlue: Percentage)
+//    @Throws(MagickException::class)
+//    public fun colorize(color: IMagickColorQuantum<TQuantumType>, alphaRed: Percentage, alphaGreen: Percentage, alphaBlue: Percentage)
 //
 //    /**
 //     * Forces all pixels in the color range to white otherwise black.
@@ -100,31 +112,42 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param startColor The start color of the color range.
 //     * @param stopColor The stop color of the color range.
 //     */
-//    fun colorThreshold(startColor: IMagickColor<TQuantumType>, stopColor: IMagickColor<TQuantumType>)
-//
-//    /**
-//     * Returns the distortion based on the specified metric.
-//     *
-//     * @param image The other image to compare with this image.
-//     * @param settings The settings to use.
-//     * @param difference The image that will contain the difference.
-//     * @return The distortion based on the specified metric.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    fun compare(image: IMagickImage, settings: ICompareSettings<TQuantumType>, difference: IMagickImage): Double
-//
-//    /**
-//     * Returns the distortion based on the specified metric.
-//     *
-//     * @param image The other image to compare with this image.
-//     * @param settings The settings to use.
-//     * @param difference The image that will contain the difference.
-//     * @param channels The channel(s) to compare.
-//     * @return The distortion based on the specified metric.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    fun compare(image: IMagickImage, settings: ICompareSettings<TQuantumType>, difference: IMagickImage, channels: Channels): Double
-//
+//    public fun colorThreshold(startColor: IMagickColorQuantum<TQuantumType>, stopColor: IMagickColorQuantum<TQuantumType>)
+
+    /**
+     * Returns the distortion based on the specified metric.
+     *
+     * @param image The other image to compare with this image.
+     * @param settings The settings to use.
+     * @param difference The image that will contain the difference.
+     * @return The distortion based on the specified metric.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun compare(
+        image: IMagickImage,
+        settings: ICompareSettingsQuantum<TQuantumType>,
+        difference: IMagickImage,
+    ): Double = compare(image, settings, difference, Channels.UNDEFINED)
+
+    /**
+     * Returns the distortion based on the specified metric.
+     *
+     * @param image The other image to compare with this image.
+     * @param settings The settings to use.
+     * @param difference The image that will contain the difference.
+     * @param channels The channel(s) to compare.
+     * @return The distortion based on the specified metric.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun compare(
+        image: IMagickImage,
+        settings: ICompareSettingsQuantum<TQuantumType>,
+        difference: IMagickImage,
+        channels: Channels,
+    ): Double
+
 //    /**
 //     * Determines the connected-components of the image.
 //     *
@@ -132,6 +155,7 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @return The connected-components of the image.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
+//    @Throws(MagickException::class)
 //    IReadOnlyCollection<IConnectedComponent<TQuantumType>> ConnectedComponents(int connectivity);
 //
 //    /**
@@ -141,6 +165,7 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @return The connected-components of the image.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
+//    @Throws(MagickException::class)
 //    IReadOnlyCollection<IConnectedComponent<TQuantumType>> ConnectedComponents(IConnectedComponentsSettings settings);
 //
 //    /**
@@ -150,7 +175,7 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param height The height of the tile.
 //     * @return New title of the current image.
 //     */
-//    IReadOnlyCollection<IMagickImage<TQuantumType>> CropToTiles(int width, int height);
+//    IReadOnlyCollection<MagickImageQuantum<TQuantumType>> CropToTiles(int width, int height);
 //
 //    /**
 //     * Creates tiles of the current image in the specified dimension.
@@ -158,7 +183,7 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param geometry The size of the tile.
 //     * @return New title of the current image.
 //     */
-//    IReadOnlyCollection<IMagickImage<TQuantumType>> CropToTiles(IMagickGeometry geometry);
+//    IReadOnlyCollection<MagickImageQuantum<TQuantumType>> CropToTiles(IMagickGeometry geometry);
 //
 //    /**
 //     * Draw on image using one or more drawables.
@@ -166,7 +191,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param drawables The drawable(s) to draw on the image.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun draw(drawables: IDrawables<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun draw(drawables: IDrawables<TQuantumType>)
 //
 //    /**
 //     * Extend the image as defined by the width and height.
@@ -176,7 +202,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param backgroundColor The background color to use.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun extent(width: Int, height: Int, backgroundColor: IMagickColor<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun extent(width: Int, height: Int, backgroundColor: IMagickColorQuantum<TQuantumType>)
 //
 //    /**
 //     * Extend the image as defined by the width and height.
@@ -187,7 +214,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param backgroundColor The background color to use.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun extent(width: Int, height: Int, gravity: Gravity, backgroundColor: IMagickColor<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun extent(width: Int, height: Int, gravity: Gravity, backgroundColor: IMagickColorQuantum<TQuantumType>)
 //
 //    /**
 //     * Extend the image as defined by the geometry.
@@ -196,7 +224,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param backgroundColor The background color to use.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun extent(geometry: IMagickGeometry, backgroundColor: IMagickColor<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun extent(geometry: IMagickGeometry, backgroundColor: IMagickColorQuantum<TQuantumType>)
 //
 //    /**
 //     * Extend the image as defined by the geometry.
@@ -206,7 +235,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param backgroundColor The background color to use.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun extent(geometry: IMagickGeometry, gravity: Gravity, backgroundColor: IMagickColor<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun extent(geometry: IMagickGeometry, gravity: Gravity, backgroundColor: IMagickColorQuantum<TQuantumType>)
 //
 //    /**
 //     * Floodfill pixels matching color (within fuzz factor) of target pixel(x,y) with replacement
@@ -217,7 +247,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param y The Y coordinate.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun floodFill(alpha: TQuantumType, x: Int, y: Int)
+//    @Throws(MagickException::class)
+//    public fun floodFill(alpha: TQuantumType, x: Int, y: Int)
 //
 //    /**
 //     * Flood-fill color across pixels that match the color of the target pixel and are neighbors
@@ -228,7 +259,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param y The Y coordinate.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun floodFill(color: IMagickColor<TQuantumType>, x: Int, y: Int)
+//    @Throws(MagickException::class)
+//    public fun floodFill(color: IMagickColorQuantum<TQuantumType>, x: Int, y: Int)
 //
 //    /**
 //     * Flood-fill color across pixels that match the color of the target pixel and are neighbors
@@ -240,7 +272,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param target The target color.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun floodFill(color: IMagickColor<TQuantumType>, x: Int, y: Int, target: IMagickColor<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun floodFill(color: IMagickColorQuantum<TQuantumType>, x: Int, y: Int, target: IMagickColorQuantum<TQuantumType>)
 //
 //    /**
 //     * Flood-fill texture across pixels that match the color of the target pixel and are neighbors
@@ -251,7 +284,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param y The Y coordinate.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun floodFill(image: IMagickImage<TQuantumType>, x: Int, y: Int)
+//    @Throws(MagickException::class)
+//    public fun floodFill(image: MagickImageQuantum<TQuantumType>, x: Int, y: Int)
 //
 //    /**
 //     * Flood-fill texture across pixels that match the color of the target pixel and are neighbors
@@ -263,7 +297,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param target The target color.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun floodFill(image: IMagickImage<TQuantumType>, x: Int, y: Int, target: IMagickColor<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun floodFill(image: MagickImageQuantum<TQuantumType>, x: Int, y: Int, target: IMagickColorQuantum<TQuantumType>)
 //
 //    /**
 //     * Returns the color at colormap position index.
@@ -272,7 +307,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @return The color at colormap position index.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    IMagickColor<TQuantumType>? GetColormapColor(int index);
+//    @Throws(MagickException::class)
+//    IMagickColorQuantum<TQuantumType>? GetColormapColor(int index);
 //
 //    /**
 //     * Returns a pixel collection that can be used to read or modify the pixels of this image.
@@ -280,6 +316,7 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @return A pixel collection that can be used to read or modify the pixels of this image.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
+//    @Throws(MagickException::class)
 //    IPixelCollection<TQuantumType> GetPixels();
 //
 //    /**
@@ -289,6 +326,7 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @return A pixel collection that can be used to read or modify the pixels of this image.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
+//    @Throws(MagickException::class)
 //    IUnsafePixelCollection<TQuantumType> GetPixelsUnsafe();
 //
 //    /**
@@ -297,7 +335,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @return The associated read mask of the image.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    IMagickImage<TQuantumType>? GetReadMask();
+//    @Throws(MagickException::class)
+//    MagickImageQuantum<TQuantumType>? GetReadMask();
 //
 //    /**
 //     * Gets the associated write mask of the image.
@@ -305,7 +344,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @return The associated write mask of the image.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    IMagickImage<TQuantumType>? GetWriteMask();
+//    @Throws(MagickException::class)
+//    MagickImageQuantum<TQuantumType>? GetWriteMask();
 //
 //    /**
 //     * Creates a color histogram.
@@ -313,7 +353,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @return A color histogram.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    IReadOnlyDictionary<IMagickColor<TQuantumType>, int> Histogram();
+//    @Throws(MagickException::class)
+//    IReadOnlyDictionary<IMagickColorQuantum<TQuantumType>, int> Histogram();
 //
 //    #if !Q8
 //
@@ -324,7 +365,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param settings The import settings to use when importing the pixels.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun importPixels(data: TQuantumType[], settings: IPixelImportSettings)
+//    @Throws(MagickException::class)
+//    public fun importPixels(data: TQuantumType[], settings: IPixelImportSettings)
 //
 //    /**
 //     * Import pixels from the specified quantum array into the current image.
@@ -334,7 +376,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param settings The import settings to use when importing the pixels.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun importPixels(data: TQuantumType[], offset: Int, settings: IPixelImportSettings)
+//    @Throws(MagickException::class)
+//    public fun importPixels(data: TQuantumType[], offset: Int, settings: IPixelImportSettings)
 //    #endif
 //
 //    /**
@@ -343,7 +386,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @return The sum of values (pixel values) in the image.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    IMagickImage<TQuantumType>? Integral();
+//    @Throws(MagickException::class)
+//    MagickImageQuantum<TQuantumType>? Integral();
 //
 //    /**
 //     * Floodfill pixels not matching color (within fuzz factor) of target pixel(x,y) with
@@ -354,7 +398,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param y The Y coordinate.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun inverseFloodFill(alpha: TQuantumType, x: Int, y: Int)
+//    @Throws(MagickException::class)
+//    public fun inverseFloodFill(alpha: TQuantumType, x: Int, y: Int)
 //
 //    /**
 //     * Flood-fill texture across pixels that do not match the color of the target pixel and are
@@ -365,7 +410,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param y The Y coordinate.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun inverseFloodFill(color: IMagickColor<TQuantumType>, x: Int, y: Int)
+//    @Throws(MagickException::class)
+//    public fun inverseFloodFill(color: IMagickColorQuantum<TQuantumType>, x: Int, y: Int)
 //
 //    /**
 //     * Flood-fill texture across pixels that do not match the color of the target pixel and are
@@ -377,7 +423,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param target The target color.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun inverseFloodFill(color: IMagickColor<TQuantumType>, x: Int, y: Int, target: IMagickColor<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun inverseFloodFill(color: IMagickColorQuantum<TQuantumType>, x: Int, y: Int, target: IMagickColorQuantum<TQuantumType>)
 //
 //    /**
 //     * Flood-fill texture across pixels that do not match the color of the target pixel and are
@@ -388,7 +435,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param y The Y coordinate.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun inverseFloodFill(image: IMagickImage<TQuantumType>, x: Int, y: Int)
+//    @Throws(MagickException::class)
+//    public fun inverseFloodFill(image: MagickImageQuantum<TQuantumType>, x: Int, y: Int)
 //
 //    /**
 //     * Flood-fill texture across pixels that match the color of the target pixel and are neighbors
@@ -400,7 +448,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param target The target color.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun inverseFloodFill(image: IMagickImage<TQuantumType>, x: Int, y: Int, target: IMagickColor<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun inverseFloodFill(image: MagickImageQuantum<TQuantumType>, x: Int, y: Int, target: IMagickColorQuantum<TQuantumType>)
 //
 //    /**
 //     * Applies the reversed level operation to just the specific channels specified. It compresses
@@ -411,7 +460,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param whitePoint The lightest color in the image. Colors brighter are set to the maximum quantum value.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun inverseLevel(blackPoint: TQuantumType, whitePoint: TQuantumType)
+//    @Throws(MagickException::class)
+//    public fun inverseLevel(blackPoint: TQuantumType, whitePoint: TQuantumType)
 //
 //    /**
 //     * Applies the reversed level operation to just the specific channels specified. It compresses
@@ -423,7 +473,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param channels The channel(s) to level.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun inverseLevel(blackPoint: TQuantumType, whitePoint: TQuantumType, channels: Channels)
+//    @Throws(MagickException::class)
+//    public fun inverseLevel(blackPoint: TQuantumType, whitePoint: TQuantumType, channels: Channels)
 //
 //    /**
 //     * Applies the reversed level operation to just the specific channels specified. It compresses
@@ -435,7 +486,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param midpoint The gamma correction to apply to the image. (Useful range of 0 to 10).
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun inverseLevel(blackPoint: TQuantumType, whitePoint: TQuantumType, midpoint: Double)
+//    @Throws(MagickException::class)
+//    public fun inverseLevel(blackPoint: TQuantumType, whitePoint: TQuantumType, midpoint: Double)
 //
 //    /**
 //     * Applies the reversed level operation to just the specific channels specified. It compresses
@@ -448,7 +500,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param channels The channel(s) to level.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun inverseLevel(blackPoint: TQuantumType, whitePoint: TQuantumType, midpoint: Double, channels: Channels)
+//    @Throws(MagickException::class)
+//    public fun inverseLevel(blackPoint: TQuantumType, whitePoint: TQuantumType, midpoint: Double, channels: Channels)
 //
 //    /**
 //     * Maps the given color to "black" and "white" values, linearly spreading out the colors, and
@@ -459,7 +512,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param whiteColor The color to map white to/from.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun inverseLevelColors(blackColor: IMagickColor<TQuantumType>, whiteColor: IMagickColor<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun inverseLevelColors(blackColor: IMagickColorQuantum<TQuantumType>, whiteColor: IMagickColorQuantum<TQuantumType>)
 //
 //    /**
 //     * Maps the given color to "black" and "white" values, linearly spreading out the colors, and
@@ -471,7 +525,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param channels The channel(s) to level.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun inverseLevelColors(blackColor: IMagickColor<TQuantumType>, whiteColor: IMagickColor<TQuantumType>, channels: Channels)
+//    @Throws(MagickException::class)
+//    public fun inverseLevelColors(blackColor: IMagickColorQuantum<TQuantumType>, whiteColor: IMagickColorQuantum<TQuantumType>, channels: Channels)
 //
 //    /**
 //     * Changes any pixel that does not match the target with the color defined by fill.
@@ -480,7 +535,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param fill The color to replace opaque color with.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun inverseOpaque(target: IMagickColor<TQuantumType>, fill: IMagickColor<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun inverseOpaque(target: IMagickColorQuantum<TQuantumType>, fill: IMagickColorQuantum<TQuantumType>)
 //
 //    /**
 //     * Add alpha channel to image, setting pixels that don't match the specified color to transparent.
@@ -488,7 +544,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param color The color that should not be made transparent.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun inverseTransparent(color: IMagickColor<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun inverseTransparent(color: IMagickColorQuantum<TQuantumType>)
 //
 //    /**
 //     * Add alpha channel to image, setting pixels that don't lie in between the given two colors to
@@ -498,7 +555,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param colorHigh The high target color.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun inverseTransparentChroma(colorLow: IMagickColor<TQuantumType>, colorHigh: IMagickColor<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun inverseTransparentChroma(colorLow: IMagickColorQuantum<TQuantumType>, colorHigh: IMagickColorQuantum<TQuantumType>)
 //
 //    /**
 //     * Adjust the levels of the image by scaling the colors falling between specified white and
@@ -508,7 +566,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param whitePoint The lightest color in the image. Colors brighter are set to the maximum quantum value.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun level(blackPoint: TQuantumType, whitePoint: TQuantumType)
+//    @Throws(MagickException::class)
+//    public fun level(blackPoint: TQuantumType, whitePoint: TQuantumType)
 //
 //    /**
 //     * Adjust the levels of the image by scaling the colors falling between specified white and
@@ -519,7 +578,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param channels The channel(s) to level.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun level(blackPoint: TQuantumType, whitePoint: TQuantumType, channels: Channels)
+//    @Throws(MagickException::class)
+//    public fun level(blackPoint: TQuantumType, whitePoint: TQuantumType, channels: Channels)
 //
 //    /**
 //     * Adjust the levels of the image by scaling the colors falling between specified white and
@@ -530,7 +590,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param gamma The gamma correction to apply to the image. (Useful range of 0 to 10).
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun level(blackPoint: TQuantumType, whitePoint: TQuantumType, gamma: Double)
+//    @Throws(MagickException::class)
+//    public fun level(blackPoint: TQuantumType, whitePoint: TQuantumType, gamma: Double)
 //
 //    /**
 //     * Adjust the levels of the image by scaling the colors falling between specified white and
@@ -542,7 +603,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param channels The channel(s) to level.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun level(blackPoint: TQuantumType, whitePoint: TQuantumType, gamma: Double, channels: Channels)
+//    @Throws(MagickException::class)
+//    public fun level(blackPoint: TQuantumType, whitePoint: TQuantumType, gamma: Double, channels: Channels)
 //
 //    /**
 //     * Maps the given color to "black" and "white" values, linearly spreading out the colors, and
@@ -553,7 +615,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param whiteColor The color to map white to/from.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun levelColors(blackColor: IMagickColor<TQuantumType>, whiteColor: IMagickColor<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun levelColors(blackColor: IMagickColorQuantum<TQuantumType>, whiteColor: IMagickColorQuantum<TQuantumType>)
 //
 //    /**
 //     * Maps the given color to "black" and "white" values, linearly spreading out the colors, and
@@ -565,7 +628,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param channels The channel(s) to level.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun levelColors(blackColor: IMagickColor<TQuantumType>, whiteColor: IMagickColor<TQuantumType>, channels: Channels)
+//    @Throws(MagickException::class)
+//    public fun levelColors(blackColor: IMagickColorQuantum<TQuantumType>, whiteColor: IMagickColorQuantum<TQuantumType>, channels: Channels)
 //
 //    /**
 //     * Remap image colors with closest color from the specified colors.
@@ -574,7 +638,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @return The error informaton.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun map(colors: IEnumerable<IMagickColor<TQuantumType>>): IMagickErrorInfo
+//    @Throws(MagickException::class)
+//    public fun map(colors: IEnumerable<IMagickColorQuantum<TQuantumType>>): IMagickErrorInfo
 //
 //    /**
 //     * Remap image colors with closest color from the specified colors.
@@ -584,7 +649,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @return The error informaton.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun map(colors: IEnumerable<IMagickColor<TQuantumType>>, settings: IQuantizeSettings): IMagickErrorInfo
+//    @Throws(MagickException::class)
+//    public fun map(colors: IEnumerable<IMagickColorQuantum<TQuantumType>>, settings: IQuantizeSettings): IMagickErrorInfo
 //
 //    /**
 //     * Changes any pixel that matches target with the color defined by fill.
@@ -593,7 +659,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param fill The color to replace opaque color with.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun opaque(target: IMagickColor<TQuantumType>, fill: IMagickColor<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun opaque(target: IMagickColorQuantum<TQuantumType>, fill: IMagickColorQuantum<TQuantumType>)
 //
 
     /**
@@ -608,7 +675,7 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
      * @throws IllegalArgumentException Thrown when offset or count
      */
     @Throws(MagickException::class, IllegalArgumentException::class)
-    fun ping(
+    public fun ping(
         data: UByteArray,
         offset: UInt,
         count: UInt,
@@ -622,7 +689,7 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
      * @param readSettings The settings to use when reading the image.
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
-    fun ping(
+    public fun ping(
         data: UByteArray,
         readSettings: IMagickReadSettings<TQuantumType>?,
     )
@@ -634,7 +701,7 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
      * @param readSettings The settings to use when reading the image.
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
-    fun ping(
+    public fun ping(
         file: Path,
         readSettings: IMagickReadSettings<TQuantumType>?,
     )
@@ -646,7 +713,7 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
      * @param readSettings The settings to use when reading the image.
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
-    fun ping(
+    public fun ping(
         stream: Source,
         readSettings: IMagickReadSettings<TQuantumType>?,
     )
@@ -658,7 +725,7 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
      * @param readSettings The settings to use when reading the image.
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
-    fun ping(
+    public fun ping(
         fileName: String,
         readSettings: IMagickReadSettings<TQuantumType>?,
     )
@@ -671,7 +738,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param high The high threshold.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun randomThreshold(low: TQuantumType, high: TQuantumType)
+//    @Throws(MagickException::class)
+//    public fun randomThreshold(low: TQuantumType, high: TQuantumType)
 //
 //    /**
 //     * Changes the value of individual pixels based on the intensity of each pixel compared to a
@@ -682,7 +750,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param channels The channel(s) to use.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun randomThreshold(low: TQuantumType, high: TQuantumType, channels: Channels)
+//    @Throws(MagickException::class)
+//    public fun randomThreshold(low: TQuantumType, high: TQuantumType, channels: Channels)
 //
 //    /**
 //     * Applies soft and hard thresholding.
@@ -693,7 +762,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param highBlack Defines the maximum black threshold value.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun rangeThreshold(lowBlack: TQuantumType, lowWhite: TQuantumType, highWhite: TQuantumType, highBlack: TQuantumType)
+//    @Throws(MagickException::class)
+//    public fun rangeThreshold(lowBlack: TQuantumType, lowWhite: TQuantumType, highWhite: TQuantumType, highBlack: TQuantumType)
 //
 
     /**
@@ -705,7 +775,7 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
      * @param readSettings The settings to use when reading the image.
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
-    fun read(
+    public fun read(
         data: UByteArray,
         offset: UInt,
         count: UInt,
@@ -721,7 +791,7 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
      * @throws IllegalArgumentException Thrown when [data] is empty
      */
     @Throws(MagickException::class, IllegalArgumentException::class)
-    fun read(
+    public fun read(
         data: UByteArray,
         readSettings: IMagickReadSettings<TQuantumType>?,
     )
@@ -733,7 +803,7 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
      * @param readSettings The settings to use when reading the image.
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
-    fun read(
+    public fun read(
         file: Path,
         readSettings: IMagickReadSettings<TQuantumType>?,
     )
@@ -746,8 +816,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
      * @param height The height.
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
-    fun read(
-        color: IMagickColor<TQuantumType>,
+    public fun read(
+        color: IMagickColorQuantum<TQuantumType>,
         width: UInt,
         height: UInt,
     )
@@ -759,7 +829,7 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
      * @param readSettings The settings to use when reading the image.
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
-    fun read(
+    public fun read(
         stream: Source,
         readSettings: IMagickReadSettings<TQuantumType>?,
     )
@@ -771,7 +841,7 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
      * @param readSettings The settings to use when reading the image.
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
-    fun read(
+    public fun read(
         fileName: String,
         readSettings: IMagickReadSettings<TQuantumType>?,
     )
@@ -784,7 +854,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @return A [Task] representing the asynchronous operation.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-// //     fun readAsync(file: Path, readSettings: IMagickReadSettings<TQuantumType>?): Task
+//    @Throws(MagickException::class)
+// //     public fun readAsync(file: Path, readSettings: IMagickReadSettings<TQuantumType>?): Task
 //
 //    /**
 //     * Read single image frame.
@@ -795,7 +866,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param cancellationToken The token to monitor for cancellation requests.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-// //     fun readAsync(file: Path, readSettings: IMagickReadSettings<TQuantumType>?, cancellationToken: CancellationToken): Task
+//    @Throws(MagickException::class)
+// //     public fun readAsync(file: Path, readSettings: IMagickReadSettings<TQuantumType>?, cancellationToken: CancellationToken): Task
 //
 //    /**
 //     * Read single image frame.
@@ -805,7 +877,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @return A [Task] representing the asynchronous operation.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-// //     fun readAsync(stream: Source, readSettings: IMagickReadSettings<TQuantumType>?): Task
+//    @Throws(MagickException::class)
+// //     public fun readAsync(stream: Source, readSettings: IMagickReadSettings<TQuantumType>?): Task
 //
 //    /**
 //     * Read single image frame.
@@ -816,7 +889,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @return A [Task] representing the asynchronous operation.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-// //     fun readAsync(stream: Source, readSettings: IMagickReadSettings<TQuantumType>?, cancellationToken: CancellationToken): Task
+//    @Throws(MagickException::class)
+// //     public fun readAsync(stream: Source, readSettings: IMagickReadSettings<TQuantumType>?, cancellationToken: CancellationToken): Task
 //
 //    /**
 //     * Read single image frame.
@@ -826,7 +900,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @return A [Task] representing the asynchronous operation.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-// //     fun readAsync(fileName: String, readSettings: IMagickReadSettings<TQuantumType>?): Task
+//    @Throws(MagickException::class)
+// //     public fun readAsync(fileName: String, readSettings: IMagickReadSettings<TQuantumType>?): Task
 //
 //    /**
 //     * Read single image frame.
@@ -837,7 +912,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @return A [Task] representing the asynchronous operation.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-// //     fun readAsync(fileName: String, readSettings: IMagickReadSettings<TQuantumType>?, cancellationToken: CancellationToken): Task
+//    @Throws(MagickException::class)
+// //     public fun readAsync(fileName: String, readSettings: IMagickReadSettings<TQuantumType>?, cancellationToken: CancellationToken): Task
 //
 //    /**
 //     * Read single image frame.
@@ -846,7 +922,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param settings The pixel settings to use when reading the image.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun readPixels(data: UByteArray, settings: IPixelReadSettings<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun readPixels(data: UByteArray, settings: IPixelReadSettings<TQuantumType>)
 //
 //    /**
 //     * Read single image frame from pixel data.
@@ -857,7 +934,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param settings The pixel settings to use when reading the image.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun readPixels(data: UByteArray, offset: Int, count: Int, settings: IPixelReadSettings<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun readPixels(data: UByteArray, offset: Int, count: Int, settings: IPixelReadSettings<TQuantumType>)
 //
 //    #if !Q8
 //
@@ -868,7 +946,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param settings The pixel settings to use when reading the image.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun readPixels(data: TQuantumType[], settings: IPixelReadSettings<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun readPixels(data: TQuantumType[], settings: IPixelReadSettings<TQuantumType>)
 //
 //    /**
 //     * Read single image frame from pixel data.
@@ -879,7 +958,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param settings The pixel settings to use when reading the image.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun readPixels(data: TQuantumType[], offset: Int, count: Int, settings: IPixelReadSettings<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun readPixels(data: TQuantumType[], offset: Int, count: Int, settings: IPixelReadSettings<TQuantumType>)
 //    #endif
 //
 //    /**
@@ -889,7 +969,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param settings The pixel settings to use when reading the image.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun readPixels(file: Path, settings: IPixelReadSettings<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun readPixels(file: Path, settings: IPixelReadSettings<TQuantumType>)
 //
 //    /**
 //     * Read single image frame from pixel data.
@@ -898,7 +979,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param settings The pixel settings to use when reading the image.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun readPixels(stream: Source, settings: IPixelReadSettings<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun readPixels(stream: Source, settings: IPixelReadSettings<TQuantumType>)
 //
 //    /**
 //     * Read single image frame from pixel data.
@@ -907,7 +989,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param settings The pixel settings to use when reading the image.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun readPixels(fileName: String, settings: IPixelReadSettings<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun readPixels(fileName: String, settings: IPixelReadSettings<TQuantumType>)
 //
 //    /**
 //     * Read single image frame from pixel data.
@@ -917,7 +1000,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @return A [Task] representing the asynchronous operation.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-// //     fun readPixelsAsync(file: Path, settings: IPixelReadSettings<TQuantumType>): Task
+//    @Throws(MagickException::class)
+// //     public fun readPixelsAsync(file: Path, settings: IPixelReadSettings<TQuantumType>): Task
 //
 //    /**
 //     * Read single image frame from pixel data.
@@ -928,7 +1012,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @return A [Task] representing the asynchronous operation.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-// //     fun readPixelsAsync(file: Path, settings: IPixelReadSettings<TQuantumType>, cancellationToken: CancellationToken): Task
+//    @Throws(MagickException::class)
+// //     public fun readPixelsAsync(file: Path, settings: IPixelReadSettings<TQuantumType>, cancellationToken: CancellationToken): Task
 //
 //    /**
 //     * Read single image frame from pixel data.
@@ -938,7 +1023,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @return A [Task] representing the asynchronous operation.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-// //     fun readPixelsAsync(stream: Source, settings: IPixelReadSettings<TQuantumType>): Task
+//    @Throws(MagickException::class)
+// //     public fun readPixelsAsync(stream: Source, settings: IPixelReadSettings<TQuantumType>): Task
 //
 //    /**
 //     * Read single image frame from pixel data.
@@ -949,7 +1035,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @return A [Task] representing the asynchronous operation.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-// //     fun readPixelsAsync(stream: Source, settings: IPixelReadSettings<TQuantumType>, cancellationToken: CancellationToken): Task
+//    @Throws(MagickException::class)
+// //     public fun readPixelsAsync(stream: Source, settings: IPixelReadSettings<TQuantumType>, cancellationToken: CancellationToken): Task
 //
 //    /**
 //     * Read single image frame from pixel data.
@@ -959,7 +1046,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @return A [Task] representing the asynchronous operation.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-// //     fun readPixelsAsync(fileName: String, settings: IPixelReadSettings<TQuantumType>): Task
+//    @Throws(MagickException::class)
+// //     public fun readPixelsAsync(fileName: String, settings: IPixelReadSettings<TQuantumType>): Task
 //
 //    /**
 //     * Read single image frame from pixel data.
@@ -970,7 +1058,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @return A [Task] representing the asynchronous operation.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-// //     fun readPixelsAsync(fileName: String, settings: IPixelReadSettings<TQuantumType>, cancellationToken: CancellationToken): Task
+//    @Throws(MagickException::class)
+// //     public fun readPixelsAsync(fileName: String, settings: IPixelReadSettings<TQuantumType>, cancellationToken: CancellationToken): Task
 //
 //    /**
 //     * Separates the channels from the image and returns it as grayscale images.
@@ -978,7 +1067,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @return The channels from the image as grayscale images.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    IReadOnlyCollection<IMagickImage<TQuantumType>> Separate();
+//    @Throws(MagickException::class)
+//    IReadOnlyCollection<MagickImageQuantum<TQuantumType>> Separate();
 //
 //    /**
 //     * Separates the specified channels from the image and returns it as grayscale images.
@@ -987,7 +1077,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @return The channels from the image as grayscale images.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    IReadOnlyCollection<IMagickImage<TQuantumType>> Separate(Channels channels);
+//    @Throws(MagickException::class)
+//    IReadOnlyCollection<MagickImageQuantum<TQuantumType>> Separate(Channels channels);
 //
 //    /**
 //     * Set color at colormap position index.
@@ -996,7 +1087,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param color The color.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun setColormapColor(index: Int, color: IMagickColor<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun setColormapColor(index: Int, color: IMagickColorQuantum<TQuantumType>)
 //
 //    /**
 //     * Simulate an image shadow.
@@ -1004,7 +1096,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param color The color of the shadow.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun shadow(color: IMagickColor<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun shadow(color: IMagickColorQuantum<TQuantumType>)
 //
 //    /**
 //     * Simulate an image shadow.
@@ -1016,7 +1109,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param color The color of the shadow.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun shadow(x: Int, y: Int, sigma: Double, alpha: Percentage, color: IMagickColor<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun shadow(x: Int, y: Int, sigma: Double, alpha: Percentage, color: IMagickColorQuantum<TQuantumType>)
 //
 //    /**
 //     * Sparse color image, given a set of coordinates, interpolates the colors found at those
@@ -1026,7 +1120,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param args The sparse color arguments.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun sparseColor(method: SparseColorMethod, args: IEnumerable<ISparseColorArg<TQuantumType>>)
+//    @Throws(MagickException::class)
+//    public fun sparseColor(method: SparseColorMethod, args: IEnumerable<ISparseColorArg<TQuantumType>>)
 //
 //    /**
 //     * Sparse color image, given a set of coordinates, interpolates the colors found at those
@@ -1036,18 +1131,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param args The sparse color arguments.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun sparseColor(method: SparseColorMethod, vararg args: ISparseColorArg<TQuantumType>)
-//
-//    /**
-//     * Sparse color image, given a set of coordinates, interpolates the colors found at those
-//     * coordinates, across the whole image, using various methods.
-//     *
-//     * @param channels The channel(s) to use.
-//     * @param method The sparse color method to use.
-//     * @param args The sparse color arguments.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    fun sparseColor(channels: Channels, method: SparseColorMethod, args: IEnumerable<ISparseColorArg<TQuantumType>>)
+//    @Throws(MagickException::class)
+//    public fun sparseColor(method: SparseColorMethod, vararg args: ISparseColorArg<TQuantumType>)
 //
 //    /**
 //     * Sparse color image, given a set of coordinates, interpolates the colors found at those
@@ -1058,7 +1143,20 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param args The sparse color arguments.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun sparseColor(channels: Channels, method: SparseColorMethod, vararg args: ISparseColorArg<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun sparseColor(channels: Channels, method: SparseColorMethod, args: IEnumerable<ISparseColorArg<TQuantumType>>)
+//
+//    /**
+//     * Sparse color image, given a set of coordinates, interpolates the colors found at those
+//     * coordinates, across the whole image, using various methods.
+//     *
+//     * @param channels The channel(s) to use.
+//     * @param method The sparse color method to use.
+//     * @param args The sparse color arguments.
+//     * @throws MagickException Thrown when an error is raised by ImageMagick.
+//     */
+//    @Throws(MagickException::class)
+//    public fun sparseColor(channels: Channels, method: SparseColorMethod, vararg args: ISparseColorArg<TQuantumType>)
 //
 //    /**
 //     * Search for the specified image at EVERY possible location in this image. This is slow!
@@ -1069,7 +1167,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @return The result of the search action.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    IMagickSearchResult<TQuantumType> SubImageSearch(IMagickImage<TQuantumType> image);
+//    @Throws(MagickException::class)
+//    IMagickSearchResult<TQuantumType> SubImageSearch(MagickImageQuantum<TQuantumType> image);
 //
 //    /**
 //     * Search for the specified image at EVERY possible location in this image. This is slow!
@@ -1081,7 +1180,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @return The result of the search action.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    IMagickSearchResult<TQuantumType> SubImageSearch(IMagickImage<TQuantumType> image, ErrorMetric metric);
+//    @Throws(MagickException::class)
+//    IMagickSearchResult<TQuantumType> SubImageSearch(MagickImageQuantum<TQuantumType> image, ErrorMetric metric);
 //
 //    /**
 //     * Search for the specified image at EVERY possible location in this image. This is slow!
@@ -1094,7 +1194,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @return The result of the search action.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    IMagickSearchResult<TQuantumType> SubImageSearch(IMagickImage<TQuantumType> image, ErrorMetric metric, double similarityThreshold);
+//    @Throws(MagickException::class)
+//    IMagickSearchResult<TQuantumType> SubImageSearch(MagickImageQuantum<TQuantumType> image, ErrorMetric metric, double similarityThreshold);
 //
 //    /**
 //     * Applies a color vector to each pixel in the image. The length of the vector is 0 for black
@@ -1105,7 +1206,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param color A color value used for tinting.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun tint(opacity: IMagickGeometry, color: IMagickColor<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun tint(opacity: IMagickGeometry, color: IMagickColorQuantum<TQuantumType>)
 //
 //    /**
 //     * Add alpha channel to image, setting pixels matching color to transparent.
@@ -1113,7 +1215,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param color The color to make transparent.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun transparent(color: IMagickColor<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun transparent(color: IMagickColorQuantum<TQuantumType>)
 //
 //    /**
 //     * Add alpha channel to image, setting pixels that lie in between the given two colors to
@@ -1123,7 +1226,8 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param colorHigh The high target color.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    fun transparentChroma(colorLow: IMagickColor<TQuantumType>, colorHigh: IMagickColor<TQuantumType>)
+//    @Throws(MagickException::class)
+//    public fun transparentChroma(colorLow: IMagickColorQuantum<TQuantumType>, colorHigh: IMagickColorQuantum<TQuantumType>)
 //
 //    /**
 //     * Returns the unique colors of an image.
@@ -1131,14 +1235,15 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @return The unique colors of an image.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
-//    IMagickImage<TQuantumType>? UniqueColors();
+//    @Throws(MagickException::class)
+//    MagickImageQuantum<TQuantumType>? UniqueColors();
 //
 //    /**
 //     * Removes noise from the image using a wavelet transform.
 //     *
 //     * @param threshold The threshold for smoothing.
 //     */
-//    fun waveletDenoise(threshold: TQuantumType)
+//    public fun waveletDenoise(threshold: TQuantumType)
 //
 //    /**
 //     * Removes noise from the image using a wavelet transform.
@@ -1146,5 +1251,5 @@ public interface MagickImageQuantum<TQuantumType> : MagickImage where TQuantumTy
 //     * @param threshold The threshold for smoothing.
 //     * @param softness Attenuate the smoothing threshold.
 //     */
-//    fun waveletDenoise(threshold: TQuantumType, softness: Double)
+//    public fun waveletDenoise(threshold: TQuantumType, softness: Double)
 }

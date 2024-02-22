@@ -2,7 +2,6 @@
 package imagemagick.colors
 
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlin.ExperimentalStdlibApi
 
 @ExperimentalStdlibApi
 @ExperimentalForeignApi
