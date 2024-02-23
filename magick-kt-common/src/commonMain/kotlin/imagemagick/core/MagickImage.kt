@@ -25,10 +25,12 @@ import imagemagick.core.exceptions.MagickException
 import imagemagick.core.types.Density
 import imagemagick.core.types.Percentage
 import imagemagick.core.types.Percentage.Companion.percent
+import imagemagick.core.types.PointD
 import kotlin.math.sqrt
 import okio.Path
 import okio.Source
 import imagemagick.core.drawables.DrawableAffine as IDrawableAffine
+import imagemagick.core.matrices.ConvolveMatrix as IConvolveMatrix
 import imagemagick.core.matrices.MagickColorMatrix as IMagickColorMatrix
 import imagemagick.core.types.ChromaticityInfo as IChromaticityInfo
 import imagemagick.core.types.MagickErrorInfo as IMagickErrorInfo
@@ -1423,17 +1425,17 @@ public interface MagickImage {
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-//    IEnumerable<PointD> ConvexHull();
-//
-//    /**
-//     * Convolve image. Applies a user-specified convolution to the image.
-//     *
-//     * @param matrix The convolution matrix.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun convolve(matrix: IConvolveMatrix)
-//
+//    public fun convexHull(): Sequence<PointD>
+
+    /**
+     * Convolve image. Applies a user-specified convolution to the image.
+     *
+     * @param matrix The convolution matrix.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun convolve(matrix: IConvolveMatrix)
+
 //    /**
 //     * Copies pixels from the source image to the destination image.
 //     *

@@ -1,19 +1,17 @@
+@file:Suppress("KDocMissingDocumentation")
+
 package imagemagick.magicknative
 
 import imagemagick.core.enums.Channels
 import kotlin.experimental.ExperimentalNativeApi
-import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.convert
-import platform.posix.size_t
 
 @ExperimentalNativeApi
-@ExperimentalForeignApi
 public object NativeChannels {
-    public inline fun Channels.toNative(): size_t = convertValue(this)
+    public inline fun Channels.toNative(): ULong = convertValue(this)
 
-    public inline fun convertValue(channels: Channels): size_t {
+    public inline fun convertValue(channels: Channels): ULong {
         if (Platform.cpuArchitecture.bitness == 64) {
-            return channels.bit.convert()
+            return channels.bit
         }
 
         if (channels == Channels.ALL) {
@@ -24,6 +22,6 @@ public object NativeChannels {
             "There is no support for setting more than 32 bits of the Channels on a 32-bit platform",
         )
 
-        return channels.bit.convert()
+        return channels.bit
     }
 }

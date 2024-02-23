@@ -1,17 +1,19 @@
 package imagemagick
 
+import imagemagick.bridge.MagickFormatInfoList
+import imagemagick.bridge.canReadMultithreaded
+import imagemagick.bridge.canWriteMultithreaded
+import imagemagick.bridge.description
+import imagemagick.bridge.format
+import imagemagick.bridge.getInfo
+import imagemagick.bridge.getInfoWithBlob
+import imagemagick.bridge.mimeType
+import imagemagick.bridge.moduleFormat
+import imagemagick.bridge.supportsMultipleFrames
+import imagemagick.bridge.supportsReading
+import imagemagick.bridge.supportsWriting
 import imagemagick.core.enums.MagickFormat
 import imagemagick.helpers.toString
-import imagemagick.magicknative.NativeMagickFormatInfo
-import imagemagick.magicknative.NativeMagickFormatInfo.canReadMultithreaded
-import imagemagick.magicknative.NativeMagickFormatInfo.canWriteMultithreaded
-import imagemagick.magicknative.NativeMagickFormatInfo.description
-import imagemagick.magicknative.NativeMagickFormatInfo.format
-import imagemagick.magicknative.NativeMagickFormatInfo.mimeType
-import imagemagick.magicknative.NativeMagickFormatInfo.moduleFormat
-import imagemagick.magicknative.NativeMagickFormatInfo.supportsMultipleFrames
-import imagemagick.magicknative.NativeMagickFormatInfo.supportsReading
-import imagemagick.magicknative.NativeMagickFormatInfo.supportsWriting
 import kotlin.contracts.ExperimentalContracts
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -20,6 +22,9 @@ import okio.Path
 import platform.posix.free
 import imagemagick.core.MagickFormatInfo as Interface
 
+/**
+ * Class that contains information about an image format.
+ */
 public data class MagickFormatInfo private constructor(
     override val canReadMultithreaded: Boolean,
     override val canWriteMultithreaded: Boolean,
@@ -42,9 +47,9 @@ public data class MagickFormatInfo private constructor(
         private fun loadFormats(): Map<MagickFormat, Interface> {
             val formats = mutableMapOf<MagickFormat, Interface>()
 
-            NativeMagickFormatInfo.createList()?.use { list ->
+            MagickFormatInfoList.create()?.use { list ->
                 for (i in 0u..list.length) {
-                    NativeMagickFormatInfo.getInfo(list, i)?.let { ptr ->
+                    list.getInfo(i)?.let { ptr ->
                         ptr.toMagickFormatInfo().also {
                             formats[it.format] = it
                         }
@@ -111,7 +116,7 @@ public data class MagickFormatInfo private constructor(
         public fun create(data: UByteArray): Interface? {
             require(data.isNotEmpty())
 
-            return NativeMagickFormatInfo.getInfoWithBlob(data)?.let {
+            return data.getInfoWithBlob()?.let {
                 val info = it.toMagickFormatInfo()
 
                 free(it)

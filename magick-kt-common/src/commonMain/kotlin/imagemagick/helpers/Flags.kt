@@ -1,3 +1,5 @@
+@file:Suppress("KDocMissingDocumentation")
+
 package imagemagick.helpers
 
 // Credits to http://www.ipreferjim.com/2017/03/prototyping-a-flagsbitmasks-implementation-in-kotlin-1-1-1/

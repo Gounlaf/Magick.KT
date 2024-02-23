@@ -27,9 +27,11 @@ import imagemagick.core.enums.PixelInterpolateMethod
 import imagemagick.core.enums.RenderingIntent
 import imagemagick.core.enums.VirtualPixelMethod
 import imagemagick.core.exceptions.MagickException
+import imagemagick.core.matrices.ConvolveMatrix
 import imagemagick.core.settings.CompareSettingsQuantum
 import imagemagick.core.types.Density
 import imagemagick.core.types.Percentage
+import imagemagick.core.types.PointD
 import imagemagick.exceptions.MagickErrorException
 import imagemagick.exceptions.throwIfEmpty
 import imagemagick.exceptions.throwIfNegative
@@ -53,6 +55,7 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.experimental.ExperimentalNativeApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.convert
+import kotlinx.coroutines.yield
 import okio.Path
 import okio.Source
 import okio.buffer
@@ -684,7 +687,7 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
             throw UnsupportedOperationException()
         }
 
-        val compareResult = TemporaryDefines(this).use {
+        val (distortion, result) = TemporaryDefines(this).use {
             it.setArtifact("compare:highlight-color", settings.highlightColor)
             it.setArtifact("compare:lowlight-color", settings.lowlightColor)
             it.setArtifact("compare:masklight-color", settings.masklightColor)
@@ -694,11 +697,9 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
             }
         }
 
-        compareResult.result?.let {
-            difference.nativeInstance.ptr = it
-        }
+        result?.let { difference.nativeInstance.ptr = it }
 
-        return compareResult.distortion
+        return distortion
     }
 
     override fun composite(
@@ -726,7 +727,7 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
         compose: CompositeOperator,
         args: String?,
         channels: Channels,
-    ): Unit  {
+    ): Unit {
         TemporaryDefines(this).use {
             it.setArtifact("compose:args", args)
 
@@ -738,9 +739,17 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
 
     override fun contrast(): Unit = nativeInstance.contrast(true)
 
-    override fun contrastStretch(blackPoint: Percentage, whitePoint: Percentage, channels: Channels) {
+    override fun contrastStretch(blackPoint: Percentage, whitePoint: Percentage, channels: Channels): Unit {
         throwIfNegative("blackPoint", blackPoint)
         throwIfNegative("whitePoint", whitePoint)
+
+        val contrast = calculateContrastStretch(blackPoint, whitePoint)
+
+        nativeInstance.contrastStretch(contrast.x, contrast.y, channels)
+    }
+
+    override fun convolve(matrix: ConvolveMatrix) {
+        TODO("Not yet implemented")
     }
 
     override fun clone(): MagickImageQuantum<QuantumType> = MagickImage(this)
@@ -1052,6 +1061,19 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
     override fun setAttribute(name: String, value: String) {
         throwIfEmpty("name", name)
         nativeInstance.setAttribute(name, value)
+    }
+
+    private fun calculateContrastStretch(blackPoint: Percentage, whitePoint: Percentage): PointD {
+        val pixels = (width * height).toDouble()
+
+        var x = blackPoint.toDouble()
+        var y = whitePoint.toDouble()
+
+        x *= pixels / 100.0
+        y *= pixels / 100.0
+        y = pixels - y
+
+        return PointD(x, y)
     }
 
     public companion object {

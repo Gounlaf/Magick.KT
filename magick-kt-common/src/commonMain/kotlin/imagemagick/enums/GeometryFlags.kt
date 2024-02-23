@@ -2,6 +2,7 @@ package imagemagick.enums
 
 import imagemagick.helpers.Flags
 
+@Suppress("KDocMissingDocumentation")
 public enum class GeometryFlags(override val bit: ULong) : Flags {
     NO_VALUE(0u),
 
