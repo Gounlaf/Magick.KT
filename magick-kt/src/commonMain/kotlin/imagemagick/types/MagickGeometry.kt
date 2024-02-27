@@ -62,7 +62,12 @@ public data class MagickGeometry(
      * @param percentageWith The percentage of the width.
      * @param percentageHeight The percentage of the height.
      */
-    public constructor(percentageWith: Percentage, percentageHeight: Percentage) : this(0, 0, percentageWith, percentageHeight)
+    public constructor(percentageWith: Percentage, percentageHeight: Percentage) : this(
+        0,
+        0,
+        percentageWith,
+        percentageHeight
+    )
 
     /**
      * Initializes a new instance of the [MagickGeometry] class using the specified offsets, width and height.
@@ -136,37 +141,36 @@ public data class MagickGeometry(
         return if (left < right) -1 else 1
     }
 
-    override fun toString(): String {
-        if (aspectRatio) return "$width:$height"
+    override fun toString(): String = buildString {
+        if (aspectRatio) {
+            append("$width:$height")
+            return@buildString
+        }
 
-        var result = ""
-
-        if (width > 0u) result += width
+        if (width > 0u) append(width)
 
         if (height > 0u) {
-            result += "x$height"
+            append("x$height")
         } else if (!isPercentage) {
-            result += "x"
+            append('x')
         }
 
         if (x != 0 || y != 0) {
-            if (x >= 0) result += '+'
+            if (x >= 0) append('+')
 
-            result += x
+            append(x)
 
-            if (y >= 0) result += '+'
+            if (y >= 0) append('+')
 
-            result += y
+            append(y)
         }
 
-        if (isPercentage) result += '%'
-        if (ignoreAspectRatio) result += '!'
-        if (greater) result += '>'
-        if (less) result += '<'
-        if (fillArea) result += '^'
-        if (limitPixels) result += '@'
-
-        return result
+        if (isPercentage) append('%')
+        if (ignoreAspectRatio) append('!')
+        if (greater) append('>')
+        if (less) append('<')
+        if (fillArea) append('^')
+        if (limitPixels) append('@')
     }
 
     private fun initializeFromPercentage(

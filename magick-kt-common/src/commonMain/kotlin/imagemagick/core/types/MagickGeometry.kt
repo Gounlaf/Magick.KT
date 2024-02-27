@@ -1,5 +1,8 @@
 package imagemagick.core.types
 
+/**
+ * Encapsulation of the ImageMagick geometry object.
+ */
 public interface MagickGeometry : Comparable<MagickGeometry?> {
     /**
      * Gets a value indicating whether the value is an aspect ratio.

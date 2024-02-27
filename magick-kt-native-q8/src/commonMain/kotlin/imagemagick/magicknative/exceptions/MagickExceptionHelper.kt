@@ -47,6 +47,7 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.NativePlacement
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.ptr
 import kotlinx.cinterop.toKString
 import kotlinx.cinterop.value
 import libMagickNative.ExceptionInfo
@@ -63,15 +64,15 @@ public typealias ExceptionInfoPtrVar = CPointerVar<ExceptionInfo>
 @ExperimentalForeignApi
 @ExperimentalContracts
 @Throws(MagickException::class)
-public inline fun <T> withException(body: (NativePlacement, ExceptionInfoPtrVar) -> T): T {
+public inline fun <T> withException(body: (NativePlacement, CPointer<CPointerVar<ExceptionInfo>>) -> T): T {
     contract {
         callsInPlace(body, InvocationKind.EXACTLY_ONCE)
     }
 
     return memScoped {
-        val exceptionInfo = alloc<ExceptionInfoPtrVar>()
+        val exceptionInfo = alloc<CPointerVar<ExceptionInfo>>()
 
-        val result = body(this, exceptionInfo)
+        val result = body(this, exceptionInfo.ptr)
 
         MagickExceptionHelper.check(exceptionInfo.value)
 

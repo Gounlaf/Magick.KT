@@ -56,25 +56,62 @@ import imagemagick.bridge.compositeGravity
 import imagemagick.bridge.compression
 import imagemagick.bridge.contrast
 import imagemagick.bridge.contrastStretch
+import imagemagick.bridge.convolve
+import imagemagick.bridge.copyPixels
+import imagemagick.bridge.crop
+import imagemagick.bridge.cycleColormap
+import imagemagick.bridge.decipher
 import imagemagick.bridge.depth
+import imagemagick.bridge.deskew
+import imagemagick.bridge.despeckle
+import imagemagick.bridge.determineBitDepth
+import imagemagick.bridge.determineColorType
 import imagemagick.bridge.dispose
+import imagemagick.bridge.distort
+import imagemagick.bridge.edge
+import imagemagick.bridge.emboss
+import imagemagick.bridge.encipher
 import imagemagick.bridge.encodingGeometry
 import imagemagick.bridge.endian
+import imagemagick.bridge.enhance
+import imagemagick.bridge.equalize
+import imagemagick.bridge.evaluateFunction
+import imagemagick.bridge.evaluateGeometry
+import imagemagick.bridge.evaluateOperator
+import imagemagick.bridge.extent
 import imagemagick.bridge.fileName
 import imagemagick.bridge.filterType
+import imagemagick.bridge.flip
+import imagemagick.bridge.flop
 import imagemagick.bridge.format
+import imagemagick.bridge.frame
+import imagemagick.bridge.fx
 import imagemagick.bridge.gamma
+import imagemagick.bridge.gammaCorrect
+import imagemagick.bridge.gaussianBlur
+import imagemagick.bridge.getArtifact
 import imagemagick.bridge.getAttribute
 import imagemagick.bridge.getNextArtifactName
 import imagemagick.bridge.getNextAttributeName
 import imagemagick.bridge.getNextProfileName
 import imagemagick.bridge.gifDisposeMethod
+import imagemagick.bridge.grayscale
+import imagemagick.bridge.haldClut
 import imagemagick.bridge.hasAlpha
 import imagemagick.bridge.hasChannel
+import imagemagick.bridge.hasProfile
 import imagemagick.bridge.height
+import imagemagick.bridge.houghLine
+import imagemagick.bridge.implode
 import imagemagick.bridge.interlace
 import imagemagick.bridge.interpolate
+import imagemagick.bridge.interpolativeResize
 import imagemagick.bridge.isOpaque
+import imagemagick.bridge.kmeans
+import imagemagick.bridge.kuwahara
+import imagemagick.bridge.linearStretch
+import imagemagick.bridge.liquidRescale
+import imagemagick.bridge.localContrast
 import imagemagick.bridge.matteColor
 import imagemagick.bridge.meanErrorPerPixel
 import imagemagick.bridge.normalizedMaximumError
@@ -96,6 +133,7 @@ import imagemagick.bridge.setAlpha
 import imagemagick.bridge.setArtifact
 import imagemagick.bridge.setAttribute
 import imagemagick.bridge.setColorMetric
+import imagemagick.bridge.sigmoidalContrast
 import imagemagick.bridge.signature
 import imagemagick.bridge.totalColors
 import imagemagick.bridge.virtualPixelMethod
@@ -109,8 +147,11 @@ import imagemagick.core.enums.ColorType
 import imagemagick.core.enums.CompositeOperator
 import imagemagick.core.enums.CompressionMethod
 import imagemagick.core.enums.DensityUnit
+import imagemagick.core.enums.DistortMethod
 import imagemagick.core.enums.Endian
 import imagemagick.core.enums.ErrorMetric
+import imagemagick.core.enums.EvaluateFunction
+import imagemagick.core.enums.EvaluateOperator
 import imagemagick.core.enums.FilterType
 import imagemagick.core.enums.GifDisposeMethod
 import imagemagick.core.enums.Gravity
@@ -118,6 +159,7 @@ import imagemagick.core.enums.Interlace
 import imagemagick.core.enums.NoiseType
 import imagemagick.core.enums.OrientationType
 import imagemagick.core.enums.PixelChannel
+import imagemagick.core.enums.PixelIntensityMethod
 import imagemagick.core.enums.PixelInterpolateMethod
 import imagemagick.core.enums.RenderingIntent
 import imagemagick.core.enums.VirtualPixelMethod
@@ -129,6 +171,7 @@ import imagemagick.magicknative.exceptions.withException
 import imagemagick.magicknative.matrices.NativeDoubleMatrix
 import imagemagick.magicknative.settings.NativeDrawingSettings
 import imagemagick.magicknative.types.NativeMagickRectangle
+import imagemagick.magicknative.types.NativeOffsetInfo
 import imagemagick.magicknative.types.NativePrimaryInfo
 import kotlin.contracts.ExperimentalContracts
 import kotlin.experimental.ExperimentalNativeApi
@@ -155,6 +198,7 @@ import imagemagick.core.types.MagickGeometry as IMagickGeometry
 @ExperimentalStdlibApi
 @ExperimentalForeignApi
 public class NativeMagickImage : NativeInstance<Image>, AutoCloseable {
+    // TODO Review me: zero ptr might not be necessary
     public var ptr: CPointer<Image> = zero
         get() {
             if (field === zero) {
@@ -176,8 +220,8 @@ public class NativeMagickImage : NativeInstance<Image>, AutoCloseable {
 
     @ExperimentalContracts
     public constructor(settings: NativeMagickSettings) {
-        ptr = withException { _, exceptionInfo ->
-            MagickImage_Create(settings.ptr, exceptionInfo.ptr)
+        ptr = withException { _, exceptionPtr ->
+            MagickImage_Create(settings.ptr, exceptionPtr)
         } ?: error("Failed to instantiate native MagickImage")
     }
 
@@ -388,44 +432,34 @@ public class NativeMagickImage : NativeInstance<Image>, AutoCloseable {
     @ExperimentalContracts
     @Throws(MagickException::class)
     public fun adaptiveBlur(radius: Double, sigma: Double): Unit {
-        ptr.adaptiveBlur(radius, sigma)?.let {
-            ptr = it
-        }
+        ptr.adaptiveBlur(radius, sigma).updateSelf()
     }
 
     @ExperimentalContracts
     @Throws(MagickException::class)
     public fun adaptiveResize(geometry: IMagickGeometry): Unit {
-        ptr.adaptiveResize(geometry.toString())?.let {
-            ptr = it
-        }
+        ptr.adaptiveResize(geometry.toString()).updateSelf()
     }
 
     @ExperimentalContracts
     @ExperimentalNativeApi
     @Throws(MagickException::class)
     public fun adaptiveSharpen(radius: Double, sigma: Double, channels: Channels): Unit {
-        ptr.adaptiveSharpen(radius, sigma, channels)?.let {
-            ptr = it
-        }
+        ptr.adaptiveSharpen(radius, sigma, channels).updateSelf()
     }
 
     @ExperimentalContracts
     @ExperimentalNativeApi
     @Throws(MagickException::class)
     public fun adaptiveThreshold(with: UInt, height: UInt, bias: Double, channels: Channels): Unit {
-        ptr.adaptiveThreshold(with.toULong(), height.toULong(), bias, channels)?.let {
-            ptr = it
-        }
+        ptr.adaptiveThreshold(with.toULong(), height.toULong(), bias, channels).updateSelf()
     }
 
     @ExperimentalContracts
     @ExperimentalNativeApi
     @Throws(MagickException::class)
     public fun addNoise(noiseType: NoiseType, attenuate: Double, channels: Channels): Unit {
-        ptr.addNoise(noiseType, attenuate, channels)?.let {
-            ptr = it
-        }
+        ptr.addNoise(noiseType, attenuate, channels).updateSelf()
     }
 
     @ExperimentalContracts
@@ -438,9 +472,7 @@ public class NativeMagickImage : NativeInstance<Image>, AutoCloseable {
         translateX: Double,
         translateY: Double,
     ): Unit {
-        ptr.affineTransform(scaleX, scaleY, shearX, shearY, translateX, translateY)?.let {
-            ptr = it
-        }
+        ptr.affineTransform(scaleX, scaleY, shearX, shearY, translateX, translateY).updateSelf()
     }
 
     @ExperimentalContracts
@@ -479,7 +511,7 @@ public class NativeMagickImage : NativeInstance<Image>, AutoCloseable {
     @ExperimentalContracts
     @Throws(MagickException::class)
     public fun bilateralBlur(width: UInt, height: UInt, intensitySigma: Double, spatialSigma: Double) {
-        ptr.bilateralBlur(width.toULong(), height.toULong(), intensitySigma, spatialSigma)?.let { ptr = it }
+        ptr.bilateralBlur(width.toULong(), height.toULong(), intensitySigma, spatialSigma).updateSelf()
     }
 
     @ExperimentalContracts
@@ -491,20 +523,20 @@ public class NativeMagickImage : NativeInstance<Image>, AutoCloseable {
     @ExperimentalContracts
     @Throws(MagickException::class)
     public fun blueShift(factor: Double): Unit {
-        ptr.blueShift(factor)?.let { ptr = it }
+        ptr.blueShift(factor).updateSelf()
     }
 
     @ExperimentalContracts
     @ExperimentalNativeApi
     @Throws(MagickException::class)
     public fun blur(radius: Double, sigma: Double, channels: Channels): Unit {
-        ptr.blur(radius, sigma, channels)?.let { ptr = it }
+        ptr.blur(radius, sigma, channels).updateSelf()
     }
 
     @ExperimentalContracts
     @Throws(MagickException::class)
     public fun border(value: NativeMagickRectangle): Unit {
-        ptr.border(value)?.let { ptr = it }
+        ptr.border(value).updateSelf()
     }
 
     @ExperimentalContracts
@@ -516,19 +548,19 @@ public class NativeMagickImage : NativeInstance<Image>, AutoCloseable {
     @ExperimentalContracts
     @Throws(MagickException::class)
     public fun cannyEdge(radius: Double, sigma: Double, lower: Percentage, upper: Percentage): Unit {
-        ptr.cannyEdge(radius, sigma, lower.toDouble() / 100, upper.toDouble() / 100)?.let { ptr = it }
+        ptr.cannyEdge(radius, sigma, lower.toDouble() / 100.0, upper.toDouble() / 100.0).updateSelf()
     }
 
     @ExperimentalContracts
     @Throws(MagickException::class)
     public fun charcoal(radius: Double, sigma: Double): Unit {
-        ptr.charcoal(radius, sigma)?.let { ptr = it }
+        ptr.charcoal(radius, sigma).updateSelf()
     }
 
     @ExperimentalContracts
     @Throws(MagickException::class)
     public fun chop(geometry: NativeMagickRectangle): Unit {
-        ptr.chop(geometry)?.let { ptr = it }
+        ptr.chop(geometry).updateSelf()
     }
 
     @ExperimentalContracts
@@ -558,13 +590,17 @@ public class NativeMagickImage : NativeInstance<Image>, AutoCloseable {
     @ExperimentalContracts
     @Throws(MagickException::class)
     public fun colorMatrix(matrix: NativeDoubleMatrix): Unit {
-        ptr.colorMatrix(matrix)?.let { ptr = it }
+        ptr.colorMatrix(matrix).updateSelf()
     }
 
     @ExperimentalContracts
     @ExperimentalNativeApi
     @Throws(MagickException::class)
-    public inline fun compare(image: NativeMagickImage, metric: ErrorMetric, channels: Channels): Pair<Double, CPointer<Image>?> =
+    public inline fun compare(
+        image: NativeMagickImage,
+        metric: ErrorMetric,
+        channels: Channels,
+    ): Pair<Double, CPointer<Image>?> =
         ptr.compare(image, metric, channels)
 
     @ExperimentalContracts
@@ -611,15 +647,223 @@ public class NativeMagickImage : NativeInstance<Image>, AutoCloseable {
 
     @ExperimentalContracts
     @Throws(MagickException::class)
+    public inline fun convolve(matrix: NativeDoubleMatrix): Unit = ptr.convolve(matrix)
+
+    @ExperimentalContracts
+    @ExperimentalNativeApi
+    @Throws(MagickException::class)
+    public inline fun copyPixels(
+        source: NativeMagickImage,
+        geometry: NativeMagickRectangle,
+        offset: NativeOffsetInfo,
+        channels: Channels,
+    ): Unit = ptr.copyPixels(source, geometry, offset, channels)
+
+    @ExperimentalContracts
+    @Throws(MagickException::class)
+    public fun crop(geometry: IMagickGeometry, gravity: Gravity): Unit {
+        ptr.crop(geometry.toString(), gravity).updateSelf()
+    }
+
+    @ExperimentalContracts
+    @Throws(MagickException::class)
+    public inline fun cycleColormap(amount: Long): Unit = ptr.cycleColormap(amount)
+
+    @ExperimentalContracts
+    @Throws(MagickException::class)
+    public inline fun decipher(passphrase: String): Unit = ptr.decipher(passphrase)
+
+    @ExperimentalContracts
+    @Throws(MagickException::class)
+    public fun deskew(threshold: Double): Unit {
+        ptr.deskew(threshold).updateSelf()
+    }
+
+    @ExperimentalContracts
+    @Throws(MagickException::class)
+    public fun despeckle(): Unit {
+        ptr.despeckle().updateSelf()
+    }
+
+    @ExperimentalContracts
+    @ExperimentalNativeApi
+    @Throws(MagickException::class)
+    public inline fun determineBitDepth(channels: Channels): ULong = ptr.determineBitDepth(channels)
+
+    @ExperimentalContracts
+    @Throws(MagickException::class)
+    public inline fun determineColorType(): ColorType = ptr.determineColorType()
+
+    @ExperimentalContracts
+    @Throws(MagickException::class)
+    public fun distort(method: DistortMethod, bestfit: Boolean, arguments: DoubleArray): Unit {
+        ptr.distort(method, bestfit, arguments).updateSelf()
+    }
+
+    @ExperimentalContracts
+    @Throws(MagickException::class)
+    public fun edge(radius: Double): Unit {
+        ptr.edge(radius).updateSelf()
+    }
+
+    @ExperimentalContracts
+    @Throws(MagickException::class)
+    public fun emboss(radius: Double, sigma: Double): Unit {
+        ptr.emboss(radius, sigma).updateSelf()
+    }
+
+    @ExperimentalContracts
+    @Throws(MagickException::class)
+    public inline fun encipher(passphrase: String): Unit = ptr.encipher(passphrase)
+
+    @ExperimentalContracts
+    @Throws(MagickException::class)
+    public fun enhance(): Unit {
+        ptr.enhance().updateSelf()
+    }
+
+    @ExperimentalContracts
+    @ExperimentalNativeApi
+    @Throws(MagickException::class)
+    public inline fun equalize(channels: Channels): Unit = ptr.equalize(channels)
+
+    @ExperimentalContracts
+    @ExperimentalNativeApi
+    @Throws(MagickException::class)
+    public inline fun evaluateFunction(
+        channels: Channels,
+        evaluateFunction: EvaluateFunction,
+        values: DoubleArray,
+    ): Unit = ptr.evaluateFunction(channels, evaluateFunction, values)
+
+    @ExperimentalContracts
+    @ExperimentalNativeApi
+    @Throws(MagickException::class)
+    public inline fun evaluateGeometry(
+        channels: Channels,
+        geometry: NativeMagickRectangle,
+        evaluateOperator: EvaluateOperator,
+        value: Double,
+    ): Unit = ptr.evaluateGeometry(channels, geometry, evaluateOperator, value)
+
+    @ExperimentalContracts
+    @ExperimentalNativeApi
+    @Throws(MagickException::class)
+    public inline fun evaluateOperator(channels: Channels, evaluateOperator: EvaluateOperator, value: Double): Unit =
+        ptr.evaluateOperator(channels, evaluateOperator, value)
+
+    @ExperimentalContracts
+    @Throws(MagickException::class)
+    public fun extent(geometry: IMagickGeometry, gravity: Gravity): Unit {
+        ptr.extent(geometry.toString(), gravity).updateSelf()
+    }
+
+    @ExperimentalContracts
+    @Throws(MagickException::class)
+    public fun flip(): Unit {
+        ptr.flip().updateSelf()
+    }
+
+    @ExperimentalContracts
+    @Throws(MagickException::class)
+    public fun flop(): Unit {
+        ptr.flop().updateSelf()
+    }
+
+    @ExperimentalContracts
+    @Throws(MagickException::class)
+    public fun frame(geometry: NativeMagickRectangle): Unit {
+        ptr.frame(geometry).updateSelf()
+    }
+
+    @ExperimentalContracts
+    @ExperimentalNativeApi
+    @Throws(MagickException::class)
+    public fun fx(expression: String, channels: Channels): Unit {
+        ptr.fx(expression, channels).updateSelf()
+    }
+
+    @ExperimentalContracts
+    @ExperimentalNativeApi
+    @Throws(MagickException::class)
+    public inline fun gammaCorrect(gamma: Double, channels: Channels): Unit = ptr.gammaCorrect(gamma, channels)
+
+    @ExperimentalContracts
+    @ExperimentalNativeApi
+    @Throws(MagickException::class)
+    public fun gaussianBlur(radius: Double, sigma: Double, channels: Channels): Unit {
+        ptr.gaussianBlur(radius, sigma, channels).updateSelf()
+    }
+
+    @ExperimentalContracts
+    @Throws(MagickException::class)
     public inline fun getAttribute(name: String): String? = ptr.getAttribute(name)
 
-    public inline fun hasChannel(channel: PixelChannel): Boolean = ptr.hasChannel(channel)
+    public inline fun getArtifact(name: String): String? = ptr.getArtifact(name)
 
     public inline fun getNextArtifactName(): String? = ptr.getNextArtifactName()
 
     public inline fun getNextAttributeName(): String? = ptr.getNextAttributeName()
 
     public inline fun getNextProfileName(): String? = ptr.getNextProfileName()
+
+    @ExperimentalContracts
+    @Throws(MagickException::class)
+    public inline fun grayscale(method: PixelIntensityMethod): Unit = ptr.grayscale(method)
+
+    @ExperimentalContracts
+    @Throws(MagickException::class)
+    public inline fun haldClut(image: NativeMagickImage): Unit = ptr.haldClut(image)
+
+    public inline fun hasChannel(channel: PixelChannel): Boolean = ptr.hasChannel(channel)
+
+    public inline fun hasProfile(name: String): Boolean = ptr.hasProfile(name)
+
+    @ExperimentalContracts
+    @Throws(MagickException::class)
+    public inline fun houghLine(width: ULong, height: ULong, threshold: ULong): Unit =
+        ptr.houghLine(width, height, threshold)
+
+    @ExperimentalContracts
+    @Throws(MagickException::class)
+    public fun implode(amount: Double, method: PixelInterpolateMethod): Unit {
+        ptr.implode(amount, method).updateSelf()
+    }
+
+    @ExperimentalContracts
+    @Throws(MagickException::class)
+    public fun interpolativeResize(geometry: IMagickGeometry, method: PixelInterpolateMethod): Unit {
+        ptr.interpolativeResize(geometry.toString(), method).updateSelf()
+    }
+
+    @ExperimentalContracts
+    @Throws(MagickException::class)
+    public inline fun kmeans(numberColors: ULong, maxIterations: ULong, tolerance: Double): Unit =
+        ptr.kmeans(numberColors, maxIterations, tolerance)
+
+    @ExperimentalContracts
+    @Throws(MagickException::class)
+    public fun kuwahara(radius: Double, sigma: Double): Unit {
+        ptr.kuwahara(radius, sigma).updateSelf()
+    }
+
+    @ExperimentalContracts
+    @Throws(MagickException::class)
+    public inline fun linearStretch(blackPoint: Double, whitePoint: Double): Unit =
+        ptr.linearStretch(blackPoint, whitePoint)
+
+    @ExperimentalContracts
+    @Throws(MagickException::class)
+    public fun liquidRescale(geometry: IMagickGeometry, deltaX: Double, rigidity: Double): Unit {
+        ptr.liquidRescale(geometry.toString(), deltaX, rigidity).updateSelf()
+    }
+
+    @ExperimentalContracts
+    @ExperimentalNativeApi
+    @Throws(MagickException::class)
+    public fun localContrast(radius: Double, strength: Double, channels: Channels): Unit {
+        ptr.localContrast(radius, strength, channels).updateSelf()
+    }
 
     // Diff from Magick.NET: a native version required in parameters
     public fun readBlob(
@@ -782,13 +1026,24 @@ public class NativeMagickImage : NativeInstance<Image>, AutoCloseable {
     @Throws(MagickException::class)
     public inline fun setColorMetric(image: NativeMagickImage): Boolean = ptr.setColorMetric(image)
 
-    public companion object {
-        public data class CompareResult(
-            /** Difference image instance */
-            public val result: CPointer<Image>?,
-            public val distortion: Double,
-        )
+    @ExperimentalContracts
+    @ExperimentalNativeApi
+    @Throws(MagickException::class)
+    public inline fun sigmoidalContrast(
+        sharpen: Boolean,
+        contrast: Double,
+        midpoint: Double,
+        channels: Channels,
+    ): Unit {
+        ptr.sigmoidalContrast(sharpen, contrast, midpoint, channels)
+    }
 
+    private inline fun CPointer<Image>?.updateSelf(): CPointer<Image> {
+        this?.let { ptr = it }
+        return ptr
+    }
+
+    public companion object {
         internal val zero: CPointer<Image> = memScoped {
             zeroValue<Image>().ptr
         }

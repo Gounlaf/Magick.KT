@@ -6,6 +6,7 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import imagemagick.core.MagickImage as IMagickImage
 import imagemagick.core.types.MagickGeometry as IMagickGeometry
 
+@Suppress("KDocMissingDocumentation")
 public data class MagickRectangle(val x: Int, val y: Int, val width: UInt, val height: UInt) {
     public companion object {
         @ExperimentalStdlibApi

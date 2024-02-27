@@ -272,8 +272,8 @@ public inline fun CPointer<DrawInfo>.setAffine(
 @ExperimentalNativeApi
 @ExperimentalStdlibApi
 public inline fun CPointer<DrawInfo>.setFillPattern(value: NativeMagickImage): Unit =
-    withException { _, exceptionInfo ->
-        DrawingSettings_SetFillPattern(this@setFillPattern, value.ptr, exceptionInfo.ptr)
+    withException { _, exceptionPtr ->
+        DrawingSettings_SetFillPattern(this@setFillPattern, value.ptr, exceptionPtr)
     }
 
 @ExperimentalForeignApi
@@ -285,8 +285,8 @@ public inline fun CPointer<DrawInfo>.setStrokeDashArray(value: DoubleArray): Uni
 @ExperimentalNativeApi
 @ExperimentalStdlibApi
 public inline fun CPointer<DrawInfo>.setStrokePattern(value: NativeMagickImage): Unit =
-    withException { _, exceptionInfo ->
-        DrawingSettings_SetStrokePattern(this@setStrokePattern, value.ptr, exceptionInfo.ptr)
+    withException { _, exceptionPtr ->
+        DrawingSettings_SetStrokePattern(this@setStrokePattern, value.ptr, exceptionPtr)
     }
 
 @ExperimentalForeignApi

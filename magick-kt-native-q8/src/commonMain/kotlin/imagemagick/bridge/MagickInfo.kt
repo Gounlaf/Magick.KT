@@ -68,9 +68,9 @@ public inline fun CPointer<MagickInfo>.supportsWriting(): Boolean =
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(Exception::class)
-public inline fun UByteArray.getInfoWithBlob(): CPointer<MagickInfo>? = withException { _, exceptionInfo ->
+public inline fun UByteArray.getInfoWithBlob(): CPointer<MagickInfo>? = withException { _, exceptionPtr ->
     this.usePinned {
-        MagickFormatInfo_GetInfoWithBlob(it.addressOf(0), this.size.convert(), exceptionInfo.ptr)
+        MagickFormatInfo_GetInfoWithBlob(it.addressOf(0), this.size.convert(), exceptionPtr)
     }
 }
 
@@ -85,10 +85,10 @@ public data class MagickFormatInfoList(val ptr: CPointer<CPointerVar<ByteVar>>, 
         @ExperimentalStdlibApi
         @ExperimentalContracts
         @ExperimentalForeignApi
-        public inline fun create(): MagickFormatInfoList? = withException { placement, exceptionInfo ->
+        public inline fun create(): MagickFormatInfoList? = withException { placement, exceptionPtr ->
             val length = placement.alloc<size_tVar>()
 
-            MagickFormatInfo_CreateList(length.ptr, exceptionInfo.ptr)?.let {
+            MagickFormatInfo_CreateList(length.ptr, exceptionPtr)?.let {
                 MagickFormatInfoList(it, length.value.toUInt())
             }
         }
@@ -104,6 +104,6 @@ public inline fun MagickFormatInfoList.dispose() {
 @ExperimentalContracts
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
-public inline fun MagickFormatInfoList.getInfo(index: UInt): CPointer<MagickInfo>? = withException { _, exceptionInfo ->
-    MagickFormatInfo_GetInfo(ptr, index.convert(), exceptionInfo.ptr)
+public inline fun MagickFormatInfoList.getInfo(index: UInt): CPointer<MagickInfo>? = withException { _, exceptionPtr ->
+    MagickFormatInfo_GetInfo(ptr, index.convert(), exceptionPtr)
 }

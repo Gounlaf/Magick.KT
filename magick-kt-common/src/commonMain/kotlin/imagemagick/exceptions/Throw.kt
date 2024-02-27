@@ -1,3 +1,5 @@
+@file:Suppress("KDocMissingDocumentation")
+
 package imagemagick.exceptions
 
 import imagemagick.core.types.Percentage
@@ -13,12 +15,37 @@ public inline fun throwIfEmpty(parameterName: String, value: String): Unit = req
 }
 
 @Throws(IllegalArgumentException::class)
+public inline fun throwIfEmpty(parameterName: String, value: DoubleArray): Unit = require(value.isNotEmpty()) {
+    "Value cannot be empty; parameter: $parameterName."
+}
+
+@Throws(IllegalArgumentException::class)
 public inline fun throwIfEmpty(value: UByteArray): Unit = require(value.isNotEmpty()) {
     "Value cannot be empty."
 }
 
 @Throws(IllegalArgumentException::class)
 public inline fun throwIfNegative(parameterName: String, value: Percentage): Unit = require(value.toDouble() >= 0.0) {
+    "Value should not be negative; parameter: $parameterName."
+}
+
+@Throws(IllegalArgumentException::class)
+public inline fun throwIfNegative(parameterName: String, value: UInt): Unit = require(value >= 0u) {
+    "Value should not be negative; parameter: $parameterName."
+}
+
+@Throws(IllegalArgumentException::class)
+public inline fun throwIfNegative(parameterName: String, value: Int): Unit = require(value >= 0) {
+    "Value should not be negative; parameter: $parameterName."
+}
+
+@Throws(IllegalArgumentException::class)
+public inline fun throwIfNegative(parameterName: String, value: ULong): Unit = require(value >= 0u) {
+    "Value should not be negative; parameter: $parameterName."
+}
+
+@Throws(IllegalArgumentException::class)
+public inline fun throwIfNegative(parameterName: String, value: Long): Unit = require(value >= 0) {
     "Value should not be negative; parameter: $parameterName."
 }
 

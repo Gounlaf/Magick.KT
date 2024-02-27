@@ -8,8 +8,11 @@ import imagemagick.core.enums.ColorSpace
 import imagemagick.core.enums.ColorType
 import imagemagick.core.enums.CompositeOperator
 import imagemagick.core.enums.CompressionMethod
+import imagemagick.core.enums.DistortMethod
 import imagemagick.core.enums.Endian
 import imagemagick.core.enums.ErrorMetric
+import imagemagick.core.enums.EvaluateFunction
+import imagemagick.core.enums.EvaluateOperator
 import imagemagick.core.enums.FilterType
 import imagemagick.core.enums.GifDisposeMethod
 import imagemagick.core.enums.Gravity
@@ -18,6 +21,7 @@ import imagemagick.core.enums.MagickFormat
 import imagemagick.core.enums.NoiseType
 import imagemagick.core.enums.OrientationType
 import imagemagick.core.enums.PixelChannel
+import imagemagick.core.enums.PixelIntensityMethod
 import imagemagick.core.enums.PixelInterpolateMethod
 import imagemagick.core.enums.RenderingIntent
 import imagemagick.core.enums.VirtualPixelMethod
@@ -32,6 +36,9 @@ import okio.Source
 import imagemagick.core.drawables.DrawableAffine as IDrawableAffine
 import imagemagick.core.matrices.ConvolveMatrix as IConvolveMatrix
 import imagemagick.core.matrices.MagickColorMatrix as IMagickColorMatrix
+import imagemagick.core.settings.DeskewSettings as IDeskewSettings
+import imagemagick.core.settings.DistortSettings as IDistortSettings
+import imagemagick.core.settings.KmeansSettings as IKmeansSettings
 import imagemagick.core.types.ChromaticityInfo as IChromaticityInfo
 import imagemagick.core.types.MagickErrorInfo as IMagickErrorInfo
 import imagemagick.core.types.MagickGeometry as IMagickGeometry
@@ -1436,218 +1443,224 @@ public interface MagickImage {
     @Throws(MagickException::class)
     public fun convolve(matrix: IConvolveMatrix)
 
-//    /**
-//     * Copies pixels from the source image to the destination image.
-//     *
-//     * @param source The source image to copy the pixels from.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun copyPixels(source: MagickImage)
-//
-//    /**
-//     * Copies pixels from the source image to the destination image.
-//     *
-//     * @param source The source image to copy the pixels from.
-//     * @param channels The channels to copy.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun copyPixels(source: MagickImage, channels: Channels)
-//
-//    /**
-//     * Copies pixels from the source image to the destination image.
-//     *
-//     * @param source The source image to copy the pixels from.
-//     * @param geometry The geometry to copy.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun copyPixels(source: MagickImage, geometry: IMagickGeometry)
-//
-//    /**
-//     * Copies pixels from the source image to the destination image.
-//     *
-//     * @param source The source image to copy the pixels from.
-//     * @param geometry The geometry to copy.
-//     * @param channels The channels to copy.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun copyPixels(source: MagickImage, geometry: IMagickGeometry, channels: Channels)
-//
-//    /**
-//     * Copies pixels from the source image as defined by the geometry the destination image at
-//     * the specified offset.
-//     *
-//     * @param source The source image to copy the pixels from.
-//     * @param geometry The geometry to copy.
-//     * @param x The X offset to start the copy from.
-//     * @param y The Y offset to start the copy from.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun copyPixels(source: MagickImage, geometry: IMagickGeometry, x: Int, y: Int)
-//
-//    /**
-//     * Copies pixels from the source image as defined by the geometry the destination image at
-//     * the specified offset.
-//     *
-//     * @param source The source image to copy the pixels from.
-//     * @param geometry The geometry to copy.
-//     * @param x The X offset to copy the pixels to.
-//     * @param y The Y offset to copy the pixels to.
-//     * @param channels The channels to copy.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun copyPixels(source: MagickImage, geometry: IMagickGeometry, x: Int, y: Int, channels: Channels)
-//
-//    /**
-//     * Crop image (subregion of original image). RePage should be called unless the Page information
-//     * is needed.
-//     *
-//     * @param width The width of the subregion.
-//     * @param height The height of the subregion.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun crop(width: Int, height: Int)
-//
-//    /**
-//     * Crop image (subregion of original image). RePage should be called unless the Page information
-//     * is needed.
-//     *
-//     * @param width The width of the subregion.
-//     * @param height The height of the subregion.
-//     * @param gravity The position where the cropping should start from.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun crop(width: Int, height: Int, gravity: Gravity)
-//
-//    /**
-//     * Crop image (subregion of original image). RePage should be called unless the Page information
-//     * is needed.
-//     *
-//     * @param geometry The subregion to crop.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun crop(geometry: IMagickGeometry)
-//
-//    /**
-//     * Crop image (subregion of original image). RePage should be called unless the Page information
-//     * is needed.
-//     *
-//     * @param geometry The subregion to crop.
-//     * @param gravity The position where the cropping should start from.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun crop(geometry: IMagickGeometry, gravity: Gravity)
-//
-//    /**
-//     * Displaces an image's colormap by a given number of positions.
-//     *
-//     * @param amount Displace the colormap this amount.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun cycleColormap(amount: Int)
-//
-//    /**
-//     * Converts cipher pixels to plain pixels.
-//     *
-//     * @param passphrase The password that was used to encrypt the image.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun decipher(passphrase: String)
-//
-//    /**
-//     * Removes skew from the image. Skew is an artifact that occurs in scanned images because of
-//     * the camera being misaligned, imperfections in the scanning or surface, or simply because
-//     * the paper was not placed completely flat when scanned. The value of threshold ranges
-//     * from 0 to QuantumRange.
-//     *
-//     * @param threshold The threshold.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     * @return The angle that was used.
-//     */
-//    public fun deskew(threshold: Percentage): Double
-//
-//    /**
-//     * Removes skew from the image. Skew is an artifact that occurs in scanned images because of
-//     * the camera being misaligned, imperfections in the scanning or surface, or simply because
-//     * the paper was not placed completely flat when scanned. The value of threshold ranges
-//     * from 0 to QuantumRange.
-//     *
-//     * @param settings The deskew settings.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     * @return The angle that was used.
-//     */
-//    public fun deskew(settings: IDeskewSettings): Double
-//
-//    /**
-//     * Despeckle image (reduce speckle noise).
-//     *
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun despeckle()
-//
-//    /**
-//     * Determines the bit depth (bits allocated to red/green/blue components). Use the Depth
-//     * property to get the current value.
-//     *
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     * @return The bit depth (bits allocated to red/green/blue components).
-//     */
-//    public fun determineBitDepth(): Int
-//
-//    /**
-//     * Determines the bit depth (bits allocated to red/green/blue components) of the specified channel.
-//     *
-//     * @param channels The channel to get the depth for.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     * @return The bit depth (bits allocated to red/green/blue components) of the specified channel.
-//     */
-//    public fun determineBitDepth(channels: Channels): Int
-//
-//    /**
-//     * Determines the color type of the image. This method can be used to automatically make the
-//     * type GrayScale.
-//     *
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     * @return The color type of the image.
-//     */
-//    public fun determineColorType(): ColorType
-//
-//    /**
-//     * Distorts an image using various distortion methods, by mapping color lookups of the source
-//     * image to a new destination image of the same size as the source image.
-//     *
-//     * @param method The distortion method to use.
-//     * @param arguments An array containing the arguments for the distortion.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun distort(method: DistortMethod, vararg arguments: Double)
-//
-//    /**
-//     * Distorts an image using various distortion methods, by mapping color lookups of the source
-//     * image to a new destination image usually of the same size as the source image, unless
-//     * 'bestfit' is set to true.
-//     *
-//     * @param method The distortion method to use.
-//     * @param settings The settings for the distort operation.
-//     * @param arguments An array containing the arguments for the distortion.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun distort(method: DistortMethod, settings: IDistortSettings, vararg arguments: Double)
-//
+    /**
+     * Copies pixels from the source image to the destination image.
+     *
+     * @param source The source image to copy the pixels from.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun copyPixels(source: MagickImage): Unit = copyPixels(source, Channels.UNDEFINED)
+
+    /**
+     * Copies pixels from the source image to the destination image.
+     *
+     * @param source The source image to copy the pixels from.
+     * @param channels The channels to copy.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun copyPixels(source: MagickImage, channels: Channels): Unit
+
+    /**
+     * Copies pixels from the source image to the destination image.
+     *
+     * @param source The source image to copy the pixels from.
+     * @param geometry The geometry to copy.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun copyPixels(source: MagickImage, geometry: IMagickGeometry): Unit =
+        copyPixels(source, geometry, Channels.UNDEFINED)
+
+    /**
+     * Copies pixels from the source image to the destination image.
+     *
+     * @param source The source image to copy the pixels from.
+     * @param geometry The geometry to copy.
+     * @param channels The channels to copy.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun copyPixels(source: MagickImage, geometry: IMagickGeometry, channels: Channels): Unit =
+        copyPixels(source, geometry, Channels.UNDEFINED)
+
+    /**
+     * Copies pixels from the source image as defined by the geometry the destination image at
+     * the specified offset.
+     *
+     * @param source The source image to copy the pixels from.
+     * @param geometry The geometry to copy.
+     * @param x The X offset to start the copy from.
+     * @param y The Y offset to start the copy from.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun copyPixels(source: MagickImage, geometry: IMagickGeometry, x: Int, y: Int): Unit =
+        copyPixels(source, geometry, x, y, Channels.UNDEFINED)
+
+    /**
+     * Copies pixels from the source image as defined by the geometry the destination image at
+     * the specified offset.
+     *
+     * @param source The source image to copy the pixels from.
+     * @param geometry The geometry to copy.
+     * @param x The X offset to copy the pixels to.
+     * @param y The Y offset to copy the pixels to.
+     * @param channels The channels to copy.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun copyPixels(source: MagickImage, geometry: IMagickGeometry, x: Int, y: Int, channels: Channels): Unit
+
+    /**
+     * Crop image (subregion of original image). RePage should be called unless the Page information
+     * is needed.
+     *
+     * @param width The width of the subregion.
+     * @param height The height of the subregion.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun crop(width: UInt, height: UInt): Unit = crop(width, height, Gravity.UNDEFINED)
+
+    /**
+     * Crop image (subregion of original image). RePage should be called unless the Page information
+     * is needed.
+     *
+     * @param width The width of the subregion.
+     * @param height The height of the subregion.
+     * @param gravity The position where the cropping should start from.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun crop(width: UInt, height: UInt, gravity: Gravity): Unit
+
+    /**
+     * Crop image (subregion of original image). RePage should be called unless the Page information
+     * is needed.
+     *
+     * @param geometry The subregion to crop.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun crop(geometry: IMagickGeometry): Unit = crop(geometry, Gravity.UNDEFINED)
+
+    /**
+     * Crop image (subregion of original image). RePage should be called unless the Page information
+     * is needed.
+     *
+     * @param geometry The subregion to crop.
+     * @param gravity The position where the cropping should start from.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun crop(geometry: IMagickGeometry, gravity: Gravity): Unit
+
+    /**
+     * Displaces an image's colormap by a given number of positions.
+     *
+     * @param amount Displace the colormap this amount.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun cycleColormap(amount: Int): Unit
+
+    /**
+     * Converts cipher pixels to plain pixels.
+     *
+     * @param passphrase The password that was used to encrypt the image.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun decipher(passphrase: String): Unit
+
+    /**
+     * Removes skew from the image. Skew is an artifact that occurs in scanned images because of
+     * the camera being misaligned, imperfections in the scanning or surface, or simply because
+     * the paper was not placed completely flat when scanned. The value of threshold ranges
+     * from 0 to QuantumRange.
+     *
+     * @param threshold The threshold.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     * @return The angle that was used.
+     */
+    public fun deskew(threshold: Percentage): Double
+
+    /**
+     * Removes skew from the image. Skew is an artifact that occurs in scanned images because of
+     * the camera being misaligned, imperfections in the scanning or surface, or simply because
+     * the paper was not placed completely flat when scanned. The value of threshold ranges
+     * from 0 to QuantumRange.
+     *
+     * @param settings The deskew settings.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     * @return The angle that was used.
+     */
+    public fun deskew(settings: IDeskewSettings): Double
+
+    /**
+     * Despeckle image (reduce speckle noise).
+     *
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun despeckle(): Unit
+
+    /**
+     * Determines the bit depth (bits allocated to red/green/blue components). Use the Depth
+     * property to get the current value.
+     *
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     * @return The bit depth (bits allocated to red/green/blue components).
+     */
+    @Throws(MagickException::class)
+    public fun determineBitDepth(): UInt = determineBitDepth(Channels.UNDEFINED)
+
+    /**
+     * Determines the bit depth (bits allocated to red/green/blue components) of the specified channel.
+     *
+     * @param channels The channel to get the depth for.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     * @return The bit depth (bits allocated to red/green/blue components) of the specified channel.
+     */
+    @Throws(MagickException::class)
+    public fun determineBitDepth(channels: Channels): UInt
+
+    /**
+     * Determines the color type of the image. This method can be used to automatically make the
+     * type GrayScale.
+     *
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     * @return The color type of the image.
+     */
+    @Throws(MagickException::class)
+    public fun determineColorType(): ColorType
+
+    /**
+     * Distorts an image using various distortion methods, by mapping color lookups of the source
+     * image to a new destination image of the same size as the source image.
+     *
+     * @param method The distortion method to use.
+     * @param arguments An array containing the arguments for the distortion.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun distort(method: DistortMethod, vararg arguments: Double): Unit
+
+    /**
+     * Distorts an image using various distortion methods, by mapping color lookups of the source
+     * image to a new destination image usually of the same size as the source image, unless
+     * 'bestfit' is set to true.
+     *
+     * @param method The distortion method to use.
+     * @param settings The settings for the distort operation.
+     * @param arguments An array containing the arguments for the distortion.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun distort(method: DistortMethod, settings: IDistortSettings, vararg arguments: Double): Unit
+
 //    /**
 //     * Draw on image using one or more drawables.
 //     *
@@ -1655,7 +1668,7 @@ public interface MagickImage {
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-//    public fun draw(vararg drawables: IDrawable)
+//    public fun draw(vararg drawables: IDrawable): Unit
 //
 //    /**
 //     * Draw on image using a collection of drawables.
@@ -1664,193 +1677,203 @@ public interface MagickImage {
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-//    public fun draw()
-//
-//    /**
-//     * Edge image (highlight edges in image).
-//     *
-//     * @param radius The radius of the pixel neighborhood.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun edge(radius: Double)
-//
-//    /**
-//     * Emboss image (highlight edges with 3D effect) with default value (0x1).
-//     *
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun emboss()
-//
-//    /**
-//     * Emboss image (highlight edges with 3D effect).
-//     *
-//     * @param radius The radius of the Gaussian, in pixels, not counting the center pixel.
-//     * @param sigma The standard deviation of the Laplacian, in pixels.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun emboss(radius: Double, sigma: Double)
-//
-//    /**
-//     * Converts pixels to cipher-pixels.
-//     *
-//     * @param passphrase The password that to encrypt the image with.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun encipher(passphrase: String)
-//
-//    /**
-//     * Applies a digital filter that improves the quality of a noisy image.
-//     *
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun enhance()
-//
-//    /**
-//     * Applies a histogram equalization to the image.
-//     *
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun equalize()
-//
-//    /**
-//     * Applies a histogram equalization to the image.
-//     *
-//     * @param channels The channel(s) to apply the operator on.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun equalize(channels: Channels)
-//
-//    /**
-//     * Apply an arithmetic or bitwise operator to the image pixel quantums.
-//     *
-//     * @param channels The channel(s) to apply the operator on.
-//     * @param evaluateFunction The function.
-//     * @param arguments The arguments for the function.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun evaluate(channels: Channels, evaluateFunction: EvaluateFunction, vararg arguments: Double)
-//
-//    /**
-//     * Apply an arithmetic or bitwise operator to the image pixel quantums.
-//     *
-//     * @param channels The channel(s) to apply the operator on.
-//     * @param evaluateOperator The operator.
-//     * @param value The value.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun evaluate(channels: Channels, evaluateOperator: EvaluateOperator, value: Double)
-//
-//    /**
-//     * Apply an arithmetic or bitwise operator to the image pixel quantums.
-//     *
-//     * @param channels The channel(s) to apply the operator on.
-//     * @param evaluateOperator The operator.
-//     * @param percentage The value.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun evaluate(channels: Channels, evaluateOperator: EvaluateOperator, percentage: Percentage)
-//
-//    /**
-//     * Apply an arithmetic or bitwise operator to the image pixel quantums.
-//     *
-//     * @param channels The channel(s) to apply the operator on.
-//     * @param geometry The geometry to use.
-//     * @param evaluateOperator The operator.
-//     * @param value The value.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun evaluate(channels: Channels, geometry: IMagickGeometry, evaluateOperator: EvaluateOperator, value: Double)
-//
-//    /**
-//     * Apply an arithmetic or bitwise operator to the image pixel quantums.
-//     *
-//     * @param channels The channel(s) to apply the operator on.
-//     * @param geometry The geometry to use.
-//     * @param evaluateOperator The operator.
-//     * @param percentage The value.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun evaluate(channels: Channels, geometry: IMagickGeometry, evaluateOperator: EvaluateOperator, percentage: Percentage)
-//
-//    /**
-//     * Extend the image as defined by the width and height.
-//     *
-//     * @param width The width to extend the image to.
-//     * @param height The height to extend the image to.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun extent(width: Int, height: Int)
-//
-//    /**
-//     * Extend the image as defined by the width and height.
-//     *
-//     * @param x The X offset from origin.
-//     * @param y The Y offset from origin.
-//     * @param width The width to extend the image to.
-//     * @param height The height to extend the image to.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun extent(x: Int, y: Int, width: Int, height: Int)
-//
-//    /**
-//     * Extend the image as defined by the width and height.
-//     *
-//     * @param width The width to extend the image to.
-//     * @param height The height to extend the image to.
-//     * @param gravity The placement gravity.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun extent(width: Int, height: Int, gravity: Gravity)
-//
-//    /**
-//     * Extend the image as defined by the rectangle.
-//     *
-//     * @param geometry The geometry to extend the image to.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun extent(geometry: IMagickGeometry)
-//
-//    /**
-//     * Extend the image as defined by the geometry.
-//     *
-//     * @param geometry The geometry to extend the image to.
-//     * @param gravity The placement gravity.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun extent(geometry: IMagickGeometry, gravity: Gravity)
-//
-//    /**
-//     * Flip image (reflect each scanline in the vertical direction).
-//     *
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun flip()
-//
-//    /**
-//     * Flop image (reflect each scanline in the horizontal direction).
-//     *
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun flop()
+//    public fun draw(): Unit
+
+    /**
+     * Edge image (highlight edges in image).
+     *
+     * @param radius The radius of the pixel neighborhood.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun edge(radius: Double): Unit
+
+    /**
+     * Emboss image (highlight edges with 3D effect) with default value (0x1).
+     *
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun emboss(): Unit = emboss(0.0, 1.0)
+
+    /**
+     * Emboss image (highlight edges with 3D effect).
+     *
+     * @param radius The radius of the Gaussian, in pixels, not counting the center pixel.
+     * @param sigma The standard deviation of the Laplacian, in pixels.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun emboss(radius: Double, sigma: Double): Unit
+
+    /**
+     * Converts pixels to cipher-pixels.
+     *
+     * @param passphrase The password that to encrypt the image with.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun encipher(passphrase: String): Unit
+
+    /**
+     * Applies a digital filter that improves the quality of a noisy image.
+     *
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun enhance(): Unit
+
+    /**
+     * Applies a histogram equalization to the image.
+     *
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun equalize(): Unit = equalize(Channels.UNDEFINED)
+
+    /**
+     * Applies a histogram equalization to the image.
+     *
+     * @param channels The channel(s) to apply the operator on.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun equalize(channels: Channels): Unit
+
+    /**
+     * Apply an arithmetic or bitwise operator to the image pixel quantums.
+     *
+     * @param channels The channel(s) to apply the operator on.
+     * @param evaluateFunction The function.
+     * @param arguments The arguments for the function.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun evaluate(channels: Channels, evaluateFunction: EvaluateFunction, vararg arguments: Double): Unit
+
+    /**
+     * Apply an arithmetic or bitwise operator to the image pixel quantums.
+     *
+     * @param channels The channel(s) to apply the operator on.
+     * @param evaluateOperator The operator.
+     * @param value The value.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun evaluate(channels: Channels, evaluateOperator: EvaluateOperator, value: Double): Unit
+
+    /**
+     * Apply an arithmetic or bitwise operator to the image pixel quantums.
+     *
+     * @param channels The channel(s) to apply the operator on.
+     * @param evaluateOperator The operator.
+     * @param percentage The value.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun evaluate(channels: Channels, evaluateOperator: EvaluateOperator, percentage: Percentage): Unit
+
+    /**
+     * Apply an arithmetic or bitwise operator to the image pixel quantums.
+     *
+     * @param channels The channel(s) to apply the operator on.
+     * @param geometry The geometry to use.
+     * @param evaluateOperator The operator.
+     * @param value The value.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun evaluate(
+        channels: Channels,
+        geometry: IMagickGeometry,
+        evaluateOperator: EvaluateOperator,
+        value: Double,
+    ): Unit
+
+    /**
+     * Apply an arithmetic or bitwise operator to the image pixel quantums.
+     *
+     * @param channels The channel(s) to apply the operator on.
+     * @param geometry The geometry to use.
+     * @param evaluateOperator The operator.
+     * @param percentage The value.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun evaluate(
+        channels: Channels,
+        geometry: IMagickGeometry,
+        evaluateOperator: EvaluateOperator,
+        percentage: Percentage,
+    ): Unit
+
+    /**
+     * Extend the image as defined by the width and height.
+     *
+     * @param width The width to extend the image to.
+     * @param height The height to extend the image to.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun extent(width: UInt, height: UInt): Unit
+
+    /**
+     * Extend the image as defined by the width and height.
+     *
+     * @param x The X offset from origin.
+     * @param y The Y offset from origin.
+     * @param width The width to extend the image to.
+     * @param height The height to extend the image to.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun extent(x: Int, y: Int, width: UInt, height: UInt): Unit
+
+    /**
+     * Extend the image as defined by the width and height.
+     *
+     * @param width The width to extend the image to.
+     * @param height The height to extend the image to.
+     * @param gravity The placement gravity.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun extent(width: UInt, height: UInt, gravity: Gravity): Unit
+
+    /**
+     * Extend the image as defined by the rectangle.
+     *
+     * @param geometry The geometry to extend the image to.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun extent(geometry: IMagickGeometry): Unit
+
+    /**
+     * Extend the image as defined by the geometry.
+     *
+     * @param geometry The geometry to extend the image to.
+     * @param gravity The placement gravity.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun extent(geometry: IMagickGeometry, gravity: Gravity): Unit
+
+    /**
+     * Flip image (reflect each scanline in the vertical direction).
+     *
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun flip(): Unit
+
+    /**
+     * Flop image (reflect each scanline in the horizontal direction).
+     *
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun flop()
 //
 //    /**
 //     * Obtain font metrics for text string given current font, pointsize, and density settings.
@@ -1882,124 +1905,124 @@ public interface MagickImage {
 //     */
 //    @Throws(MagickException::class)
 //    string? FormatExpression(string expression);
-//
-//    /**
-//     * Frame image with the default geometry (25x25+6+6).
-//     *
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun frame()
-//
-//    /**
-//     * Frame image with the specified geometry.
-//     *
-//     * @param geometry The geometry of the frame.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun frame(geometry: IMagickGeometry)
-//
-//    /**
-//     * Frame image with the specified with and height.
-//     *
-//     * @param width The width of the frame.
-//     * @param height The height of the frame.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun frame(width: Int, height: Int)
-//
-//    /**
-//     * Frame image with the specified with, height, innerBevel and outerBevel.
-//     *
-//     * @param width The width of the frame.
-//     * @param height The height of the frame.
-//     * @param innerBevel The inner bevel of the frame.
-//     * @param outerBevel The outer bevel of the frame.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun frame(width: Int, height: Int, innerBevel: Int, outerBevel: Int)
-//
-//    /**
-//     * Applies a mathematical expression to the image.
-//     *
-//     * @param expression The expression to apply.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun fx(expression: String)
-//
-//    /**
-//     * Applies a mathematical expression to the image.
-//     *
-//     * @param expression The expression to apply.
-//     * @param channels The channel(s) to apply the expression to.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun fx(expression: String, channels: Channels)
-//
-//    /**
-//     * Gamma correct image.
-//     *
-//     * @param gamma The image gamma.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun gammaCorrect(gamma: Double)
-//
-//    /**
-//     * Gamma correct image.
-//     *
-//     * @param gamma The image gamma for the channel.
-//     * @param channels The channel(s) to gamma correct.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun gammaCorrect(gamma: Double, channels: Channels)
-//
-//    /**
-//     * Gaussian blur image.
-//     *
-//     * @param radius The number of neighbor pixels to be included in the convolution.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun gaussianBlur(radius: Double)
-//
-//    /**
-//     * Gaussian blur image.
-//     *
-//     * @param radius The number of neighbor pixels to be included in the convolution.
-//     * @param channels The channel(s) to blur.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun gaussianBlur(radius: Double, channels: Channels)
-//
-//    /**
-//     * Gaussian blur image.
-//     *
-//     * @param radius The number of neighbor pixels to be included in the convolution.
-//     * @param sigma The standard deviation of the gaussian bell curve.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun gaussianBlur(radius: Double, sigma: Double)
-//
-//    /**
-//     * Gaussian blur image.
-//     *
-//     * @param radius The number of neighbor pixels to be included in the convolution.
-//     * @param sigma The standard deviation of the gaussian bell curve.
-//     * @param channels The channel(s) to blur.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun gaussianBlur(radius: Double, sigma: Double, channels: Channels)
-//
+
+    /**
+     * Frame image with the default geometry (25x25+6+6).
+     *
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun frame(): Unit
+
+    /**
+     * Frame image with the specified geometry.
+     *
+     * @param geometry The geometry of the frame.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun frame(geometry: IMagickGeometry): Unit
+
+    /**
+     * Frame image with the specified with and height.
+     *
+     * @param width The width of the frame.
+     * @param height The height of the frame.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun frame(width: UInt, height: UInt): Unit
+
+    /**
+     * Frame image with the specified with, height, innerBevel and outerBevel.
+     *
+     * @param width The width of the frame.
+     * @param height The height of the frame.
+     * @param innerBevel The inner bevel of the frame.
+     * @param outerBevel The outer bevel of the frame.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun frame(width: UInt, height: UInt, innerBevel: Int, outerBevel: Int): Unit
+
+    /**
+     * Applies a mathematical expression to the image.
+     *
+     * @param expression The expression to apply.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun fx(expression: String): Unit = fx(expression, Channels.UNDEFINED)
+
+    /**
+     * Applies a mathematical expression to the image.
+     *
+     * @param expression The expression to apply.
+     * @param channels The channel(s) to apply the expression to.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun fx(expression: String, channels: Channels): Unit
+
+    /**
+     * Gamma correct image.
+     *
+     * @param gamma The image gamma.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun gammaCorrect(gamma: Double): Unit = gammaCorrect(gamma, Channels.UNDEFINED)
+
+    /**
+     * Gamma correct image.
+     *
+     * @param gamma The image gamma for the channel.
+     * @param channels The channel(s) to gamma correct.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun gammaCorrect(gamma: Double, channels: Channels): Unit
+
+    /**
+     * Gaussian blur image.
+     *
+     * @param radius The number of neighbor pixels to be included in the convolution.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun gaussianBlur(radius: Double): Unit = gaussianBlur(radius, 1.0, Channels.UNDEFINED)
+
+    /**
+     * Gaussian blur image.
+     *
+     * @param radius The number of neighbor pixels to be included in the convolution.
+     * @param channels The channel(s) to blur.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun gaussianBlur(radius: Double, channels: Channels): Unit = gaussianBlur(radius, 1.0, channels)
+
+    /**
+     * Gaussian blur image.
+     *
+     * @param radius The number of neighbor pixels to be included in the convolution.
+     * @param sigma The standard deviation of the gaussian bell curve.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun gaussianBlur(radius: Double, sigma: Double): Unit = gaussianBlur(radius, sigma, Channels.UNDEFINED)
+
+    /**
+     * Gaussian blur image.
+     *
+     * @param radius The number of neighbor pixels to be included in the convolution.
+     * @param sigma The standard deviation of the gaussian bell curve.
+     * @param channels The channel(s) to blur.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun gaussianBlur(radius: Double, sigma: Double, channels: Channels)
+
 //    /**
 //     * Retrieve the 8bim profile from the image.
 //     *
@@ -2007,15 +2030,14 @@ public interface MagickImage {
 //     * @return The 8bim profile from the image.
 //     */
 //    IEightBimProfile? Get8BimProfile();
-//
-//    /**
-//     * Returns the value of the artifact with the specified name.
-//     *
-//     * @param name The name of the artifact.
-//     * @return The value of the artifact with the specified name.
-//     */
-//    string? GetArtifact(string name);
-//
+
+    /**
+     * Returns the value of the artifact with the specified name.
+     *
+     * @param name The name of the artifact.
+     * @return The value of the artifact with the specified name.
+     */
+    public fun getArtifact(name: String): String?
 
     /**
      * Returns the value of a named image attribute.
@@ -2027,25 +2049,25 @@ public interface MagickImage {
     @Throws(MagickException::class)
     public fun getAttribute(name: String): String?
 
-//    /**
-//     * Returns the default clipping path. Null will be returned if the image has no clipping path.
-//     *
-//     * @return The default clipping path. Null will be returned if the image has no clipping path.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    string? GetClippingPath();
-//
-//    /**
-//     * Returns the clipping path with the specified name. Null will be returned if the image has no clipping path.
-//     *
-//     * @param pathName Name of clipping path resource. If name is preceded by #, use clipping path numbered by name.
-//     * @return The clipping path with the specified name. Null will be returned if the image has no clipping path.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    string? GetClippingPath(string pathName);
-//
+    /**
+     * Returns the default clipping path. Null will be returned if the image has no clipping path.
+     *
+     * @return The default clipping path. Null will be returned if the image has no clipping path.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun getClippingPath(): String? = getClippingPath("#1")
+
+    /**
+     * Returns the clipping path with the specified name. Null will be returned if the image has no clipping path.
+     *
+     * @param pathName Name of clipping path resource. If name is preceded by #, use clipping path numbered by name.
+     * @return The clipping path with the specified name. Null will be returned if the image has no clipping path.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun getClippingPath(pathName: String): String? = getAttribute("8BIM:1999,2998:$pathName")
+
 //    /**
 //     * Retrieve the color profile from the image.
 //     *
@@ -2091,70 +2113,70 @@ public interface MagickImage {
 //     */
 //    @Throws(MagickException::class)
 //    IXmpProfile? GetXmpProfile();
-//
-//    /**
-//     * Converts the colors in the image to gray.
-//     *
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun grayscale()
-//
-//    /**
-//     * Converts the colors in the image to gray.
-//     *
-//     * @param method The pixel intensity method to use.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun grayscale(method: PixelIntensityMethod)
-//
-//    /**
-//     * Apply a color lookup table (Hald CLUT) to the image.
-//     *
-//     * @param image The image to use.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun haldClut(image: MagickImage)
-//
-//    /**
-//     * Gets a value indicating whether a profile with the specified name already exists on the image.
-//     *
-//     * @param name The name of the profile.
-//     * @return A value indicating whether a profile with the specified name already exists on the image.
-//     */
-//    public fun hasProfile(name: String): Boolean
-//
-//    /**
-//     * Identifies lines in the image.
-//     *
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun houghLine()
-//
-//    /**
-//     * Identifies lines in the image.
-//     *
-//     * @param width The width of the neighborhood.
-//     * @param height The height of the neighborhood.
-//     * @param threshold The line count threshold.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun houghLine(width: Int, height: Int, threshold: Int)
-//
-//    /**
-//     * Implode image (special effect).
-//     *
-//     * @param amount The extent of the implosion.
-//     * @param method Pixel interpolate method.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun implode(amount: Double, method: PixelInterpolateMethod)
-//
+
+    /**
+     * Converts the colors in the image to gray.
+     *
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun grayscale(): Unit = grayscale(PixelIntensityMethod.UNDEFINED)
+
+    /**
+     * Converts the colors in the image to gray.
+     *
+     * @param method The pixel intensity method to use.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun grayscale(method: PixelIntensityMethod): Unit
+
+    /**
+     * Apply a color lookup table (Hald CLUT) to the image.
+     *
+     * @param image The image to use.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun haldClut(image: MagickImage): Unit
+
+    /**
+     * Gets a value indicating whether a profile with the specified name already exists on the image.
+     *
+     * @param name The name of the profile.
+     * @return A value indicating whether a profile with the specified name already exists on the image.
+     */
+    public fun hasProfile(name: String): Boolean
+
+    /**
+     * Identifies lines in the image.
+     *
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun houghLine(): Unit = houghLine(0u, 0u, 40u)
+
+    /**
+     * Identifies lines in the image.
+     *
+     * @param width The width of the neighborhood.
+     * @param height The height of the neighborhood.
+     * @param threshold The line count threshold.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun houghLine(width: UInt, height: UInt, threshold: UInt): Unit
+
+    /**
+     * Implode image (special effect).
+     *
+     * @param amount The extent of the implosion.
+     * @param method Pixel interpolate method.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun implode(amount: Double, method: PixelInterpolateMethod): Unit
+
 //    /**
 //     * Import pixels from the specified byte array.
 //     *
@@ -2163,7 +2185,7 @@ public interface MagickImage {
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-//    public fun importPixels(data: UByteArray, settings: IPixelImportSettings)
+//    public fun importPixels(data: UByteArray, settings: IPixelImportSettings): Unit
 //
 //    /**
 //     * Import pixels from the specified byte array.
@@ -2176,56 +2198,60 @@ public interface MagickImage {
 //    @Throws(MagickException::class)
 //    public fun importPixels(data: UByteArray, offset: Int, settings: IPixelImportSettings)
 //
-//    /**
-//     * Resize image to specified size using the specified interpolation method.
-//     *
-//     * @param width The new width.
-//     * @param height The new height.
-//     * @param method Pixel interpolate method.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun interpolativeResize(width: Int, height: Int, method: PixelInterpolateMethod)
-//
-//    /**
-//     * Resize image to specified size using the specified interpolation method.
-//     *
-//     * @param geometry The geometry to use.
-//     * @param method Pixel interpolate method.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun interpolativeResize(geometry: IMagickGeometry, method: PixelInterpolateMethod)
-//
-//    /**
-//     * Resize image to specified size using the specified interpolation method.
-//     *
-//     * @param percentage The percentage.
-//     * @param method Pixel interpolate method.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun interpolativeResize(percentage: Percentage, method: PixelInterpolateMethod)
-//
-//    /**
-//     * Resize image to specified size using the specified interpolation method.
-//     *
-//     * @param percentageWidth The percentage of the width.
-//     * @param percentageHeight The percentage of the height.
-//     * @param method Pixel interpolate method.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun interpolativeResize(percentageWidth: Percentage, percentageHeight: Percentage, method: PixelInterpolateMethod)
-//
-//    /**
-//     * Inverse contrast image (diminish intensity differences in image).
-//     *
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun inverseContrast()
-//
+    /**
+     * Resize image to specified size using the specified interpolation method.
+     *
+     * @param width The new width.
+     * @param height The new height.
+     * @param method Pixel interpolate method.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun interpolativeResize(width: UInt, height: UInt, method: PixelInterpolateMethod): Unit
+
+    /**
+     * Resize image to specified size using the specified interpolation method.
+     *
+     * @param geometry The geometry to use.
+     * @param method Pixel interpolate method.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun interpolativeResize(geometry: IMagickGeometry, method: PixelInterpolateMethod): Unit
+
+    /**
+     * Resize image to specified size using the specified interpolation method.
+     *
+     * @param percentage The percentage.
+     * @param method Pixel interpolate method.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun interpolativeResize(percentage: Percentage, method: PixelInterpolateMethod): Unit
+
+    /**
+     * Resize image to specified size using the specified interpolation method.
+     *
+     * @param percentageWidth The percentage of the width.
+     * @param percentageHeight The percentage of the height.
+     * @param method Pixel interpolate method.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun interpolativeResize(
+        percentageWidth: Percentage,
+        percentageHeight: Percentage,
+        method: PixelInterpolateMethod,
+    ): Unit
+
+    /**
+     * Inverse contrast image (diminish intensity differences in image).
+     *
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun inverseContrast(): Unit
+
 //    /**
 //     * Applies the reversed level operation to just the specific channels specified. It compresses
 //     * the full range of color values, so that they lie between the given black and white points.
@@ -2278,73 +2304,73 @@ public interface MagickImage {
 //    @Throws(MagickException::class)
 //    public fun inverseLevel(blackPointPercentage: Percentage, whitePointPercentage: Percentage, midpoint: Double, channels: Channels)
 //
-//    /**
-//     * Adjust the image contrast with an inverse non-linear sigmoidal contrast algorithm.
-//     *
-//     * @param contrast The contrast.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun inverseSigmoidalContrast(contrast: Double)
-//
-//    /**
-//     * Adjust the image contrast with an inverse non-linear sigmoidal contrast algorithm.
-//     *
-//     * @param contrast The contrast to use.
-//     * @param midpoint The midpoint to use.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun inverseSigmoidalContrast(contrast: Double, midpoint: Double)
-//
-//    /**
-//     * Adjust the image contrast with an inverse non-linear sigmoidal contrast algorithm.
-//     *
-//     * @param contrast The contrast to use.
-//     * @param midpoint The midpoint to use.
-//     * @param channels The channel(s) that should be adjusted.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun inverseSigmoidalContrast(contrast: Double, midpoint: Double, channels: Channels)
-//
-//    /**
-//     * Adjust the image contrast with an inverse non-linear sigmoidal contrast algorithm.
-//     *
-//     * @param contrast The contrast to use.
-//     * @param midpointPercentage The midpoint to use.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun inverseSigmoidalContrast(contrast: Double, midpointPercentage: Percentage)
-//
-//    /**
-//     * Applies k-means color reduction to an image. This is a colorspace clustering or segmentation technique.
-//     *
-//     * @param settings The kmeans settings.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun kmeans(settings: IKmeansSettings)
-//
-//    /**
-//     * An edge preserving noise reduction filter.
-//     *
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun kuwahara()
-//
-//    /**
-//     * An edge preserving noise reduction filter.
-//     *
-//     * @param radius The radius of the Gaussian, in pixels, not counting the center pixel.
-//     * @param sigma The standard deviation of the Laplacian, in pixels.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun kuwahara(radius: Double, sigma: Double)
-//
+    /**
+     * Adjust the image contrast with an inverse non-linear sigmoidal contrast algorithm.
+     *
+     * @param contrast The contrast.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun inverseSigmoidalContrast(contrast: Double): Unit
+
+    /**
+     * Adjust the image contrast with an inverse non-linear sigmoidal contrast algorithm.
+     *
+     * @param contrast The contrast to use.
+     * @param midpoint The midpoint to use.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun inverseSigmoidalContrast(contrast: Double, midpoint: Double): Unit
+
+    /**
+     * Adjust the image contrast with an inverse non-linear sigmoidal contrast algorithm.
+     *
+     * @param contrast The contrast to use.
+     * @param midpoint The midpoint to use.
+     * @param channels The channel(s) that should be adjusted.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun inverseSigmoidalContrast(contrast: Double, midpoint: Double, channels: Channels): Unit
+
+    /**
+     * Adjust the image contrast with an inverse non-linear sigmoidal contrast algorithm.
+     *
+     * @param contrast The contrast to use.
+     * @param midpointPercentage The midpoint to use.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun inverseSigmoidalContrast(contrast: Double, midpointPercentage: Percentage): Unit
+
+    /**
+     * Applies k-means color reduction to an image. This is a colorspace clustering or segmentation technique.
+     *
+     * @param settings The kmeans settings.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun kmeans(settings: IKmeansSettings): Unit
+
+    /**
+     * An edge preserving noise reduction filter.
+     *
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun kuwahara(): Unit = kuwahara(0.0, 0.0)
+
+    /**
+     * An edge preserving noise reduction filter.
+     *
+     * @param radius The radius of the Gaussian, in pixels, not counting the center pixel.
+     * @param sigma The standard deviation of the Laplacian, in pixels.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun kuwahara(radius: Double, sigma: Double): Unit
+
 //    /**
 //     * Adjust the levels of the image by scaling the colors falling between specified white and
 //     * black points to the full available quantum range. Uses a midpoint of 1.0.
@@ -2392,100 +2418,106 @@ public interface MagickImage {
 //     */
 //    @Throws(MagickException::class)
 //    public fun level(blackPointPercentage: Percentage, whitePointPercentage: Percentage, gamma: Double, channels: Channels)
-//
-//    /**
-//     * Discards any pixels below the black point and above the white point and levels the remaining pixels.
-//     *
-//     * @param blackPoint The black point.
-//     * @param whitePoint The white point.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun linearStretch(blackPoint: Percentage, whitePoint: Percentage)
-//
-//    /**
-//     * Rescales image with seam carving.
-//     *
-//     * @param width The new width.
-//     * @param height The new height.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun liquidRescale(width: Int, height: Int)
-//
-//    /**
-//     * Rescales image with seam carving.
-//     *
-//     * @param width The new width.
-//     * @param height The new height.
-//     * @param deltaX Maximum seam transversal step (0 means straight seams).
-//     * @param rigidity Introduce a bias for non-straight seams (typically 0).
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun liquidRescale(width: Int, height: Int, deltaX: Double, rigidity: Double)
-//
-//    /**
-//     * Rescales image with seam carving.
-//     *
-//     * @param geometry The geometry to use.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun liquidRescale(geometry: IMagickGeometry)
-//
-//    /**
-//     * Rescales image with seam carving.
-//     *
-//     * @param percentage The percentage.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun liquidRescale(percentage: Percentage)
-//
-//    /**
-//     * Rescales image with seam carving.
-//     *
-//     * @param percentageWidth The percentage of the width.
-//     * @param percentageHeight The percentage of the height.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun liquidRescale(percentageWidth: Percentage, percentageHeight: Percentage)
-//
-//    /**
-//     * Rescales image with seam carving.
-//     *
-//     * @param percentageWidth The percentage of the width.
-//     * @param percentageHeight The percentage of the height.
-//     * @param deltaX Maximum seam transversal step (0 means straight seams).
-//     * @param rigidity Introduce a bias for non-straight seams (typically 0).
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun liquidRescale(percentageWidth: Percentage, percentageHeight: Percentage, deltaX: Double, rigidity: Double)
-//
-//    /**
-//     * Local contrast enhancement.
-//     *
-//     * @param radius The radius of the Gaussian, in pixels, not counting the center pixel.
-//     * @param strength The strength of the blur mask.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun localContrast(radius: Double, strength: Percentage)
-//
-//    /**
-//     * Local contrast enhancement.
-//     *
-//     * @param radius The radius of the Gaussian, in pixels, not counting the center pixel.
-//     * @param strength The strength of the blur mask.
-//     * @param channels The channel(s) that should be changed.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun localContrast(radius: Double, strength: Percentage, channels: Channels)
-//
+
+    /**
+     * Discards any pixels below the black point and above the white point and levels the remaining pixels.
+     *
+     * @param blackPoint The black point.
+     * @param whitePoint The white point.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun linearStretch(blackPoint: Percentage, whitePoint: Percentage): Unit
+
+    /**
+     * Rescales image with seam carving.
+     *
+     * @param width The new width.
+     * @param height The new height.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun liquidRescale(width: UInt, height: UInt): Unit
+
+    /**
+     * Rescales image with seam carving.
+     *
+     * @param width The new width.
+     * @param height The new height.
+     * @param deltaX Maximum seam transversal step (0 means straight seams).
+     * @param rigidity Introduce a bias for non-straight seams (typically 0).
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun liquidRescale(width: UInt, height: UInt, deltaX: Double, rigidity: Double): Unit
+
+    /**
+     * Rescales image with seam carving.
+     *
+     * @param geometry The geometry to use.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun liquidRescale(geometry: IMagickGeometry): Unit
+
+    /**
+     * Rescales image with seam carving.
+     *
+     * @param percentage The percentage.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun liquidRescale(percentage: Percentage): Unit
+
+    /**
+     * Rescales image with seam carving.
+     *
+     * @param percentageWidth The percentage of the width.
+     * @param percentageHeight The percentage of the height.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun liquidRescale(percentageWidth: Percentage, percentageHeight: Percentage): Unit
+
+    /**
+     * Rescales image with seam carving.
+     *
+     * @param percentageWidth The percentage of the width.
+     * @param percentageHeight The percentage of the height.
+     * @param deltaX Maximum seam transversal step (0 means straight seams).
+     * @param rigidity Introduce a bias for non-straight seams (typically 0).
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun liquidRescale(
+        percentageWidth: Percentage,
+        percentageHeight: Percentage,
+        deltaX: Double,
+        rigidity: Double,
+    ): Unit
+
+    /**
+     * Local contrast enhancement.
+     *
+     * @param radius The radius of the Gaussian, in pixels, not counting the center pixel.
+     * @param strength The strength of the blur mask.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun localContrast(radius: Double, strength: Percentage): Unit =
+        localContrast(radius, strength, Channels.UNDEFINED)
+
+    /**
+     * Local contrast enhancement.
+     *
+     * @param radius The radius of the Gaussian, in pixels, not counting the center pixel.
+     * @param strength The strength of the blur mask.
+     * @param channels The channel(s) that should be changed.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun localContrast(radius: Double, strength: Percentage, channels: Channels): Unit
+
 //    /**
 //     * Lower image (darken the edges of an image to give a 3-D lowered effect).
 //     *

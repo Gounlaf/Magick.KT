@@ -10,7 +10,7 @@ import kotlinx.cinterop.ExperimentalForeignApi
  * Class that contains setting for the compare operations.
  */
 @ExperimentalForeignApi
-public class CompareSettings(
+public data class CompareSettings(
     override var metric: ErrorMetric = ErrorMetric.UNDEFINED,
     override var highlightColor: MagickColorQuantum<QuantumType>? = null,
     override var lowlightColor: MagickColorQuantum<QuantumType>? = null,
