@@ -66,8 +66,7 @@ public inline fun CPointer<ImageInfo>.dispose(): Unit = MagickSettings_Dispose(t
 public inline fun CPointer<ImageInfo>.antiAlias(): Boolean = MagickSettings_AntiAlias_Get(this).toPrimitive()
 
 @ExperimentalForeignApi
-public inline fun CPointer<ImageInfo>.antiAlias(value: Boolean): Unit =
-    MagickSettings_AntiAlias_Set(this, value.toNative())
+public inline fun CPointer<ImageInfo>.antiAlias(value: Boolean): Unit = MagickSettings_AntiAlias_Set(this, value.toNative())
 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
@@ -86,22 +85,19 @@ public inline fun CPointer<ImageInfo>.colorFuzz(value: Double): Unit = MagickSet
 public inline fun CPointer<ImageInfo>.colorSpace(): ColorSpace = MagickSettings_ColorSpace_Get(this).toMagick()
 
 @ExperimentalForeignApi
-public inline fun CPointer<ImageInfo>.colorSpace(value: ColorSpace): Unit =
-    MagickSettings_ColorSpace_Set(this, value.toNative())
+public inline fun CPointer<ImageInfo>.colorSpace(value: ColorSpace): Unit = MagickSettings_ColorSpace_Set(this, value.toNative())
 
 @ExperimentalForeignApi
 public inline fun CPointer<ImageInfo>.colorType(): ColorType = MagickSettings_ColorType_Get(this).toMagick()
 
 @ExperimentalForeignApi
-public inline fun CPointer<ImageInfo>.colorType(value: ColorType): Unit =
-    MagickSettings_ColorType_Set(this, value.toNative())
+public inline fun CPointer<ImageInfo>.colorType(value: ColorType): Unit = MagickSettings_ColorType_Set(this, value.toNative())
 
 @ExperimentalForeignApi
 public inline fun CPointer<ImageInfo>.compression(): CompressionMethod = MagickSettings_Compression_Get(this).toMagick()
 
 @ExperimentalForeignApi
-public inline fun CPointer<ImageInfo>.compression(value: CompressionMethod): Unit =
-    MagickSettings_Compression_Set(this, value.toNative())
+public inline fun CPointer<ImageInfo>.compression(value: CompressionMethod): Unit = MagickSettings_Compression_Set(this, value.toNative())
 
 @ExperimentalForeignApi
 public inline fun CPointer<ImageInfo>.debug(): Boolean = MagickSettings_Debug_Get(this).toPrimitive()
@@ -152,23 +148,22 @@ public inline fun CPointer<ImageInfo>.fontPointsize(value: Double): Unit = Magic
 public inline fun CPointer<ImageInfo>.interlace(): Interlace = MagickSettings_Interlace_Get(this).toMagick()
 
 @ExperimentalForeignApi
-public inline fun CPointer<ImageInfo>.interlace(value: Interlace): Unit =
-    MagickSettings_Interlace_Set(this, value.toNative())
+public inline fun CPointer<ImageInfo>.interlace(value: Interlace): Unit = MagickSettings_Interlace_Set(this, value.toNative())
 
 @ExperimentalForeignApi
 public inline fun CPointer<ImageInfo>.monochrome(): Boolean = MagickSettings_Monochrome_Get(this).toPrimitive()
 
 @ExperimentalForeignApi
-public inline fun CPointer<ImageInfo>.monochrome(value: Boolean): Unit =
-    MagickSettings_Monochrome_Set(this, value.toNative())
+public inline fun CPointer<ImageInfo>.monochrome(value: Boolean): Unit = MagickSettings_Monochrome_Set(this, value.toNative())
 
 @ExperimentalForeignApi
-public inline fun CPointer<ImageInfo>.numberScenes(value: UInt): Unit =
-    MagickSettings_SetNumberScenes(this, value.convert())
+public inline fun CPointer<ImageInfo>.numberScenes(value: UInt): Unit = MagickSettings_SetNumberScenes(this, value.convert())
 
 @ExperimentalForeignApi
-public inline fun CPointer<ImageInfo>.option(key: String, value: String?): Unit =
-    MagickSettings_SetOption(this, key, value)
+public inline fun CPointer<ImageInfo>.option(
+    key: String,
+    value: String?,
+): Unit = MagickSettings_SetOption(this, key, value)
 
 @ExperimentalForeignApi
 public inline fun CPointer<ImageInfo>.page(value: String?): Unit = MagickSettings_SetPage(this, value)

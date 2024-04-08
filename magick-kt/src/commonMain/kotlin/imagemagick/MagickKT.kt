@@ -1,10 +1,10 @@
 package imagemagick
 
 import imagemagick.core.MagickFormatInfo
-import kotlin.contracts.ExperimentalContracts
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.toKString
 import libMagickNative.Magick_Features_Get
+import kotlin.contracts.ExperimentalContracts
 import imagemagick.core.MagickKT as Interface
 
 @ExperimentalContracts

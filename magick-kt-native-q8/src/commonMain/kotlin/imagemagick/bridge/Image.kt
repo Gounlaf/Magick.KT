@@ -26,11 +26,11 @@ import imagemagick.core.enums.PixelChannel
 import imagemagick.core.enums.PixelIntensityMethod
 import imagemagick.core.enums.PixelInterpolateMethod
 import imagemagick.core.enums.RenderingIntent
+import imagemagick.core.enums.StatisticType
 import imagemagick.core.enums.VirtualPixelMethod
 import imagemagick.core.exceptions.MagickException
 import imagemagick.core.toMagick
 import imagemagick.core.toNative
-import imagemagick.core.types.Percentage
 import imagemagick.magicknative.NativeChannels.toNative
 import imagemagick.magicknative.NativeMagickImage
 import imagemagick.magicknative.colors.NativeMagickColor
@@ -43,8 +43,6 @@ import imagemagick.magicknative.toPrimitive
 import imagemagick.magicknative.types.NativeMagickRectangle
 import imagemagick.magicknative.types.NativeOffsetInfo
 import imagemagick.magicknative.types.NativePrimaryInfo
-import kotlin.contracts.ExperimentalContracts
-import kotlin.experimental.ExperimentalNativeApi
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.DoubleVar
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -56,6 +54,7 @@ import kotlinx.cinterop.ptr
 import kotlinx.cinterop.toKString
 import kotlinx.cinterop.usePinned
 import kotlinx.cinterop.value
+import libMagickNative.ChannelStatistics
 import libMagickNative.Image
 import libMagickNative.MagickImage_AdaptiveBlur
 import libMagickNative.MagickImage_AdaptiveResize
@@ -205,6 +204,8 @@ import libMagickNative.MagickImage_Page_Get
 import libMagickNative.MagickImage_Page_Set
 import libMagickNative.MagickImage_Quality_Get
 import libMagickNative.MagickImage_Quality_Set
+import libMagickNative.MagickImage_RaiseOrLower
+import libMagickNative.MagickImage_RegionMask
 import libMagickNative.MagickImage_RemoveArtifact
 import libMagickNative.MagickImage_RemoveAttribute
 import libMagickNative.MagickImage_RemoveProfile
@@ -213,18 +214,43 @@ import libMagickNative.MagickImage_RenderingIntent_Set
 import libMagickNative.MagickImage_ResetArtifactIterator
 import libMagickNative.MagickImage_ResetAttributeIterator
 import libMagickNative.MagickImage_ResetProfileIterator
+import libMagickNative.MagickImage_Resize
 import libMagickNative.MagickImage_ResolutionUnits_Get
 import libMagickNative.MagickImage_ResolutionUnits_Set
 import libMagickNative.MagickImage_ResolutionX_Get
 import libMagickNative.MagickImage_ResolutionX_Set
 import libMagickNative.MagickImage_ResolutionY_Get
 import libMagickNative.MagickImage_ResolutionY_Set
+import libMagickNative.MagickImage_Roll
+import libMagickNative.MagickImage_Rotate
+import libMagickNative.MagickImage_RotationalBlur
+import libMagickNative.MagickImage_Sample
+import libMagickNative.MagickImage_Scale
+import libMagickNative.MagickImage_Segment
+import libMagickNative.MagickImage_SelectiveBlur
+import libMagickNative.MagickImage_SepiaTone
 import libMagickNative.MagickImage_SetAlpha
 import libMagickNative.MagickImage_SetArtifact
 import libMagickNative.MagickImage_SetAttribute
+import libMagickNative.MagickImage_SetBitDepth
 import libMagickNative.MagickImage_SetColorMetric
+import libMagickNative.MagickImage_SetProfile
+import libMagickNative.MagickImage_SetReadMask
+import libMagickNative.MagickImage_SetWriteMask
+import libMagickNative.MagickImage_Shade
+import libMagickNative.MagickImage_Shadow
+import libMagickNative.MagickImage_Sharpen
+import libMagickNative.MagickImage_Shave
+import libMagickNative.MagickImage_Shear
 import libMagickNative.MagickImage_SigmoidalContrast
 import libMagickNative.MagickImage_Signature_Get
+import libMagickNative.MagickImage_Sketch
+import libMagickNative.MagickImage_Solarize
+import libMagickNative.MagickImage_SortPixels
+import libMagickNative.MagickImage_Splice
+import libMagickNative.MagickImage_Spread
+import libMagickNative.MagickImage_Statistic
+import libMagickNative.MagickImage_Statistics
 import libMagickNative.MagickImage_TotalColors_Get
 import libMagickNative.MagickImage_VirtualPixelMethod_Get
 import libMagickNative.MagickImage_VirtualPixelMethod_Set
@@ -232,13 +258,16 @@ import libMagickNative.MagickImage_Width_Get
 import libMagickNative.RectangleInfo
 import platform.posix.size_t
 import platform.posix.ssize_t
+import kotlin.contracts.ExperimentalContracts
+import kotlin.experimental.ExperimentalNativeApi
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class, RuntimeException::class)
-public inline fun CPointer<Image>.clone(): CPointer<Image> = withException { _, exceptionPtr ->
-    MagickImage_Clone(this@clone, exceptionPtr)
-} ?: throw RuntimeException()
+public inline fun CPointer<Image>.clone(): Pair<CPointer<Image>, MagickException?> =
+    withException({ it.dispose() }) { _, exceptionPtr ->
+        MagickImage_Clone(this@clone, exceptionPtr)
+    }
 
 @ExperimentalForeignApi
 public inline fun CPointer<Image>.dispose(): Unit = MagickImage_Dispose(this)
@@ -255,26 +284,24 @@ public inline fun CPointer<Image>.animationDelay(value: size_t): Unit = MagickIm
 public inline fun CPointer<Image>.animationIterations(): size_t = MagickImage_AnimationIterations_Get(this)
 
 @ExperimentalForeignApi
-public inline fun CPointer<Image>.animationIterations(value: size_t): Unit =
-    MagickImage_AnimationIterations_Set(this, value)
+public inline fun CPointer<Image>.animationIterations(value: size_t): Unit = MagickImage_AnimationIterations_Set(this, value)
 
 @ExperimentalForeignApi
 public inline fun CPointer<Image>.animationTicksPerSecond(): ssize_t = MagickImage_AnimationTicksPerSecond_Get(this)
 
 @ExperimentalForeignApi
-public inline fun CPointer<Image>.animationTicksPerSecond(value: ssize_t): Unit =
-    MagickImage_AnimationTicksPerSecond_Set(this, value)
+public inline fun CPointer<Image>.animationTicksPerSecond(value: ssize_t): Unit = MagickImage_AnimationTicksPerSecond_Set(this, value)
 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
-public inline fun CPointer<Image>.backgroundColor(): NativeMagickColor? = MagickImage_BackgroundColor_Get(this)?.let {
-    NativeMagickColor(it)
-}
+public inline fun CPointer<Image>.backgroundColor(): NativeMagickColor? =
+    MagickImage_BackgroundColor_Get(this)?.let {
+        NativeMagickColor(it)
+    }
 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
-public inline fun CPointer<Image>.backgroundColor(value: NativeMagickColor?): Unit =
-    MagickImage_BackgroundColor_Set(this, value?.ptr)
+public inline fun CPointer<Image>.backgroundColor(value: NativeMagickColor?): Unit = MagickImage_BackgroundColor_Set(this, value?.ptr)
 
 @ExperimentalForeignApi
 public inline fun CPointer<Image>.baseHeight(): size_t = MagickImage_BaseHeight_Get(this)
@@ -283,8 +310,7 @@ public inline fun CPointer<Image>.baseHeight(): size_t = MagickImage_BaseHeight_
 public inline fun CPointer<Image>.baseWidth(): size_t = MagickImage_BaseWidth_Get(this)
 
 @ExperimentalForeignApi
-public inline fun CPointer<Image>.blackPointCompensation(): Boolean =
-    MagickImage_BlackPointCompensation_Get(this).toPrimitive()
+public inline fun CPointer<Image>.blackPointCompensation(): Boolean = MagickImage_BlackPointCompensation_Get(this).toPrimitive()
 
 @ExperimentalForeignApi
 public inline fun CPointer<Image>.blackPointCompensation(value: Boolean): Unit =
@@ -292,85 +318,88 @@ public inline fun CPointer<Image>.blackPointCompensation(value: Boolean): Unit =
 
 @ExperimentalStdlibApi
 @ExperimentalForeignApi
-public inline fun CPointer<Image>.borderColor(): NativeMagickColor? = MagickImage_BorderColor_Get(this)?.let {
-    NativeMagickColor(it)
-}
+public inline fun CPointer<Image>.borderColor(): NativeMagickColor? =
+    MagickImage_BorderColor_Get(this)?.let {
+        NativeMagickColor(it)
+    }
 
 @ExperimentalStdlibApi
 @ExperimentalForeignApi
-public inline fun CPointer<Image>.borderColor(value: NativeMagickColor?): Unit =
-    MagickImage_BorderColor_Set(this, value?.ptr)
+public inline fun CPointer<Image>.borderColor(value: NativeMagickColor?): Unit = MagickImage_BorderColor_Set(this, value?.ptr)
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class, RuntimeException::class)
-public inline fun CPointer<Image>.boundingBox(): CPointer<RectangleInfo> = withException { _, exceptionPtr ->
-    MagickImage_BoundingBox_Get(this@boundingBox, exceptionPtr)
-} ?: throw RuntimeException()
+public inline fun CPointer<Image>.boundingBox(): Pair<CPointer<RectangleInfo>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_BoundingBox_Get(this@boundingBox, exceptionPtr)
+    }
 
 @ExperimentalForeignApi
 public inline fun CPointer<Image>.channelCount(): size_t = MagickImage_ChannelCount_Get(this)
 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
-public inline fun CPointer<Image>.chromaBlue(): NativePrimaryInfo? = MagickImage_ChromaBlue_Get(this)?.let {
-    NativePrimaryInfo(it)
-}
+public inline fun CPointer<Image>.chromaBlue(): NativePrimaryInfo? =
+    MagickImage_ChromaBlue_Get(this)?.let {
+        NativePrimaryInfo(it)
+    }
 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
-public inline fun CPointer<Image>.chromaBlue(value: NativePrimaryInfo?): Unit =
-    MagickImage_ChromaBlue_Set(this, value?.ptr)
+public inline fun CPointer<Image>.chromaBlue(value: NativePrimaryInfo?): Unit = MagickImage_ChromaBlue_Set(this, value?.ptr)
 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
-public inline fun CPointer<Image>.chromaGreen(): NativePrimaryInfo? = MagickImage_ChromaGreen_Get(this)?.let {
-    NativePrimaryInfo(it)
-}
+public inline fun CPointer<Image>.chromaGreen(): NativePrimaryInfo? =
+    MagickImage_ChromaGreen_Get(this)?.let {
+        NativePrimaryInfo(it)
+    }
 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
-public inline fun CPointer<Image>.chromaGreen(value: NativePrimaryInfo?): Unit =
-    MagickImage_ChromaGreen_Set(this, value?.ptr)
+public inline fun CPointer<Image>.chromaGreen(value: NativePrimaryInfo?): Unit = MagickImage_ChromaGreen_Set(this, value?.ptr)
 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
-public inline fun CPointer<Image>.chromaRed(): NativePrimaryInfo? = MagickImage_ChromaRed_Get(this)?.let {
-    NativePrimaryInfo(it)
-}
+public inline fun CPointer<Image>.chromaRed(): NativePrimaryInfo? =
+    MagickImage_ChromaRed_Get(this)?.let {
+        NativePrimaryInfo(it)
+    }
 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
-public inline fun CPointer<Image>.chromaRed(value: NativePrimaryInfo?): Unit =
-    MagickImage_ChromaRed_Set(this, value?.ptr)
+public inline fun CPointer<Image>.chromaRed(value: NativePrimaryInfo?): Unit = MagickImage_ChromaRed_Set(this, value?.ptr)
 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
-public inline fun CPointer<Image>.chromaWhite(): NativePrimaryInfo? = MagickImage_ChromaWhite_Get(this)?.let {
-    NativePrimaryInfo(it)
-}
+public inline fun CPointer<Image>.chromaWhite(): NativePrimaryInfo? =
+    MagickImage_ChromaWhite_Get(this)?.let {
+        NativePrimaryInfo(it)
+    }
 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
-public inline fun CPointer<Image>.chromaWhite(value: NativePrimaryInfo?): Unit =
-    MagickImage_ChromaWhite_Set(this, value?.ptr)
+public inline fun CPointer<Image>.chromaWhite(value: NativePrimaryInfo?): Unit = MagickImage_ChromaWhite_Set(this, value?.ptr)
 
 @ExperimentalForeignApi
-public inline fun CPointer<Image>.classType(): ClassType = memScoped {
-    val exceptionInfo = alloc<ExceptionInfoPtrVar>()
+public inline fun CPointer<Image>.classType(): ClassType =
+    memScoped {
+        val exceptionInfo = alloc<ExceptionInfoPtrVar>()
 
-    // the exception is required by the underlying API, but it never used
-    // https://github.com/dlemstra/Magick.Native/discussions/38
+        // the exception is required by the underlying API, but it never used
+        // https://github.com/dlemstra/Magick.Native/discussions/38
 
-    MagickImage_ClassType_Get(this@classType, exceptionInfo.ptr).toMagick()
-}
+        MagickImage_ClassType_Get(this@classType, exceptionInfo.ptr).toMagick()
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.classType(value: ClassType): Unit = withException { _, exceptionPtr ->
-    MagickImage_ClassType_Set(this@classType, value.toNative(), exceptionPtr)
-}
+public inline fun CPointer<Image>.classType(value: ClassType): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_ClassType_Set(this@classType, value.toNative(), exceptionPtr)
+    }
 
 @ExperimentalForeignApi
 public inline fun CPointer<Image>.colorFuzz(): Double = MagickImage_ColorFuzz_Get(this)
@@ -379,71 +408,75 @@ public inline fun CPointer<Image>.colorFuzz(): Double = MagickImage_ColorFuzz_Ge
 public inline fun CPointer<Image>.colorFuzz(value: Double): Unit = MagickImage_ColorFuzz_Set(this, value)
 
 @ExperimentalForeignApi
-public inline fun CPointer<Image>.colormapSize(): Long = memScoped {
-    val exceptionInfo = alloc<ExceptionInfoPtrVar>()
+public inline fun CPointer<Image>.colormapSize(): Long =
+    memScoped {
+        val exceptionInfo = alloc<ExceptionInfoPtrVar>()
 
-    // the exception is required by the underlying API, but it never used
-    // https://github.com/dlemstra/Magick.Native/discussions/38
+        // the exception is required by the underlying API, but it never used
+        // https://github.com/dlemstra/Magick.Native/discussions/38
 
-    MagickImage_ColormapSize_Get(this@colormapSize, exceptionInfo.ptr)
-}
-
-@ExperimentalContracts
-@ExperimentalForeignApi
-@Throws(MagickException::class)
-public inline fun CPointer<Image>.colormapSize(value: Long): Unit = withException { _, exceptionPtr ->
-    MagickImage_ColormapSize_Set(this@colormapSize, value, exceptionPtr)
-}
-
-@ExperimentalForeignApi
-public inline fun CPointer<Image>.colorSpace(): ColorSpace = memScoped {
-    val exceptionInfo = alloc<ExceptionInfoPtrVar>()
-
-    // the exception is required by the underlying API, but it never used
-    // https://github.com/dlemstra/Magick.Native/discussions/38
-
-    MagickImage_ColorSpace_Get(this@colorSpace, exceptionInfo.ptr).toMagick()
-}
+        MagickImage_ColormapSize_Get(this@colormapSize, exceptionInfo.ptr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.colorSpace(value: ColorSpace): Unit = withException { _, exceptionPtr ->
-    MagickImage_ColorSpace_Set(this@colorSpace, value.toNative(), exceptionPtr)
-}
+public inline fun CPointer<Image>.colormapSize(value: Long): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_ColormapSize_Set(this@colormapSize, value, exceptionPtr)
+    }
 
 @ExperimentalForeignApi
-public inline fun CPointer<Image>.colorType(): ColorType = memScoped {
-    val exceptionInfo = alloc<ExceptionInfoPtrVar>()
+public inline fun CPointer<Image>.colorSpace(): ColorSpace =
+    memScoped {
+        val exceptionInfo = alloc<ExceptionInfoPtrVar>()
 
-    val value = MagickImage_ColorType_Get(this@colorType, exceptionInfo.ptr)
+        // the exception is required by the underlying API, but it never used
+        // https://github.com/dlemstra/Magick.Native/discussions/38
 
-    // the exception is required by the underlying API, but it never used
-    // https://github.com/dlemstra/Magick.Native/discussions/38
-
-    value.toMagick()
-}
+        MagickImage_ColorSpace_Get(this@colorSpace, exceptionInfo.ptr).toMagick()
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.colorType(value: ColorType): Unit = withException { _, exceptionPtr ->
-    MagickImage_ColorType_Set(this@colorType, value.toNative(), exceptionPtr)
-}
+public inline fun CPointer<Image>.colorSpace(value: ColorSpace): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_ColorSpace_Set(this@colorSpace, value.toNative(), exceptionPtr)
+    }
+
+@ExperimentalForeignApi
+public inline fun CPointer<Image>.colorType(): ColorType =
+    memScoped {
+        val exceptionInfo = alloc<ExceptionInfoPtrVar>()
+
+        val value = MagickImage_ColorType_Get(this@colorType, exceptionInfo.ptr)
+
+        // the exception is required by the underlying API, but it never used
+        // https://github.com/dlemstra/Magick.Native/discussions/38
+
+        value.toMagick()
+    }
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+@Throws(MagickException::class)
+public inline fun CPointer<Image>.colorType(value: ColorType): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_ColorType_Set(this@colorType, value.toNative(), exceptionPtr)
+    }
 
 @ExperimentalForeignApi
 public inline fun CPointer<Image>.compose(): CompositeOperator = MagickImage_Compose_Get(this).toMagick()
 
 @ExperimentalForeignApi
-public inline fun CPointer<Image>.compose(value: CompositeOperator): Unit =
-    MagickImage_Compose_Set(this, value.toNative())
+public inline fun CPointer<Image>.compose(value: CompositeOperator): Unit = MagickImage_Compose_Set(this, value.toNative())
 
 @ExperimentalForeignApi
 public inline fun CPointer<Image>.compression(): CompressionMethod = MagickImage_Compression_Get(this).toMagick()
 
 @ExperimentalForeignApi
-public inline fun CPointer<Image>.compression(value: CompressionMethod): Unit =
-    MagickImage_Compression_Set(this, value.toNative())
+public inline fun CPointer<Image>.compression(value: CompressionMethod): Unit = MagickImage_Compression_Set(this, value.toNative())
 
 @ExperimentalForeignApi
 public inline fun CPointer<Image>.depth(): size_t = MagickImage_Depth_Get(this)
@@ -470,8 +503,7 @@ public inline fun CPointer<Image>.fileName(value: String?): Unit = MagickImage_F
 public inline fun CPointer<Image>.filterType(): FilterType = MagickImage_FilterType_Get(this).toMagick()
 
 @ExperimentalForeignApi
-public inline fun CPointer<Image>.filterType(value: FilterType): Unit =
-    MagickImage_FilterType_Set(this, value.toNative())
+public inline fun CPointer<Image>.filterType(value: FilterType): Unit = MagickImage_FilterType_Set(this, value.toNative())
 
 @ExperimentalForeignApi
 public inline fun CPointer<Image>.format(): String? = MagickImage_Format_Get(this)?.toKString()
@@ -483,12 +515,10 @@ public inline fun CPointer<Image>.format(value: String?): Unit = MagickImage_For
 public inline fun CPointer<Image>.gamma(): Double = MagickImage_Gamma_Get(this)
 
 @ExperimentalForeignApi
-public inline fun CPointer<Image>.gifDisposeMethod(): GifDisposeMethod =
-    MagickImage_GifDisposeMethod_Get(this).toMagick()
+public inline fun CPointer<Image>.gifDisposeMethod(): GifDisposeMethod = MagickImage_GifDisposeMethod_Get(this).toMagick()
 
 @ExperimentalForeignApi
-public inline fun CPointer<Image>.gifDisposeMethod(value: GifDisposeMethod): Unit =
-    MagickImage_GifDisposeMethod_Set(this, value.toNative())
+public inline fun CPointer<Image>.gifDisposeMethod(value: GifDisposeMethod): Unit = MagickImage_GifDisposeMethod_Set(this, value.toNative())
 
 @ExperimentalForeignApi
 public inline fun CPointer<Image>.height(): size_t = MagickImage_Height_Get(this)
@@ -496,22 +526,32 @@ public inline fun CPointer<Image>.height(): size_t = MagickImage_Height_Get(this
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.hasAlpha(): Boolean = withException { _, exceptionPtr ->
-    MagickImage_HasAlpha_Get(this@hasAlpha, exceptionPtr).toPrimitive()
-}
+public inline fun CPointer<Image>.hasAlpha(): Boolean =
+    memScoped {
+        val exceptionInfo = alloc<ExceptionInfoPtrVar>()
+
+        val value = MagickImage_HasAlpha_Get(this@hasAlpha, exceptionInfo.ptr)
+
+        // the exception is required by the underlying API, but it never used
+        // https://github.com/dlemstra/Magick.Native/discussions/38
+
+        value.toPrimitive()
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.hasAlpha(value: Boolean): Unit = withException { _, exceptionPtr ->
-    MagickImage_HasAlpha_Set(this@hasAlpha, value.toNative(), exceptionPtr)
-}
+public inline fun CPointer<Image>.hasAlpha(value: Boolean): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_HasAlpha_Set(this@hasAlpha, value.toNative(), exceptionPtr)
+    }
 
 @ExperimentalForeignApi
-public inline fun CPointer<Image>.hasChannel(channel: PixelChannel): Boolean = MagickImage_HasChannel(
-    this,
-    channel.channel.convert(),
-).toPrimitive()
+public inline fun CPointer<Image>.hasChannel(channel: PixelChannel): Boolean =
+    MagickImage_HasChannel(
+        this,
+        channel.channel.convert(),
+    ).toPrimitive()
 
 @ExperimentalForeignApi
 public inline fun CPointer<Image>.hasProfile(name: String): Boolean = MagickImage_HasProfile(this, name).toPrimitive()
@@ -520,33 +560,29 @@ public inline fun CPointer<Image>.hasProfile(name: String): Boolean = MagickImag
 public inline fun CPointer<Image>.interlace(): Interlace = MagickImage_Interlace_Get(this).toMagick()
 
 @ExperimentalForeignApi
-public inline fun CPointer<Image>.interlace(value: Interlace): Unit =
-    MagickImage_Interlace_Set(this, value.toNative())
+public inline fun CPointer<Image>.interlace(value: Interlace): Unit = MagickImage_Interlace_Set(this, value.toNative())
 
 @ExperimentalForeignApi
-public inline fun CPointer<Image>.interpolate(): PixelInterpolateMethod =
-    MagickImage_Interpolate_Get(this).toMagick()
+public inline fun CPointer<Image>.interpolate(): PixelInterpolateMethod = MagickImage_Interpolate_Get(this).toMagick()
 
 @ExperimentalForeignApi
-public inline fun CPointer<Image>.interpolate(value: PixelInterpolateMethod): Unit =
-    MagickImage_Interpolate_Set(this, value.toNative())
+public inline fun CPointer<Image>.interpolate(value: PixelInterpolateMethod): Unit = MagickImage_Interpolate_Set(this, value.toNative())
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.isOpaque(): Boolean = withException { _, exceptionPtr ->
-    MagickImage_IsOpaque_Get(this@isOpaque, exceptionPtr).toPrimitive()
-}
+public inline fun CPointer<Image>.isOpaque(): Pair<Boolean, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_IsOpaque_Get(this@isOpaque, exceptionPtr).toPrimitive()
+    }
 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
-public inline fun CPointer<Image>.matteColor(): NativeMagickColor? =
-    MagickImage_MatteColor_Get(this)?.let { NativeMagickColor(it) }
+public inline fun CPointer<Image>.matteColor(): NativeMagickColor? = MagickImage_MatteColor_Get(this)?.let { NativeMagickColor(it) }
 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
-public inline fun CPointer<Image>.matteColor(value: NativeMagickColor?): Unit =
-    MagickImage_MatteColor_Set(this, value?.ptr)
+public inline fun CPointer<Image>.matteColor(value: NativeMagickColor?): Unit = MagickImage_MatteColor_Set(this, value?.ptr)
 
 @ExperimentalForeignApi
 public inline fun CPointer<Image>.meanErrorPerPixel(): Double = MagickImage_MeanErrorPerPixel_Get(this)
@@ -561,13 +597,11 @@ public inline fun CPointer<Image>.normalizedMeanError(): Double = MagickImage_No
 public inline fun CPointer<Image>.orientation(): OrientationType = MagickImage_Orientation_Get(this).toMagick()
 
 @ExperimentalForeignApi
-public inline fun CPointer<Image>.orientation(value: OrientationType): Unit =
-    MagickImage_Orientation_Set(this, value.toNative())
+public inline fun CPointer<Image>.orientation(value: OrientationType): Unit = MagickImage_Orientation_Set(this, value.toNative())
 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
-public inline fun CPointer<Image>.page(): NativeMagickRectangle? =
-    MagickImage_Page_Get(this)?.let { NativeMagickRectangle(it) }
+public inline fun CPointer<Image>.page(): NativeMagickRectangle? = MagickImage_Page_Get(this)?.let { NativeMagickRectangle(it) }
 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
@@ -583,15 +617,13 @@ public inline fun CPointer<Image>.quality(value: size_t): Unit = MagickImage_Qua
 public inline fun CPointer<Image>.renderingIntent(): RenderingIntent = MagickImage_RenderingIntent_Get(this).toMagick()
 
 @ExperimentalForeignApi
-public inline fun CPointer<Image>.renderingIntent(value: RenderingIntent): Unit =
-    MagickImage_RenderingIntent_Set(this, value.toNative())
+public inline fun CPointer<Image>.renderingIntent(value: RenderingIntent): Unit = MagickImage_RenderingIntent_Set(this, value.toNative())
 
 @ExperimentalForeignApi
 public inline fun CPointer<Image>.resolutionUnits(): DensityUnit = MagickImage_ResolutionUnits_Get(this).toMagick()
 
 @ExperimentalForeignApi
-public inline fun CPointer<Image>.resolutionUnits(value: DensityUnit): Unit =
-    MagickImage_ResolutionUnits_Set(this, value.toNative())
+public inline fun CPointer<Image>.resolutionUnits(value: DensityUnit): Unit = MagickImage_ResolutionUnits_Set(this, value.toNative())
 
 @ExperimentalForeignApi
 public inline fun CPointer<Image>.resolutionX(): Double = MagickImage_ResolutionX_Get(this)
@@ -608,33 +640,36 @@ public inline fun CPointer<Image>.resolutionY(value: Double): Unit = MagickImage
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class, RuntimeException::class)
-public inline fun CPointer<Image>.signature(): String = withException { _, exceptionPtr ->
-    MagickImage_Signature_Get(this@signature, exceptionPtr)?.toKString()
-} ?: throw RuntimeException("The string value should never be null.")
+public inline fun CPointer<Image>.signature(): Pair<String, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Signature_Get(this@signature, exceptionPtr)?.toKString()
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.totalColors(): size_t = withException { _, exceptionPtr ->
-    MagickImage_TotalColors_Get(this@totalColors, exceptionPtr)
-}
+public inline fun CPointer<Image>.totalColors(): Pair<size_t, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_TotalColors_Get(this@totalColors, exceptionPtr)
+    }
 
 @ExperimentalForeignApi
-public inline fun CPointer<Image>.virtualPixelMethod(): VirtualPixelMethod = memScoped {
-    val exceptionInfo = alloc<ExceptionInfoPtrVar>()
+public inline fun CPointer<Image>.virtualPixelMethod(): VirtualPixelMethod =
+    memScoped {
+        val exceptionInfo = alloc<ExceptionInfoPtrVar>()
 
-    val value = MagickImage_VirtualPixelMethod_Get(this@virtualPixelMethod, exceptionInfo.ptr)
+        val value = MagickImage_VirtualPixelMethod_Get(this@virtualPixelMethod, exceptionInfo.ptr)
 
-    // the exception is required by the underlying API, but it never used
-    // https://github.com/dlemstra/Magick.Native/discussions/38
+        // the exception is required by the underlying API, but it never used
+        // https://github.com/dlemstra/Magick.Native/discussions/38
 
-    value.toMagick()
-}
+        value.toMagick()
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.virtualPixelMethod(value: VirtualPixelMethod): Unit =
+public inline fun CPointer<Image>.virtualPixelMethod(value: VirtualPixelMethod): Pair<Unit, MagickException?> =
     withException { _, exceptionPtr ->
         MagickImage_VirtualPixelMethod_Set(this@virtualPixelMethod, value.toNative(), exceptionPtr)
     }
@@ -649,16 +684,19 @@ public inline fun CPointer<Image>.width(): size_t = MagickImage_Width_Get(this)
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.adaptiveBlur(radius: Double, sigma: Double): CPointer<Image>? =
-    withException { _, exceptionPtr ->
+public inline fun CPointer<Image>.adaptiveBlur(
+    radius: Double,
+    sigma: Double,
+): Pair<CPointer<Image>, MagickException?> =
+    withException({ it.dispose() }) { _, exceptionPtr ->
         MagickImage_AdaptiveBlur(this@adaptiveBlur, radius, sigma, exceptionPtr)
     }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.adaptiveResize(geometry: String): CPointer<Image>? =
-    withException { _, exceptionPtr ->
+public inline fun CPointer<Image>.adaptiveResize(geometry: String): Pair<CPointer<Image>, MagickException?> =
+    withException({ it.dispose() }) { _, exceptionPtr ->
         MagickImage_AdaptiveResize(this@adaptiveResize, geometry, exceptionPtr)
     }
 
@@ -670,9 +708,10 @@ public inline fun CPointer<Image>.adaptiveSharpen(
     radius: Double,
     sigma: Double,
     channels: Channels,
-): CPointer<Image>? = withException { _, exceptionPtr ->
-    MagickImage_AdaptiveSharpen(this@adaptiveSharpen, radius, sigma, channels.toNative(), exceptionPtr)
-}
+): Pair<CPointer<Image>, MagickException?> =
+    withException({ it.dispose() }) { _, exceptionPtr ->
+        MagickImage_AdaptiveSharpen(this@adaptiveSharpen, radius, sigma, channels.toNative(), exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
@@ -683,16 +722,17 @@ public inline fun CPointer<Image>.adaptiveThreshold(
     height: ULong,
     bias: Double,
     channels: Channels,
-): CPointer<Image>? = withException { _, exceptionPtr ->
-    MagickImage_AdaptiveThreshold(
-        this@adaptiveThreshold,
-        with,
-        height,
-        bias,
-        channels.toNative(),
-        exceptionPtr
-    )
-}
+): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_AdaptiveThreshold(
+            this@adaptiveThreshold,
+            with,
+            height,
+            bias,
+            channels.toNative(),
+            exceptionPtr,
+        )
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
@@ -702,9 +742,10 @@ public inline fun CPointer<Image>.addNoise(
     noiseType: NoiseType,
     attenuate: Double,
     channels: Channels,
-): CPointer<Image>? = withException { _, exceptionPtr ->
-    MagickImage_AddNoise(this@addNoise, noiseType.toNative(), attenuate, channels.toNative(), exceptionPtr)
-}
+): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_AddNoise(this@addNoise, noiseType.toNative(), attenuate, channels.toNative(), exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
@@ -716,11 +757,19 @@ public inline fun CPointer<Image>.affineTransform(
     shearY: Double,
     translateX: Double,
     translateY: Double,
-): CPointer<Image>? = withException { _, exceptionPtr ->
-    MagickImage_AffineTransform(
-        this@affineTransform, scaleX, scaleY, shearX, shearY, translateX, translateY, exceptionPtr
-    )
-}
+): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_AffineTransform(
+            this@affineTransform,
+            scaleX,
+            scaleY,
+            shearX,
+            shearY,
+            translateX,
+            translateY,
+            exceptionPtr,
+        )
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
@@ -732,17 +781,18 @@ public inline fun CPointer<Image>.annotate(
     boundingArea: String,
     gravity: Gravity,
     degrees: Double,
-): Unit = withException { _, exceptionPtr ->
-    MagickImage_Annotate(
-        this@annotate,
-        settings.ptr,
-        text,
-        boundingArea,
-        gravity.toNative(),
-        degrees,
-        exceptionPtr
-    )
-}
+): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Annotate(
+            this@annotate,
+            settings.ptr,
+            text,
+            boundingArea,
+            gravity.toNative(),
+            degrees,
+            exceptionPtr,
+        )
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
@@ -752,41 +802,50 @@ public inline fun CPointer<Image>.annotateGravity(
     settings: NativeDrawingSettings,
     text: String,
     gravity: Gravity,
-): Unit = withException { _, exceptionPtr ->
-    MagickImage_AnnotateGravity(
-        this@annotateGravity, settings.ptr, text, gravity.toNative(), exceptionPtr
-    )
-}
+): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_AnnotateGravity(
+            this@annotateGravity,
+            settings.ptr,
+            text,
+            gravity.toNative(),
+            exceptionPtr,
+        )
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @ExperimentalNativeApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.autoGamma(channels: Channels): Unit = withException { _, exceptionPtr ->
-    MagickImage_AutoGamma(this@autoGamma, channels.toNative(), exceptionPtr)
-}
+public inline fun CPointer<Image>.autoGamma(channels: Channels): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_AutoGamma(this@autoGamma, channels.toNative(), exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @ExperimentalNativeApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.autoLevel(channels: Channels): Unit = withException { _, exceptionPtr ->
-    MagickImage_AutoLevel(this@autoLevel, channels.toNative(), exceptionPtr)
-}
+public inline fun CPointer<Image>.autoLevel(channels: Channels): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_AutoLevel(this@autoLevel, channels.toNative(), exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.autoOrient(): Unit = withException { _, exceptionPtr ->
-    MagickImage_AutoOrient(this@autoOrient, exceptionPtr)
-}
+public inline fun CPointer<Image>.autoOrient(): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_AutoOrient(this@autoOrient, exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.autoThreshold(method: AutoThresholdMethod): Unit = withException { _, exceptionPtr ->
-    MagickImage_AutoThreshold(this@autoThreshold, method.toNative(), exceptionPtr)
-}
+public inline fun CPointer<Image>.autoThreshold(method: AutoThresholdMethod): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_AutoThreshold(this@autoThreshold, method.toNative(), exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
@@ -796,22 +855,26 @@ public inline fun CPointer<Image>.bilateralBlur(
     height: ULong,
     intensitySigma: Double,
     spatialSigma: Double,
-): CPointer<Image>? = withException { _, exceptionPtr ->
-    MagickImage_BilateralBlur(
-        this@bilateralBlur,
-        width,
-        height,
-        intensitySigma,
-        spatialSigma,
-        exceptionPtr
-    )
-}
+): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_BilateralBlur(
+            this@bilateralBlur,
+            width,
+            height,
+            intensitySigma,
+            spatialSigma,
+            exceptionPtr,
+        )
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @ExperimentalNativeApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.blackThreshold(threshold: String, channels: Channels): Unit =
+public inline fun CPointer<Image>.blackThreshold(
+    threshold: String,
+    channels: Channels,
+): Pair<Unit, MagickException?> =
     withException { _, exceptionPtr ->
         MagickImage_BlackThreshold(this@blackThreshold, threshold, channels.toNative(), exceptionPtr)
     }
@@ -819,7 +882,7 @@ public inline fun CPointer<Image>.blackThreshold(threshold: String, channels: Ch
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.blueShift(factor: Double): CPointer<Image>? =
+public inline fun CPointer<Image>.blueShift(factor: Double): Pair<CPointer<Image>, MagickException?> =
     withException { _, exceptionPtr ->
         MagickImage_BlueShift(this@blueShift, factor, exceptionPtr)
     }
@@ -828,7 +891,11 @@ public inline fun CPointer<Image>.blueShift(factor: Double): CPointer<Image>? =
 @ExperimentalForeignApi
 @ExperimentalNativeApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.blur(radius: Double, sigma: Double, channels: Channels): CPointer<Image>? =
+public inline fun CPointer<Image>.blur(
+    radius: Double,
+    sigma: Double,
+    channels: Channels,
+): Pair<CPointer<Image>, MagickException?> =
     withException { _, exceptionPtr ->
         MagickImage_Blur(this@blur, radius, sigma, channels.toNative(), exceptionPtr)
     }
@@ -837,7 +904,7 @@ public inline fun CPointer<Image>.blur(radius: Double, sigma: Double, channels: 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.border(value: NativeMagickRectangle): CPointer<Image>? =
+public inline fun CPointer<Image>.border(value: NativeMagickRectangle): Pair<CPointer<Image>, MagickException?> =
     withException { _, exceptionPtr ->
         MagickImage_Border(this@border, value.ptr, exceptionPtr)
     }
@@ -846,14 +913,18 @@ public inline fun CPointer<Image>.border(value: NativeMagickRectangle): CPointer
 @ExperimentalForeignApi
 @ExperimentalNativeApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.brightnessContrast(brigthness: Double, contrast: Double, channels: Channels): Unit =
+public inline fun CPointer<Image>.brightnessContrast(
+    brigthness: Double,
+    contrast: Double,
+    channels: Channels,
+): Pair<Unit, MagickException?> =
     withException { _, exceptionPtr ->
         MagickImage_BrightnessContrast(
             this@brightnessContrast,
             brigthness,
             contrast,
             channels.toNative(),
-            exceptionPtr
+            exceptionPtr,
         )
     }
 
@@ -865,14 +936,18 @@ public inline fun CPointer<Image>.cannyEdge(
     sigma: Double,
     lower: Double,
     upper: Double,
-): CPointer<Image>? = withException { _, exceptionPtr ->
-    MagickImage_CannyEdge(this@cannyEdge, radius, sigma, lower, upper, exceptionPtr)
-}
+): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_CannyEdge(this@cannyEdge, radius, sigma, lower, upper, exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.charcoal(radius: Double, sigma: Double): CPointer<Image>? =
+public inline fun CPointer<Image>.charcoal(
+    radius: Double,
+    sigma: Double,
+): Pair<CPointer<Image>, MagickException?> =
     withException { _, exceptionPtr ->
         MagickImage_Charcoal(this@charcoal, radius, sigma, exceptionPtr)
     }
@@ -881,7 +956,7 @@ public inline fun CPointer<Image>.charcoal(radius: Double, sigma: Double): CPoin
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.chop(geometry: NativeMagickRectangle): CPointer<Image>? =
+public inline fun CPointer<Image>.chop(geometry: NativeMagickRectangle): Pair<CPointer<Image>, MagickException?> =
     withException { _, exceptionPtr ->
         MagickImage_Chop(this@chop, geometry.ptr, exceptionPtr)
     }
@@ -894,22 +969,27 @@ public inline fun CPointer<Image>.clahe(
     yTiles: size_t,
     numberBins: size_t,
     clipLimit: Double,
-): Unit = withException { _, exceptionPtr ->
-    MagickImage_Clahe(this@clahe, xTiles, yTiles, numberBins, clipLimit, exceptionPtr)
-}
+): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Clahe(this@clahe, xTiles, yTiles, numberBins, clipLimit, exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @ExperimentalNativeApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.clamp(channels: Channels): Unit = withException { _, exceptionPtr ->
-    MagickImage_Clamp(this@clamp, channels.toNative(), exceptionPtr)
-}
+public inline fun CPointer<Image>.clamp(channels: Channels): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Clamp(this@clamp, channels.toNative(), exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.clipPath(pathName: String, inside: Boolean): Unit =
+public inline fun CPointer<Image>.clipPath(
+    pathName: String,
+    inside: Boolean,
+): Pair<Unit, MagickException?> =
     withException { _, exceptionPtr ->
         MagickImage_ClipPath(this@clipPath, pathName, inside.toNative(), exceptionPtr)
     }
@@ -923,22 +1003,24 @@ public inline fun CPointer<Image>.clut(
     image: NativeMagickImage,
     method: PixelInterpolateMethod,
     channels: Channels,
-): Unit = withException { _, exceptionPtr ->
-    MagickImage_Clut(this@clut, image.ptr, method.toNative(), channels.toNative(), exceptionPtr)
-}
+): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Clut(this@clut, image.ptr, method.toNative(), channels.toNative(), exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.colorDecisionList(fileName: String): Unit = withException { _, exceptionPtr ->
-    MagickImage_ColorDecisionList(this@colorDecisionList, fileName, exceptionPtr)
-}
+public inline fun CPointer<Image>.colorDecisionList(fileName: String): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_ColorDecisionList(this@colorDecisionList, fileName, exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.colorMatrix(matrix: NativeDoubleMatrix): CPointer<Image>? =
+public inline fun CPointer<Image>.colorMatrix(matrix: NativeDoubleMatrix): Pair<CPointer<Image>, MagickException?> =
     withException { _, exceptionPtr ->
         MagickImage_ColorMatrix(this@colorMatrix, matrix.ptr, exceptionPtr)
     }
@@ -952,20 +1034,22 @@ public inline fun CPointer<Image>.compare(
     image: NativeMagickImage,
     metric: ErrorMetric,
     channels: Channels,
-): Pair<Double, CPointer<Image>?> = withException { placement, exceptionPtr ->
-    val distortion = placement.alloc<DoubleVar>()
+): Pair<Pair<Double, CPointer<Image>?>, MagickException?> =
+    withException { placement, exceptionPtr ->
+        val distortion = placement.alloc<DoubleVar>()
 
-    val differenceImage = MagickImage_Compare(
-        this,
-        image.ptr,
-        metric.toNative(),
-        channels.toNative(),
-        distortion.ptr,
-        exceptionPtr
-    )
+        val differenceImage =
+            MagickImage_Compare(
+                this,
+                image.ptr,
+                metric.toNative(),
+                channels.toNative(),
+                distortion.ptr,
+                exceptionPtr,
+            )
 
-    Pair(distortion.value, differenceImage)
-}
+        Pair(distortion.value, differenceImage)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
@@ -976,9 +1060,10 @@ public inline fun CPointer<Image>.compareDistortion(
     image: NativeMagickImage,
     metric: ErrorMetric,
     channels: Channels,
-): Double = withException { _, exceptionPtr ->
-    MagickImage_CompareDistortion(this, image.ptr, metric.toNative(), channels.toNative(), exceptionPtr)
-}
+): Pair<Double, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_CompareDistortion(this, image.ptr, metric.toNative(), channels.toNative(), exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
@@ -991,17 +1076,18 @@ public inline fun CPointer<Image>.composite(
     y: Long,
     compose: CompositeOperator,
     channels: Channels,
-): Unit = withException { _, exceptionPtr ->
-    MagickImage_Composite(
-        this@composite,
-        image.ptr,
-        x,
-        y,
-        compose.toNative(),
-        channels.toNative(),
-        exceptionPtr
-    )
-}
+): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Composite(
+            this@composite,
+            image.ptr,
+            x,
+            y,
+            compose.toNative(),
+            channels.toNative(),
+            exceptionPtr,
+        )
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
@@ -1015,25 +1101,27 @@ public inline fun CPointer<Image>.compositeGravity(
     y: Long,
     compose: CompositeOperator,
     channels: Channels,
-): Unit = withException { _, exceptionPtr ->
-    MagickImage_CompositeGravity(
-        this@compositeGravity,
-        image.ptr,
-        gravity.toNative(),
-        x,
-        y,
-        compose.toNative(),
-        channels.toNative(),
-        exceptionPtr
-    )
-}
+): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_CompositeGravity(
+            this@compositeGravity,
+            image.ptr,
+            gravity.toNative(),
+            x,
+            y,
+            compose.toNative(),
+            channels.toNative(),
+            exceptionPtr,
+        )
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.contrast(enhance: Boolean): Unit = withException { _, exceptionPtr ->
-    MagickImage_Contrast(this@contrast, enhance.toNative(), exceptionPtr)
-}
+public inline fun CPointer<Image>.contrast(enhance: Boolean): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Contrast(this@contrast, enhance.toNative(), exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
@@ -1043,23 +1131,25 @@ public inline fun CPointer<Image>.contrastStretch(
     blackPoint: Double,
     whitePoint: Double,
     channels: Channels,
-): Unit = withException { _, exceptionPtr ->
-    MagickImage_ContrastStretch(
-        this@contrastStretch,
-        blackPoint,
-        whitePoint,
-        channels.toNative(),
-        exceptionPtr
-    )
-}
+): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_ContrastStretch(
+            this@contrastStretch,
+            blackPoint,
+            whitePoint,
+            channels.toNative(),
+            exceptionPtr,
+        )
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.convolve(matrix: NativeDoubleMatrix): Unit = withException { _, exceptionPtr ->
-    MagickImage_Convolve(this@convolve, matrix.ptr, exceptionPtr)
-}
+public inline fun CPointer<Image>.convolve(matrix: NativeDoubleMatrix): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Convolve(this@convolve, matrix.ptr, exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
@@ -1071,14 +1161,18 @@ public inline fun CPointer<Image>.copyPixels(
     geometry: NativeMagickRectangle,
     offset: NativeOffsetInfo,
     channels: Channels,
-): Unit = withException { _, exceptionPtr ->
-    MagickImage_CopyPixels(this@copyPixels, image.ptr, geometry.ptr, offset.ptr, channels.toNative(), exceptionPtr)
-}
+): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_CopyPixels(this@copyPixels, image.ptr, geometry.ptr, offset.ptr, channels.toNative(), exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.crop(geometry: String, gravity: Gravity): CPointer<Image>? =
+public inline fun CPointer<Image>.crop(
+    geometry: String,
+    gravity: Gravity,
+): Pair<CPointer<Image>, MagickException?> =
     withException { _, exceptionPtr ->
         MagickImage_Crop(this@crop, geometry, gravity.toNative(), exceptionPtr)
     }
@@ -1086,45 +1180,51 @@ public inline fun CPointer<Image>.crop(geometry: String, gravity: Gravity): CPoi
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.cycleColormap(amount: Long): Unit = withException { _, exceptionPtr ->
-    MagickImage_CycleColormap(this@cycleColormap, amount, exceptionPtr)
-}
+public inline fun CPointer<Image>.cycleColormap(amount: Long): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_CycleColormap(this@cycleColormap, amount, exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.decipher(passphrase: String): Unit = withException { _, exceptionPtr ->
-    MagickImage_Decipher(this@decipher, passphrase, exceptionPtr)
-}
+public inline fun CPointer<Image>.decipher(passphrase: String): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Decipher(this@decipher, passphrase, exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.deskew(threshold: Double): CPointer<Image>? = withException { _, exceptionPtr ->
-    MagickImage_Deskew(this@deskew, threshold, exceptionPtr)
-}
+public inline fun CPointer<Image>.deskew(threshold: Double): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Deskew(this@deskew, threshold, exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.despeckle(): CPointer<Image>? = withException { _, exceptionPtr ->
-    MagickImage_Despeckle(this@despeckle, exceptionPtr)
-}
+public inline fun CPointer<Image>.despeckle(): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Despeckle(this@despeckle, exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @ExperimentalNativeApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.determineBitDepth(channels: Channels): size_t = withException { _, exceptionPtr ->
-    MagickImage_DetermineBitDepth(this@determineBitDepth, channels.toNative(), exceptionPtr)
-}
+public inline fun CPointer<Image>.determineBitDepth(channels: Channels): Pair<size_t, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_DetermineBitDepth(this@determineBitDepth, channels.toNative(), exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.determineColorType(): ColorType = withException { _, exceptionPtr ->
-    MagickImage_DetermineColorType(this@determineColorType, exceptionPtr).toMagick()
-}
+public inline fun CPointer<Image>.determineColorType(): Pair<ColorType, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_DetermineColorType(this@determineColorType, exceptionPtr).toMagick<ColorType>()
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
@@ -1133,24 +1233,27 @@ public inline fun CPointer<Image>.distort(
     method: DistortMethod,
     bestfit: Boolean,
     arguments: DoubleArray,
-): CPointer<Image>? = withException { _, exceptionPtr ->
-    val length = arguments.size
-    arguments.usePinned {
-        MagickImage_Distort(
-            this@distort,
-            method.toNative(),
-            bestfit.toNative(),
-            it.addressOf(0),
-            length.toULong(),
-            exceptionPtr
-        )
+): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        arguments.usePinned {
+            MagickImage_Distort(
+                this@distort,
+                method.toNative(),
+                bestfit.toNative(),
+                it.addressOf(0),
+                arguments.size.toULong(),
+                exceptionPtr,
+            )
+        }
     }
-}
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.emboss(radius: Double, sigma: Double): CPointer<Image>? =
+public inline fun CPointer<Image>.emboss(
+    radius: Double,
+    sigma: Double,
+): Pair<CPointer<Image>, MagickException?> =
     withException { _, exceptionPtr ->
         MagickImage_Emboss(this@emboss, radius, sigma, exceptionPtr)
     }
@@ -1158,31 +1261,35 @@ public inline fun CPointer<Image>.emboss(radius: Double, sigma: Double): CPointe
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.edge(radius: Double): CPointer<Image>? = withException { _, exceptionPtr ->
-    MagickImage_Edge(this@edge, radius, exceptionPtr)
-}
+public inline fun CPointer<Image>.edge(radius: Double): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Edge(this@edge, radius, exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.encipher(passphrase: String): Unit = withException { _, exceptionPtr ->
-    MagickImage_Encipher(this@encipher, passphrase, exceptionPtr)
-}
+public inline fun CPointer<Image>.encipher(passphrase: String): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Encipher(this@encipher, passphrase, exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.enhance(): CPointer<Image>? = withException { _, exceptionPtr ->
-    MagickImage_Enhance(this@enhance, exceptionPtr)
-}
+public inline fun CPointer<Image>.enhance(): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Enhance(this@enhance, exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @ExperimentalNativeApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.equalize(channels: Channels): Unit = withException { _, exceptionPtr ->
-    MagickImage_Equalize(this@equalize, channels.toNative(), exceptionPtr)
-}
+public inline fun CPointer<Image>.equalize(channels: Channels): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Equalize(this@equalize, channels.toNative(), exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
@@ -1192,19 +1299,20 @@ public inline fun CPointer<Image>.evaluateFunction(
     channels: Channels,
     evaluateFunction: EvaluateFunction,
     values: DoubleArray,
-): Unit = withException { _, exceptionPtr ->
-    val length = values.size
-    values.usePinned {
-        MagickImage_EvaluateFunction(
-            this@evaluateFunction,
-            channels.toNative(),
-            evaluateFunction.toNative(),
-            it.addressOf(0),
-            length.toULong(),
-            exceptionPtr
-        )
+): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        val length = values.size
+        values.usePinned {
+            MagickImage_EvaluateFunction(
+                this@evaluateFunction,
+                channels.toNative(),
+                evaluateFunction.toNative(),
+                it.addressOf(0),
+                length.toULong(),
+                exceptionPtr,
+            )
+        }
     }
-}
 
 @ExperimentalContracts
 @ExperimentalForeignApi
@@ -1216,16 +1324,17 @@ public inline fun CPointer<Image>.evaluateGeometry(
     geometry: NativeMagickRectangle,
     evaluateOperator: EvaluateOperator,
     value: Double,
-): Unit = withException { _, exceptionPtr ->
-    MagickImage_EvaluateGeometry(
-        this@evaluateGeometry,
-        channels.toNative(),
-        geometry.ptr,
-        evaluateOperator.toNative(),
-        value,
-        exceptionPtr
-    )
-}
+): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_EvaluateGeometry(
+            this@evaluateGeometry,
+            channels.toNative(),
+            geometry.ptr,
+            evaluateOperator.toNative(),
+            value,
+            exceptionPtr,
+        )
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
@@ -1235,20 +1344,24 @@ public inline fun CPointer<Image>.evaluateOperator(
     channels: Channels,
     evaluateOperator: EvaluateOperator,
     value: Double,
-): Unit = withException { _, exceptionPtr ->
-    MagickImage_EvaluateOperator(
-        this@evaluateOperator,
-        channels.toNative(),
-        evaluateOperator.toNative(),
-        value,
-        exceptionPtr
-    )
-}
+): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_EvaluateOperator(
+            this@evaluateOperator,
+            channels.toNative(),
+            evaluateOperator.toNative(),
+            value,
+            exceptionPtr,
+        )
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.extent(geometry: String, gravity: Gravity): CPointer<Image>? =
+public inline fun CPointer<Image>.extent(
+    geometry: String,
+    gravity: Gravity,
+): Pair<CPointer<Image>, MagickException?> =
     withException { _, exceptionPtr ->
         MagickImage_Extent(this@extent, geometry, gravity.toNative(), exceptionPtr)
     }
@@ -1256,22 +1369,24 @@ public inline fun CPointer<Image>.extent(geometry: String, gravity: Gravity): CP
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.flip(): CPointer<Image>? = withException { _, exceptionPtr ->
-    MagickImage_Flip(this@flip, exceptionPtr)
-}
+public inline fun CPointer<Image>.flip(): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Flip(this@flip, exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.flop(): CPointer<Image>? = withException { _, exceptionPtr ->
-    MagickImage_Flop(this@flop, exceptionPtr)
-}
+public inline fun CPointer<Image>.flop(): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Flop(this@flop, exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.frame(geometry: NativeMagickRectangle): CPointer<Image>? =
+public inline fun CPointer<Image>.frame(geometry: NativeMagickRectangle): Pair<CPointer<Image>, MagickException?> =
     withException { _, exceptionPtr ->
         MagickImage_Frame(this@frame, geometry.ptr, exceptionPtr)
     }
@@ -1280,17 +1395,22 @@ public inline fun CPointer<Image>.frame(geometry: NativeMagickRectangle): CPoint
 @ExperimentalForeignApi
 @ExperimentalNativeApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.fx(expression: String, channels: Channels): CPointer<Image>? =
+public inline fun CPointer<Image>.fx(
+    expression: String,
+    channels: Channels,
+): Pair<CPointer<Image>, MagickException?> =
     withException { _, exceptionPtr ->
         MagickImage_Fx(this@fx, expression, channels.toNative(), exceptionPtr)
     }
-
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @ExperimentalNativeApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.gammaCorrect(gamma: Double, channels: Channels): Unit =
+public inline fun CPointer<Image>.gammaCorrect(
+    gamma: Double,
+    channels: Channels,
+): Pair<Unit, MagickException?> =
     withException { _, exceptionPtr ->
         MagickImage_GammaCorrect(this@gammaCorrect, gamma, channels.toNative(), exceptionPtr)
     }
@@ -1299,7 +1419,11 @@ public inline fun CPointer<Image>.gammaCorrect(gamma: Double, channels: Channels
 @ExperimentalForeignApi
 @ExperimentalNativeApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.gaussianBlur(radius: Double, sigma: Double, channels: Channels): CPointer<Image>? =
+public inline fun CPointer<Image>.gaussianBlur(
+    radius: Double,
+    sigma: Double,
+    channels: Channels,
+): Pair<CPointer<Image>, MagickException?> =
     withException { _, exceptionPtr ->
         MagickImage_GaussianBlur(this@gaussianBlur, radius, sigma, channels.toNative(), exceptionPtr)
     }
@@ -1307,13 +1431,13 @@ public inline fun CPointer<Image>.gaussianBlur(radius: Double, sigma: Double, ch
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.getAttribute(name: String): String? = withException { _, exceptionPtr ->
-    MagickImage_GetAttribute(this@getAttribute, name, exceptionPtr)?.toKString()
-}
+public inline fun CPointer<Image>.getAttribute(name: String): Pair<String, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_GetAttribute(this@getAttribute, name, exceptionPtr)?.toKString()
+    }
 
 @ExperimentalForeignApi
-public inline fun CPointer<Image>.getArtifact(name: String): String? =
-    MagickImage_GetArtifact(this@getArtifact, name)?.toKString()
+public inline fun CPointer<Image>.getArtifact(name: String): String? = MagickImage_GetArtifact(this@getArtifact, name)?.toKString()
 
 @ExperimentalForeignApi
 public inline fun CPointer<Image>.getNextArtifactName(): String? = MagickImage_GetNextArtifactName(this)?.toKString()
@@ -1327,22 +1451,28 @@ public inline fun CPointer<Image>.getNextProfileName(): String? = MagickImage_Ge
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.grayscale(method: PixelIntensityMethod): Unit = withException { _, exceptionPtr ->
-    MagickImage_Grayscale(this@grayscale, method.toNative(), exceptionPtr)
-}
+public inline fun CPointer<Image>.grayscale(method: PixelIntensityMethod): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Grayscale(this@grayscale, method.toNative(), exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.haldClut(image: NativeMagickImage): Unit = withException { _, exceptionPtr ->
-    MagickImage_HaldClut(this@haldClut, image.ptr, exceptionPtr)
-}
+public inline fun CPointer<Image>.haldClut(image: NativeMagickImage): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_HaldClut(this@haldClut, image.ptr, exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.houghLine(width: ULong, height: ULong, threshold: ULong): Unit =
+public inline fun CPointer<Image>.houghLine(
+    width: ULong,
+    height: ULong,
+    threshold: ULong,
+): Pair<CPointer<Image>, MagickException?> =
     withException { _, exceptionPtr ->
         MagickImage_HoughLine(this@houghLine, width, height, threshold, exceptionPtr)
     }
@@ -1350,7 +1480,10 @@ public inline fun CPointer<Image>.houghLine(width: ULong, height: ULong, thresho
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.implode(amount: Double, method: PixelInterpolateMethod): CPointer<Image>? =
+public inline fun CPointer<Image>.implode(
+    amount: Double,
+    method: PixelInterpolateMethod,
+): Pair<CPointer<Image>, MagickException?> =
     withException { _, exceptionPtr ->
         MagickImage_Implode(this@implode, amount, method.toNative(), exceptionPtr)
     }
@@ -1361,14 +1494,19 @@ public inline fun CPointer<Image>.implode(amount: Double, method: PixelInterpola
 public inline fun CPointer<Image>.interpolativeResize(
     geometry: String,
     method: PixelInterpolateMethod,
-): CPointer<Image>? = withException { _, exceptionPtr ->
-    MagickImage_InterpolativeResize(this@interpolativeResize, geometry, method.toNative(), exceptionPtr)
-}
+): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_InterpolativeResize(this@interpolativeResize, geometry, method.toNative(), exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.kmeans(numberColors: ULong, maxIterations: ULong, tolerance: Double): Unit =
+public inline fun CPointer<Image>.kmeans(
+    numberColors: ULong,
+    maxIterations: ULong,
+    tolerance: Double,
+): Pair<Unit, MagickException?> =
     withException { _, exceptionPtr ->
         MagickImage_Kmeans(this@kmeans, numberColors, maxIterations, tolerance, exceptionPtr)
     }
@@ -1376,7 +1514,10 @@ public inline fun CPointer<Image>.kmeans(numberColors: ULong, maxIterations: ULo
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.kuwahara(radius: Double, sigma: Double): CPointer<Image>? =
+public inline fun CPointer<Image>.kuwahara(
+    radius: Double,
+    sigma: Double,
+): Pair<CPointer<Image>, MagickException?> =
     withException { _, exceptionPtr ->
         MagickImage_Kuwahara(this@kuwahara, radius, sigma, exceptionPtr)
     }
@@ -1384,7 +1525,10 @@ public inline fun CPointer<Image>.kuwahara(radius: Double, sigma: Double): CPoin
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.linearStretch(blackPoint: Double, whitePoint: Double): Unit =
+public inline fun CPointer<Image>.linearStretch(
+    blackPoint: Double,
+    whitePoint: Double,
+): Pair<Unit, MagickException?> =
     withException { _, exceptionPtr ->
         MagickImage_LinearStretch(this@linearStretch, blackPoint, whitePoint, exceptionPtr)
     }
@@ -1392,7 +1536,11 @@ public inline fun CPointer<Image>.linearStretch(blackPoint: Double, whitePoint: 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.liquidRescale(geometry: String, deltaX: Double, rigidity: Double): CPointer<Image>? =
+public inline fun CPointer<Image>.liquidRescale(
+    geometry: String,
+    deltaX: Double,
+    rigidity: Double,
+): Pair<CPointer<Image>, MagickException?> =
     withException { _, exceptionPtr ->
         MagickImage_LiquidRescale(this@liquidRescale, geometry, deltaX, rigidity, exceptionPtr)
     }
@@ -1401,22 +1549,48 @@ public inline fun CPointer<Image>.liquidRescale(geometry: String, deltaX: Double
 @ExperimentalForeignApi
 @ExperimentalNativeApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.localContrast(radius: Double, strength: Double, channels: Channels): CPointer<Image>? =
+public inline fun CPointer<Image>.localContrast(
+    radius: Double,
+    strength: Double,
+    channels: Channels,
+): Pair<CPointer<Image>, MagickException?> =
     withException { _, exceptionPtr ->
         MagickImage_LocalContrast(this@localContrast, radius, strength, channels.toNative(), exceptionPtr)
     }
 
+@ExperimentalContracts
 @ExperimentalForeignApi
-public inline fun CPointer<Image>.removeArtifact(name: String): Unit =
-    MagickImage_RemoveArtifact(this@removeArtifact, name)
+@Throws(MagickException::class)
+public inline fun CPointer<Image>.lower(size: ULong): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_RaiseOrLower(this@lower, size, false.toNative(), exceptionPtr)
+    }
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+@Throws(MagickException::class)
+public inline fun CPointer<Image>.raise(size: ULong): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_RaiseOrLower(this@raise, size, true.toNative(), exceptionPtr)
+    }
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+@ExperimentalStdlibApi
+@Throws(MagickException::class)
+public inline fun CPointer<Image>.regionMask(region: NativeMagickRectangle?): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_RegionMask(this@regionMask, region?.ptr, exceptionPtr)
+    }
 
 @ExperimentalForeignApi
-public inline fun CPointer<Image>.removeAttribute(name: String): Unit =
-    MagickImage_RemoveAttribute(this@removeAttribute, name)
+public inline fun CPointer<Image>.removeArtifact(name: String): Unit = MagickImage_RemoveArtifact(this@removeArtifact, name)
 
 @ExperimentalForeignApi
-public inline fun CPointer<Image>.removeProfile(name: String): Unit =
-    MagickImage_RemoveProfile(this@removeProfile, name)
+public inline fun CPointer<Image>.removeAttribute(name: String): Unit = MagickImage_RemoveAttribute(this@removeAttribute, name)
+
+@ExperimentalForeignApi
+public inline fun CPointer<Image>.removeProfile(name: String): Unit = MagickImage_RemoveProfile(this@removeProfile, name)
 
 @ExperimentalForeignApi
 public inline fun CPointer<Image>.resetArtifactIterator(): Unit = MagickImage_ResetArtifactIterator(this)
@@ -1427,12 +1601,100 @@ public inline fun CPointer<Image>.resetAttributeIterator(): Unit = MagickImage_R
 @ExperimentalForeignApi
 public inline fun CPointer<Image>.resetProfileIterator(): Unit = MagickImage_ResetProfileIterator(this)
 
+@ExperimentalContracts
+@ExperimentalForeignApi
+@Throws(MagickException::class)
+public inline fun CPointer<Image>.resize(geometry: String): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Resize(this@resize, geometry, exceptionPtr)
+    }
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+@Throws(MagickException::class)
+public inline fun CPointer<Image>.roll(
+    x: Long,
+    y: Long,
+): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Roll(this@roll, x, y, exceptionPtr)
+    }
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+@Throws(MagickException::class)
+public inline fun CPointer<Image>.rotate(degrees: Double): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Rotate(this@rotate, degrees, exceptionPtr)
+    }
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+@ExperimentalNativeApi
+@Throws(MagickException::class)
+public inline fun CPointer<Image>.rotationalBlur(
+    angle: Double,
+    channels: Channels,
+): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_RotationalBlur(this@rotationalBlur, angle, channels.toNative(), exceptionPtr)
+    }
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+@Throws(MagickException::class)
+public inline fun CPointer<Image>.sample(geometry: String): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Sample(this@sample, geometry, exceptionPtr)
+    }
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+@Throws(MagickException::class)
+public inline fun CPointer<Image>.scale(geometry: String): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Scale(this@scale, geometry, exceptionPtr)
+    }
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+@Throws(MagickException::class)
+public inline fun CPointer<Image>.segment(
+    colorSpace: ColorSpace,
+    clusterThreshold: Double,
+    smoothingThreshold: Double,
+): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Segment(this@segment, colorSpace.toNative(), clusterThreshold, smoothingThreshold, exceptionPtr)
+    }
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+@ExperimentalNativeApi
+@Throws(MagickException::class)
+public inline fun CPointer<Image>.selectiveBlur(
+    radius: Double,
+    sigma: Double,
+    threshold: Double,
+    channels: Channels,
+): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_SelectiveBlur(this@selectiveBlur, radius, sigma, threshold, channels.toNative(), exceptionPtr)
+    }
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+@Throws(MagickException::class)
+public inline fun CPointer<Image>.sepiaTone(threshold: Double): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_SepiaTone(this@sepiaTone, threshold, exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.setColorMetric(image: NativeMagickImage): Boolean =
+public inline fun CPointer<Image>.setColorMetric(image: NativeMagickImage): Pair<Boolean, MagickException?> =
     withException { _, exceptionPtr ->
         MagickImage_SetColorMetric(this@setColorMetric, image.ptr, exceptionPtr).toPrimitive()
     }
@@ -1440,20 +1702,138 @@ public inline fun CPointer<Image>.setColorMetric(image: NativeMagickImage): Bool
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.setAlpha(value: AlphaOption): Unit = withException { _, exceptionPtr ->
-    MagickImage_SetAlpha(this@setAlpha, value.toNative(), exceptionPtr)
-}
+public inline fun CPointer<Image>.setAlpha(value: AlphaOption): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_SetAlpha(this@setAlpha, value.toNative(), exceptionPtr)
+    }
 
 @ExperimentalForeignApi
-public inline fun CPointer<Image>.setArtifact(name: String, value: String): Unit =
-    MagickImage_SetArtifact(this@setArtifact, name, value)
+public inline fun CPointer<Image>.setArtifact(
+    name: String,
+    value: String,
+): Unit = MagickImage_SetArtifact(this@setArtifact, name, value)
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @Throws(MagickException::class)
-public inline fun CPointer<Image>.setAttribute(name: String, value: String): Unit = withException { _, exceptionPtr ->
-    MagickImage_SetAttribute(this@setAttribute, name, value, exceptionPtr)
-}
+public inline fun CPointer<Image>.setAttribute(
+    name: String,
+    value: String,
+): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_SetAttribute(this@setAttribute, name, value, exceptionPtr)
+    }
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+@ExperimentalNativeApi
+@Throws(MagickException::class)
+public inline fun CPointer<Image>.setBitDepth(
+    value: ULong,
+    channels: Channels,
+): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_SetBitDepth(this@setBitDepth, value, channels.toNative(), exceptionPtr)
+    }
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+@Throws(MagickException::class)
+public inline fun CPointer<Image>.setProfile(
+    name: String,
+    datum: UByteArray,
+): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        datum.usePinned {
+            MagickImage_SetProfile(
+                this@setProfile,
+                name,
+                it.addressOf(0),
+                datum.size.toULong(),
+                exceptionPtr,
+            )
+        }
+    }
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+@ExperimentalStdlibApi
+@Throws(MagickException::class)
+public inline fun CPointer<Image>.setReadMask(image: NativeMagickImage?): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_SetReadMask(this@setReadMask, image?.ptr, exceptionPtr)
+    }
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+@ExperimentalStdlibApi
+@Throws(MagickException::class)
+public inline fun CPointer<Image>.setWriteMask(image: NativeMagickImage?): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_SetWriteMask(this@setWriteMask, image?.ptr, exceptionPtr)
+    }
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+@ExperimentalNativeApi
+@Throws(MagickException::class)
+public inline fun CPointer<Image>.shade(
+    azimuth: Double,
+    elevation: Double,
+    colorShading: Boolean,
+    channels: Channels,
+): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Shade(this@shade, azimuth, elevation, colorShading.toNative(), channels.toNative(), exceptionPtr)
+    }
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+@Throws(MagickException::class)
+public inline fun CPointer<Image>.shadow(
+    x: Long,
+    y: Long,
+    sigma: Double,
+    alphaPercentage: Double,
+): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Shadow(this@shadow, x, y, sigma, alphaPercentage, exceptionPtr)
+    }
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+@ExperimentalNativeApi
+@Throws(MagickException::class)
+public inline fun CPointer<Image>.sharpen(
+    radius: Double,
+    sigma: Double,
+    channels: Channels,
+): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Sharpen(this@sharpen, radius, sigma, channels.toNative(), exceptionPtr)
+    }
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+@Throws(MagickException::class)
+public inline fun CPointer<Image>.shave(
+    leftRight: ULong,
+    bottomLeft: ULong,
+): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Shave(this@shave, leftRight, bottomLeft, exceptionPtr)
+    }
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+@Throws(MagickException::class)
+public inline fun CPointer<Image>.shear(
+    xAngle: Double,
+    yAngle: Double,
+): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Shear(this@shear, xAngle, yAngle, exceptionPtr)
+    }
 
 @ExperimentalContracts
 @ExperimentalForeignApi
@@ -1464,15 +1844,85 @@ public inline fun CPointer<Image>.sigmoidalContrast(
     contrast: Double,
     midpoint: Double,
     channels: Channels,
-): Unit = withException { _, exceptionPtr ->
-    MagickImage_SigmoidalContrast(
-        this@sigmoidalContrast,
-        sharpen.toNative(),
-        contrast,
-        midpoint,
-        channels.toNative(),
-        exceptionPtr
-    )
-}
+): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_SigmoidalContrast(
+            this@sigmoidalContrast,
+            sharpen.toNative(),
+            contrast,
+            midpoint,
+            channels.toNative(),
+            exceptionPtr,
+        )
+    }
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+@Throws(MagickException::class)
+public inline fun CPointer<Image>.sketch(
+    radius: Double,
+    sigma: Double,
+    angle: Double,
+): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Sketch(this@sketch, radius, sigma, angle, exceptionPtr)
+    }
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+@Throws(MagickException::class)
+public inline fun CPointer<Image>.solarize(factor: Double): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Solarize(this@solarize, factor, exceptionPtr)
+    }
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+@Throws(MagickException::class)
+public inline fun CPointer<Image>.sortPixels(): Pair<Unit, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_SortPixels(this@sortPixels, exceptionPtr)
+    }
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+@ExperimentalStdlibApi
+@Throws(MagickException::class)
+public inline fun CPointer<Image>.splice(geometry: NativeMagickRectangle): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Splice(this@splice, geometry.ptr, exceptionPtr)
+    }
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+@Throws(MagickException::class)
+public inline fun CPointer<Image>.spread(
+    method: PixelInterpolateMethod,
+    radius: Double,
+): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Spread(this@spread, method.toNative(), radius, exceptionPtr)
+    }
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+@Throws(MagickException::class)
+public inline fun CPointer<Image>.statistic(
+    type: StatisticType,
+    width: ULong,
+    height: ULong,
+): Pair<CPointer<Image>, MagickException?> =
+    withException { _, exceptionPtr ->
+        MagickImage_Statistic(this@statistic, type.toNative(), width, height, exceptionPtr)
+    }
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+@ExperimentalNativeApi
+@Throws(MagickException::class)
+public inline fun CPointer<Image>.statistics(channels: Channels): Pair<CPointer<ChannelStatistics>, MagickException?> =
+    withException(onError = { it.dispose() }) { _, exceptionPtr ->
+        MagickImage_Statistics(this@statistics, channels.toNative(), exceptionPtr)
+    }
 
 //endregion

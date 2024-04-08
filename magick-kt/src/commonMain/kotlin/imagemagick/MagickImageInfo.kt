@@ -7,11 +7,11 @@ import imagemagick.core.enums.Interlace
 import imagemagick.core.enums.MagickFormat
 import imagemagick.core.exceptions.MagickException
 import imagemagick.core.types.Density
-import kotlin.contracts.ExperimentalContracts
-import kotlin.experimental.ExperimentalNativeApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import okio.Path
 import okio.Source
+import kotlin.contracts.ExperimentalContracts
+import kotlin.experimental.ExperimentalNativeApi
 import imagemagick.core.MagickImageInfo as IMagickImageInfo
 
 /**

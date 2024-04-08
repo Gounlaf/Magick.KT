@@ -1,5 +1,6 @@
 package imagemagick
 
+import imagemagick.bridge.dispose
 import imagemagick.colors.MagickColor.Companion.toMagick
 import imagemagick.colors.MagickColor.Companion.toNative
 import imagemagick.core.MagickImageQuantum
@@ -10,6 +11,7 @@ import imagemagick.core.enums.AutoThresholdMethod
 import imagemagick.core.enums.Channels
 import imagemagick.core.enums.ClassType
 import imagemagick.core.enums.ColorSpace
+import imagemagick.core.enums.ColorTransformMode
 import imagemagick.core.enums.ColorType
 import imagemagick.core.enums.CompositeOperator
 import imagemagick.core.enums.CompressionMethod
@@ -29,8 +31,11 @@ import imagemagick.core.enums.PixelChannel
 import imagemagick.core.enums.PixelIntensityMethod
 import imagemagick.core.enums.PixelInterpolateMethod
 import imagemagick.core.enums.RenderingIntent
+import imagemagick.core.enums.StatisticType
 import imagemagick.core.enums.VirtualPixelMethod
 import imagemagick.core.exceptions.MagickException
+import imagemagick.core.profiles.ImageProfile
+import imagemagick.core.profiles.color.ColorProfile
 import imagemagick.core.settings.CompareSettingsQuantum
 import imagemagick.core.settings.KmeansSettings
 import imagemagick.core.types.Density
@@ -38,7 +43,6 @@ import imagemagick.core.types.Percentage
 import imagemagick.core.types.PointD
 import imagemagick.exceptions.MagickErrorException
 import imagemagick.exceptions.throwIfEmpty
-import imagemagick.exceptions.throwIfNegative
 import imagemagick.exceptions.throwIfTrue
 import imagemagick.helpers.PercentageHelper
 import imagemagick.helpers.TemporaryDefines
@@ -52,6 +56,7 @@ import imagemagick.settings.DeskewSettings
 import imagemagick.settings.DistortSettings
 import imagemagick.settings.MagickReadSettings
 import imagemagick.settings.MagickSettings
+import imagemagick.statistics.Statistics
 import imagemagick.types.ChromaticityInfo
 import imagemagick.types.MagickErrorInfo
 import imagemagick.types.MagickGeometry
@@ -59,14 +64,14 @@ import imagemagick.types.MagickRectangle
 import imagemagick.types.MagickRectangle.Companion.toNative
 import imagemagick.types.PrimaryInfo.Companion.toMagick
 import imagemagick.types.PrimaryInfo.Companion.toNative
-import kotlin.contracts.ExperimentalContracts
-import kotlin.experimental.ExperimentalNativeApi
-import kotlin.math.min
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.convert
 import okio.Path
 import okio.Source
 import okio.buffer
+import kotlin.contracts.ExperimentalContracts
+import kotlin.experimental.ExperimentalNativeApi
+import kotlin.math.min
 import imagemagick.core.MagickImage as IMagickImage
 import imagemagick.core.MagickImageQuantum as IMagickImageQ
 import imagemagick.core.colors.MagickColorQuantum as IMagickColor
@@ -75,10 +80,10 @@ import imagemagick.core.matrices.MagickColorMatrix as IMagickColorMatrix
 import imagemagick.core.settings.DeskewSettings as IDeskewSettings
 import imagemagick.core.settings.DistortSettings as IDistortSettings
 import imagemagick.core.settings.MagickReadSettings as IMagickReadSettings
+import imagemagick.core.statistics.Statistics as IStatistics
 import imagemagick.core.types.ChromaticityInfo as IChromaticityInfo
 import imagemagick.core.types.MagickErrorInfo as IMagickErrorInfo
 import imagemagick.core.types.MagickGeometry as IMagickGeometry
-
 
 /**
  * Class that represents an ImageMagick image.
@@ -219,24 +224,26 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
     }
 
     override val artifactNames: Sequence<String>
-        get() = sequence {
-            nativeInstance.resetArtifactIterator()
-            var name = nativeInstance.getNextArtifactName()
-            while (name != null) {
-                yield(name)
-                name = nativeInstance.getNextArtifactName()
+        get() =
+            sequence {
+                nativeInstance.resetArtifactIterator()
+                var name = nativeInstance.getNextArtifactName()
+                while (name != null) {
+                    yield(name)
+                    name = nativeInstance.getNextArtifactName()
+                }
             }
-        }
 
     override val attributeNames: Sequence<String>
-        get() = sequence {
-            nativeInstance.resetAttributeIterator()
-            var name = nativeInstance.getNextAttributeName()
-            while (name != null) {
-                yield(name)
-                name = nativeInstance.getNextAttributeName()
+        get() =
+            sequence {
+                nativeInstance.resetAttributeIterator()
+                var name = nativeInstance.getNextAttributeName()
+                while (name != null) {
+                    yield(name)
+                    name = nativeInstance.getNextAttributeName()
+                }
             }
-        }
 
     override var animationDelay: UInt
         get() = nativeInstance.animationDelay
@@ -503,14 +510,15 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
         }
 
     override val profileNames: Sequence<String>
-        get() = sequence {
-            nativeInstance.resetProfileIterator()
-            var name = nativeInstance.getNextProfileName()
-            while (name != null) {
-                yield(name)
-                name = nativeInstance.getNextProfileName()
+        get() =
+            sequence {
+                nativeInstance.resetProfileIterator()
+                var name = nativeInstance.getNextProfileName()
+                while (name != null) {
+                    yield(name)
+                    name = nativeInstance.getNextProfileName()
+                }
             }
-        }
 
     override var quality: UInt
         get() = nativeInstance.quality.toUInt()
@@ -543,34 +551,53 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
     override val width: UInt
         get() = nativeInstance.width
 
+    override fun adaptiveBlur(
+        radius: Double,
+        sigma: Double,
+    ): Unit = nativeInstance.adaptiveBlur(radius, sigma)
 
-    override fun adaptiveBlur(radius: Double, sigma: Double): Unit = nativeInstance.adaptiveBlur(radius, sigma)
-
-    override fun adaptiveResize(width: UInt, height: UInt): Unit =
-        nativeInstance.adaptiveResize(MagickGeometry(width, height))
+    override fun adaptiveResize(
+        width: UInt,
+        height: UInt,
+    ): Unit = nativeInstance.adaptiveResize(MagickGeometry(width, height))
 
     override fun adaptiveResize(geometry: IMagickGeometry): Unit = nativeInstance.adaptiveResize(geometry)
 
-    override fun adaptiveSharpen(radius: Double, sigma: Double, channels: Channels): Unit =
-        nativeInstance.adaptiveSharpen(radius, sigma, channels)
+    override fun adaptiveSharpen(
+        radius: Double,
+        sigma: Double,
+        channels: Channels,
+    ): Unit = nativeInstance.adaptiveSharpen(radius, sigma, channels)
 
-    override fun adaptiveThreshold(width: UInt, height: UInt, bias: Double, channels: Channels): Unit =
-        nativeInstance.adaptiveThreshold(width, height, bias, channels)
+    override fun adaptiveThreshold(
+        width: UInt,
+        height: UInt,
+        bias: Double,
+        channels: Channels,
+    ): Unit = nativeInstance.adaptiveThreshold(width, height, bias, channels)
 
-    override fun adaptiveThreshold(width: UInt, height: UInt, biasPercentage: Percentage, channels: Channels): Unit =
-        adaptiveThreshold(width, height, PercentageHelper.toQuantum(biasPercentage), channels)
+    override fun adaptiveThreshold(
+        width: UInt,
+        height: UInt,
+        biasPercentage: Percentage,
+        channels: Channels,
+    ): Unit = adaptiveThreshold(width, height, PercentageHelper.toQuantum(biasPercentage), channels)
 
-    override fun addNoise(noiseType: NoiseType, attenuate: Double, channels: Channels): Unit =
-        nativeInstance.addNoise(noiseType, attenuate, channels)
+    override fun addNoise(
+        noiseType: NoiseType,
+        attenuate: Double,
+        channels: Channels,
+    ): Unit = nativeInstance.addNoise(noiseType, attenuate, channels)
 
-    override fun affineTransform(affineMatrix: DrawableAffine): Unit = nativeInstance.affineTransform(
-        affineMatrix.scaleX,
-        affineMatrix.scaleY,
-        affineMatrix.shearX,
-        affineMatrix.shearY,
-        affineMatrix.translateX,
-        affineMatrix.translateY
-    )
+    override fun affineTransform(affineMatrix: DrawableAffine): Unit =
+        nativeInstance.affineTransform(
+            affineMatrix.scaleX,
+            affineMatrix.scaleY,
+            affineMatrix.shearX,
+            affineMatrix.shearY,
+            affineMatrix.translateX,
+            affineMatrix.translateY,
+        )
 
     override fun alpha(value: AlphaOption): Unit = nativeInstance.setAlpha(value)
 
@@ -587,7 +614,10 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
         }
     }
 
-    override fun annotate(text: String, gravity: Gravity) {
+    override fun annotate(
+        text: String,
+        gravity: Gravity,
+    ) {
         throwIfEmpty(text)
         settings.drawing.createNativeInstance().use { drawingSettings ->
             nativeInstance.annotateGravity(drawingSettings, text, gravity)
@@ -602,44 +632,78 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
 
     override fun autoThreshold(method: AutoThresholdMethod): Unit = nativeInstance.autoThreshold(method)
 
-    override fun bilateralBlur(width: UInt, height: UInt, intensitySigma: Double, spatialSigma: Double): Unit =
-        nativeInstance.bilateralBlur(width, height, intensitySigma, spatialSigma)
+    override fun bilateralBlur(
+        width: UInt,
+        height: UInt,
+        intensitySigma: Double,
+        spatialSigma: Double,
+    ): Unit = nativeInstance.bilateralBlur(width, height, intensitySigma, spatialSigma)
 
-    override fun blackThreshold(threshold: Percentage, channels: Channels): Unit =
-        nativeInstance.blackThreshold(threshold.toString(), channels)
+    override fun blackThreshold(
+        threshold: Percentage,
+        channels: Channels,
+    ): Unit = nativeInstance.blackThreshold(threshold.toString(), channels)
 
     override fun blueShift(factor: Double): Unit = nativeInstance.blueShift(factor)
 
-    override fun blur(radius: Double, sigma: Double, channels: Channels): Unit =
-        nativeInstance.blur(radius, sigma, channels)
+    override fun blur(
+        radius: Double,
+        sigma: Double,
+        channels: Channels,
+    ): Unit = nativeInstance.blur(radius, sigma, channels)
 
-    override fun border(width: UInt, height: UInt): Unit = MagickRectangle(x = 0, y = 0, width, height).toNative().use {
-        nativeInstance.border(it)
-    }
+    override fun border(
+        width: UInt,
+        height: UInt,
+    ): Unit =
+        MagickRectangle(x = 0, y = 0, width, height).toNative().use {
+            nativeInstance.border(it)
+        }
 
-    override fun brightnessContrast(brightness: Percentage, contrast: Percentage, channels: Channels): Unit =
-        nativeInstance.brightnessContrast(brightness.toDouble(), contrast.toDouble(), channels)
+    override fun brightnessContrast(
+        brightness: Percentage,
+        contrast: Percentage,
+        channels: Channels,
+    ): Unit = nativeInstance.brightnessContrast(brightness.toDouble(), contrast.toDouble(), channels)
 
-    override fun cannyEdge(radius: Double, sigma: Double, lower: Percentage, upper: Percentage) {
+    override fun cannyEdge(
+        radius: Double,
+        sigma: Double,
+        lower: Percentage,
+        upper: Percentage,
+    ) {
         // The implementation slightly differs from Magick.NET: Percentage -> double conversion done in Native* classes
         nativeInstance.cannyEdge(radius, sigma, lower, upper)
     }
 
-    override fun charcoal(radius: Double, sigma: Double) {
+    override fun charcoal(
+        radius: Double,
+        sigma: Double,
+    ) {
         nativeInstance.charcoal(radius, sigma)
     }
 
-    override fun chop(geometry: IMagickGeometry): Unit = MagickRectangle.fromGeometry(geometry, this).toNative().use {
-        nativeInstance.chop(it)
-    }
+    override fun chop(geometry: IMagickGeometry): Unit =
+        MagickRectangle.fromGeometry(geometry, this).toNative().use {
+            nativeInstance.chop(it)
+        }
 
-    override fun chopHorizontal(offset: Int, width: UInt): Unit =
-        chop(MagickGeometry(offset, y = 0, width, height = 0u))
+    override fun chopHorizontal(
+        offset: Int,
+        width: UInt,
+    ): Unit = chop(MagickGeometry(offset, y = 0, width, height = 0u))
 
-    override fun chopVertical(offset: Int, height: UInt): Unit = chop(MagickGeometry(x = 0, offset, width = 0u, height))
+    override fun chopVertical(
+        offset: Int,
+        height: UInt,
+    ): Unit = chop(MagickGeometry(x = 0, offset, width = 0u, height))
 
-    override fun clahe(xTiles: UInt, yTiles: UInt, numberBins: UInt, clipLimit: Double): Unit =
-        nativeInstance.clahe(xTiles.toULong(), yTiles.toULong(), numberBins.toULong(), clipLimit)
+    override fun clahe(
+        xTiles: UInt,
+        yTiles: UInt,
+        numberBins: UInt,
+        clipLimit: Double,
+    ): Unit = nativeInstance.clahe(xTiles.toULong(), yTiles.toULong(), numberBins.toULong(), clipLimit)
 
     override fun clamp(channels: Channels): Unit = nativeInstance.clamp(channels)
 
@@ -648,40 +712,42 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
         nativeInstance.clipPath(pathName, true)
     }
 
-    override fun clipOutside(pathName: String): Unit {
+    override fun clipOutside(pathName: String) {
         throwIfEmpty(pathName)
         nativeInstance.clipPath(pathName, false)
     }
 
     override fun clone(): MagickImageQuantum<QuantumType> = MagickImage(this)
 
-    override fun clut(image: IMagickImage, method: PixelInterpolateMethod, channels: Channels): Unit {
-        nativeInstance(image).let { nativeInstance.clut(it, method, channels) }
-    }
+    override fun clut(
+        image: IMagickImage,
+        method: PixelInterpolateMethod,
+        channels: Channels,
+    ): Unit = nativeInstance.clut(image.nativeInstance(), method, channels)
 
-    override fun colorDecisionList(fileName: String): Unit {
+    override fun colorDecisionList(fileName: String) {
         nativeInstance.colorDecisionList(fileName)
     }
 
-    override fun colorMatrix(matrix: IMagickColorMatrix): Unit {
+    override fun colorMatrix(matrix: IMagickColorMatrix) {
         DoubleMatrix.nativeInstance(matrix).use {
             nativeInstance.colorMatrix(it)
         }
     }
 
     override fun compare(image: IMagickImage): IMagickErrorInfo {
-        val other = nativeInstance(image)
-        if (nativeInstance.setColorMetric(other)) {
+        if (nativeInstance.setColorMetric(image.nativeInstance())) {
             return MagickErrorInfo()
         }
 
         return createErrorInfo(this)
     }
 
-    override fun compare(image: IMagickImage, metric: ErrorMetric, channels: Channels): Double =
-        nativeInstance(image).let {
-            nativeInstance.compareDistortion(it, metric, channels)
-        }
+    override fun compare(
+        image: IMagickImage,
+        metric: ErrorMetric,
+        channels: Channels,
+    ): Double = nativeInstance.compareDistortion(image.nativeInstance(), metric, channels)
 
     override fun compare(
         image: IMagickImage,
@@ -700,15 +766,14 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
             throw UnsupportedOperationException()
         }
 
-        val (distortion, result) = TemporaryDefines(this).use {
-            it.setArtifact("compare:highlight-color", settings.highlightColor)
-            it.setArtifact("compare:lowlight-color", settings.lowlightColor)
-            it.setArtifact("compare:masklight-color", settings.masklightColor)
+        val (distortion, result) =
+            TemporaryDefines(this).use {
+                it.setArtifact("compare:highlight-color", settings.highlightColor)
+                it.setArtifact("compare:lowlight-color", settings.lowlightColor)
+                it.setArtifact("compare:masklight-color", settings.masklightColor)
 
-            nativeInstance(image).let { otherNativeInstance ->
-                nativeInstance.compare(otherNativeInstance, settings.metric, channels)
+                nativeInstance.compare(image.nativeInstance(), settings.metric, channels)
             }
-        }
 
         result?.let { difference.nativeInstance.ptr = it }
 
@@ -716,50 +781,44 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
     }
 
     override fun composite(
-        image: imagemagick.core.MagickImage,
+        image: IMagickImage,
         x: Int,
         y: Int,
         compose: CompositeOperator,
         args: String?,
         channels: Channels,
-    ): Unit {
+    ): Unit =
         TemporaryDefines(this).use {
             it.setArtifact("compose:args", args)
 
-            nativeInstance(image).let { otherNativeInstance ->
-                nativeInstance.composite(otherNativeInstance, x.toLong(), y.toLong(), compose, channels)
-            }
+            nativeInstance.composite(image.nativeInstance(), x.toLong(), y.toLong(), compose, channels)
         }
-    }
 
     override fun composite(
-        image: imagemagick.core.MagickImage,
+        image: IMagickImage,
         gravity: Gravity,
         x: Int,
         y: Int,
         compose: CompositeOperator,
         args: String?,
         channels: Channels,
-    ): Unit {
+    ): Unit =
         TemporaryDefines(this).use {
             it.setArtifact("compose:args", args)
 
-            nativeInstance(image).let { otherNativeInstance ->
-                nativeInstance.compositeGravity(otherNativeInstance, gravity, x.toLong(), y.toLong(), compose, channels)
-            }
+            nativeInstance.compositeGravity(image.nativeInstance(), gravity, x.toLong(), y.toLong(), compose, channels)
         }
-    }
 
     override fun contrast(): Unit = nativeInstance.contrast(true)
 
-    override fun contrastStretch(blackPoint: Percentage, whitePoint: Percentage, channels: Channels): Unit {
-        throwIfNegative("blackPoint", blackPoint)
-        throwIfNegative("whitePoint", whitePoint)
-
-        val contrast = calculateContrastStretch(blackPoint, whitePoint)
-
-        nativeInstance.contrastStretch(contrast.x, contrast.y, channels)
-    }
+    override fun contrastStretch(
+        blackPoint: Percentage,
+        whitePoint: Percentage,
+        channels: Channels,
+    ): Unit =
+        calculateContrastStretch(blackPoint, whitePoint).let { contrast ->
+            nativeInstance.contrastStretch(contrast.x, contrast.y, channels)
+        }
 
     override fun convolve(matrix: IConvolveMatrix) {
         DoubleMatrix.nativeInstance(matrix).use {
@@ -767,40 +826,56 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
         }
     }
 
-    override fun copyPixels(source: IMagickImage, channels: Channels) {
+    override fun copyPixels(
+        source: IMagickImage,
+        channels: Channels,
+    ) {
         val geometry = MagickGeometry(x = 0, y = 0, min(source.width, width), min(source.height, height))
 
         copyPixels(source, geometry, x = 0, y = 0, channels)
     }
 
-    override fun copyPixels(source: IMagickImage, geometry: IMagickGeometry, x: Int, y: Int, channels: Channels) {
+    override fun copyPixels(
+        source: IMagickImage,
+        geometry: IMagickGeometry,
+        x: Int,
+        y: Int,
+        channels: Channels,
+    ) {
         using(
             MagickRectangle.fromGeometry(geometry, this).toNative(),
-            NativeOffsetInfo()
+            NativeOffsetInfo(),
         ) { nativeGeometry, offsetInfo ->
             offsetInfo.x(x.toLong())
             offsetInfo.y(y.toLong())
 
-            nativeInstance.copyPixels(nativeInstance(source), nativeGeometry, offsetInfo, channels)
+            nativeInstance.copyPixels(source.nativeInstance(), nativeGeometry, offsetInfo, channels)
         }
     }
 
-    override fun crop(width: UInt, height: UInt, gravity: Gravity): Unit =
-        crop(MagickGeometry(x = 0, y = 0, width = width, height = height), gravity)
+    override fun crop(
+        width: UInt,
+        height: UInt,
+        gravity: Gravity,
+    ): Unit = crop(MagickGeometry(x = 0, y = 0, width = width, height = height), gravity)
 
-    override fun crop(geometry: IMagickGeometry, gravity: Gravity): Unit = nativeInstance.crop(geometry, gravity)
+    override fun crop(
+        geometry: IMagickGeometry,
+        gravity: Gravity,
+    ): Unit = nativeInstance.crop(geometry, gravity)
 
     override fun cycleColormap(amount: Int): Unit = nativeInstance.cycleColormap(amount.toLong())
 
     override fun decipher(passphrase: String): Unit = nativeInstance.decipher(passphrase)
 
-    override fun deskew(threshold: Percentage): Double = deskew(DeskewSettings().apply {
-        this.threshold = threshold
-    })
+    override fun deskew(threshold: Percentage): Double =
+        deskew(
+            DeskewSettings().apply {
+                this.threshold = threshold
+            },
+        )
 
     override fun deskew(settings: IDeskewSettings): Double {
-        throwIfNegative("settings", settings.threshold)
-
         TemporaryDefines(this).use {
             it.setArtifact("deskew:auto-crop", settings.autoCrop)
             nativeInstance.deskew(PercentageHelper.toQuantum(settings.threshold))
@@ -815,10 +890,16 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
 
     override fun determineBitDepth(channels: Channels): UInt = nativeInstance.determineBitDepth(channels).toUInt()
 
-    override fun distort(method: DistortMethod, vararg arguments: Double): Unit =
-        distort(method, DistortSettings(), *arguments)
+    override fun distort(
+        method: DistortMethod,
+        vararg arguments: Double,
+    ): Unit = distort(method, DistortSettings(), *arguments)
 
-    override fun distort(method: DistortMethod, settings: IDistortSettings, vararg arguments: Double): Unit {
+    override fun distort(
+        method: DistortMethod,
+        settings: IDistortSettings,
+        vararg arguments: Double,
+    ) {
         throwIfEmpty("arguments", arguments)
 
         TemporaryDefines(this).use {
@@ -831,9 +912,12 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
 
     override fun edge(radius: Double): Unit = nativeInstance.edge(radius)
 
-    override fun emboss(radius: Double, sigma: Double): Unit = nativeInstance.emboss(radius, sigma)
+    override fun emboss(
+        radius: Double,
+        sigma: Double,
+    ): Unit = nativeInstance.emboss(radius, sigma)
 
-    override fun encipher(passphrase: String): Unit {
+    override fun encipher(passphrase: String) {
         throwIfEmpty("passphrase", passphrase)
         nativeInstance.encipher(passphrase)
     }
@@ -842,25 +926,36 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
 
     override fun equalize(channels: Channels): Unit = nativeInstance.equalize(channels)
 
-    override fun evaluate(channels: Channels, evaluateFunction: EvaluateFunction, vararg arguments: Double): Unit {
+    override fun evaluate(
+        channels: Channels,
+        evaluateFunction: EvaluateFunction,
+        vararg arguments: Double,
+    ) {
         throwIfEmpty("arguments", arguments)
         nativeInstance.evaluateFunction(channels, evaluateFunction, arguments)
     }
 
-    override fun evaluate(channels: Channels, evaluateOperator: EvaluateOperator, value: Double): Unit =
-        nativeInstance.evaluateOperator(channels, evaluateOperator, value)
+    override fun evaluate(
+        channels: Channels,
+        evaluateOperator: EvaluateOperator,
+        value: Double,
+    ): Unit = nativeInstance.evaluateOperator(channels, evaluateOperator, value)
 
-    override fun evaluate(channels: Channels, evaluateOperator: EvaluateOperator, percentage: Percentage): Unit =
-        evaluate(channels, evaluateOperator, PercentageHelper.toQuantum(percentage))
+    override fun evaluate(
+        channels: Channels,
+        evaluateOperator: EvaluateOperator,
+        percentage: Percentage,
+    ): Unit = evaluate(channels, evaluateOperator, PercentageHelper.toQuantum(percentage))
 
     override fun evaluate(
         channels: Channels,
         geometry: IMagickGeometry,
         evaluateOperator: EvaluateOperator,
         value: Double,
-    ): Unit = MagickRectangle.fromGeometry(geometry, this).toNative().use {
-        nativeInstance.evaluateGeometry(channels, it, evaluateOperator, value)
-    }
+    ): Unit =
+        MagickRectangle.fromGeometry(geometry, this).toNative().use {
+            nativeInstance.evaluateGeometry(channels, it, evaluateOperator, value)
+        }
 
     override fun evaluate(
         channels: Channels,
@@ -869,17 +964,30 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
         percentage: Percentage,
     ): Unit = evaluate(channels, geometry, evaluateOperator, PercentageHelper.toQuantum(percentage))
 
-    override fun extent(width: UInt, height: UInt): Unit = extent(MagickGeometry(width, height), Gravity.UNDEFINED)
+    override fun extent(
+        width: UInt,
+        height: UInt,
+    ): Unit = extent(MagickGeometry(width, height), Gravity.UNDEFINED)
 
-    override fun extent(x: Int, y: Int, width: UInt, height: UInt): Unit =
-        extent(MagickGeometry(x, y, width, height), Gravity.UNDEFINED)
+    override fun extent(
+        x: Int,
+        y: Int,
+        width: UInt,
+        height: UInt,
+    ): Unit = extent(MagickGeometry(x, y, width, height), Gravity.UNDEFINED)
 
-    override fun extent(width: UInt, height: UInt, gravity: Gravity): Unit =
-        extent(MagickGeometry(width, height), gravity)
+    override fun extent(
+        width: UInt,
+        height: UInt,
+        gravity: Gravity,
+    ): Unit = extent(MagickGeometry(width, height), gravity)
 
     override fun extent(geometry: IMagickGeometry): Unit = extent(geometry, Gravity.UNDEFINED)
 
-    override fun extent(geometry: IMagickGeometry, gravity: Gravity): Unit = nativeInstance.extent(geometry, gravity)
+    override fun extent(
+        geometry: IMagickGeometry,
+        gravity: Gravity,
+    ): Unit = nativeInstance.extent(geometry, gravity)
 
     override fun flip(): Unit = nativeInstance.flip()
 
@@ -887,23 +995,40 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
 
     override fun frame(): Unit = frame(MagickGeometry(x = 6, y = 6, width = 25u, height = 25u))
 
-    override fun frame(geometry: IMagickGeometry): Unit = MagickRectangle.fromGeometry(geometry, this).toNative()
-        .use { nativeInstance.frame(it) }
+    override fun frame(geometry: IMagickGeometry): Unit =
+        MagickRectangle.fromGeometry(geometry, this).toNative()
+            .use { nativeInstance.frame(it) }
 
-    override fun frame(width: UInt, height: UInt): Unit = frame(MagickGeometry(x = 6, y = 6, width, height))
+    override fun frame(
+        width: UInt,
+        height: UInt,
+    ): Unit = frame(MagickGeometry(x = 6, y = 6, width, height))
 
-    override fun frame(width: UInt, height: UInt, innerBevel: Int, outerBevel: Int): Unit =
-        frame(MagickGeometry(innerBevel, outerBevel, width, height))
+    override fun frame(
+        width: UInt,
+        height: UInt,
+        innerBevel: Int,
+        outerBevel: Int,
+    ): Unit = frame(MagickGeometry(innerBevel, outerBevel, width, height))
 
-    override fun fx(expression: String, channels: Channels) {
+    override fun fx(
+        expression: String,
+        channels: Channels,
+    ) {
         throwIfEmpty(expression)
         nativeInstance.fx(expression, channels)
     }
 
-    override fun gammaCorrect(gamma: Double, channels: Channels): Unit = nativeInstance.gammaCorrect(gamma, channels)
+    override fun gammaCorrect(
+        gamma: Double,
+        channels: Channels,
+    ): Unit = nativeInstance.gammaCorrect(gamma, channels)
 
-    override fun gaussianBlur(radius: Double, sigma: Double, channels: Channels): Unit =
-        nativeInstance.gaussianBlur(radius, sigma, channels)
+    override fun gaussianBlur(
+        radius: Double,
+        sigma: Double,
+        channels: Channels,
+    ): Unit = nativeInstance.gaussianBlur(radius, sigma, channels)
 
     override fun getAttribute(name: String): String? {
         throwIfEmpty("name", name)
@@ -917,104 +1042,114 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
 
     override fun grayscale(method: PixelIntensityMethod): Unit = nativeInstance.grayscale(method)
 
-    override fun haldClut(image: IMagickImage): Unit = nativeInstance.haldClut(nativeInstance(image))
+    override fun haldClut(image: IMagickImage): Unit = nativeInstance.haldClut(image.nativeInstance())
 
     override fun hasProfile(name: String): Boolean = nativeInstance.hasProfile(name)
 
-    override fun houghLine(width: UInt, height: UInt, threshold: UInt): Unit =
-        nativeInstance.houghLine(width.toULong(), height.toULong(), threshold.toULong())
+    override fun houghLine(
+        width: UInt,
+        height: UInt,
+        threshold: UInt,
+    ): Unit = nativeInstance.houghLine(width.toULong(), height.toULong(), threshold.toULong())
 
-    override fun implode(amount: Double, method: PixelInterpolateMethod): Unit = nativeInstance.implode(amount, method)
+    override fun implode(
+        amount: Double,
+        method: PixelInterpolateMethod,
+    ): Unit = nativeInstance.implode(amount, method)
 
-    override fun interpolativeResize(width: UInt, height: UInt, method: PixelInterpolateMethod): Unit =
-        interpolativeResize(MagickGeometry(width, height), method)
+    override fun interpolativeResize(
+        width: UInt,
+        height: UInt,
+        method: PixelInterpolateMethod,
+    ): Unit = interpolativeResize(MagickGeometry(width, height), method)
 
-    override fun interpolativeResize(geometry: IMagickGeometry, method: PixelInterpolateMethod): Unit =
-        nativeInstance.interpolativeResize(geometry, method)
+    override fun interpolativeResize(
+        geometry: IMagickGeometry,
+        method: PixelInterpolateMethod,
+    ): Unit = nativeInstance.interpolativeResize(geometry, method)
 
-    override fun interpolativeResize(percentage: Percentage, method: PixelInterpolateMethod) {
-        throwIfNegative("percentage", percentage)
-        interpolativeResize(MagickGeometry(percentage, percentage), method)
-    }
+    override fun interpolativeResize(
+        percentage: Percentage,
+        method: PixelInterpolateMethod,
+    ): Unit = interpolativeResize(MagickGeometry(percentage, percentage), method)
 
     override fun interpolativeResize(
         percentageWidth: Percentage,
         percentageHeight: Percentage,
         method: PixelInterpolateMethod,
-    ) {
-        throwIfNegative("percentageWidth", percentageWidth)
-        throwIfNegative("percentageHeight", percentageHeight)
-        interpolativeResize(MagickGeometry(percentageWidth, percentageHeight), method)
-    }
+    ): Unit = interpolativeResize(MagickGeometry(percentageWidth, percentageHeight), method)
 
-    override fun inverseContrast(): Unit = nativeInstance.contrast(false)
+    override fun inverseContrast(): Unit = nativeInstance.contrast(enhance = false)
 
-    override fun inverseSigmoidalContrast(contrast: Double): Unit =
-        inverseSigmoidalContrast(contrast, Quantum.maxd * 0.5)
+    override fun inverseSigmoidalContrast(contrast: Double): Unit = inverseSigmoidalContrast(contrast, Quantum.maxd * 0.5)
 
-    override fun inverseSigmoidalContrast(contrast: Double, midpoint: Double): Unit =
-        inverseSigmoidalContrast(contrast, midpoint, Channels.UNDEFINED)
+    override fun inverseSigmoidalContrast(
+        contrast: Double,
+        midpoint: Double,
+        channels: Channels,
+    ): Unit = nativeInstance.sigmoidalContrast(sharpen = false, contrast, midpoint, channels)
 
-    override fun inverseSigmoidalContrast(contrast: Double, midpoint: Double, channels: Channels): Unit =
-        nativeInstance.sigmoidalContrast(false, contrast, midpoint, channels)
+    override fun inverseSigmoidalContrast(
+        contrast: Double,
+        midpointPercentage: Percentage,
+    ): Unit = inverseSigmoidalContrast(contrast, PercentageHelper.toQuantum(midpointPercentage))
 
-    override fun inverseSigmoidalContrast(contrast: Double, midpointPercentage: Percentage): Unit =
-        inverseSigmoidalContrast(contrast, PercentageHelper.toQuantum(midpointPercentage))
-
-    override fun kmeans(settings: KmeansSettings): Unit {
-        throwIfNegative("settings", settings.numberColors)
-        throwIfNegative("settings", settings.maxIterations)
-
+    override fun kmeans(settings: KmeansSettings): Unit =
         TemporaryDefines(this).use {
             it.setArtifact("kmeans:seed-colors", settings.seedColors)
             nativeInstance.kmeans(settings.numberColors.toULong(), settings.maxIterations.toULong(), settings.tolerance)
         }
-    }
 
-    override fun kuwahara(radius: Double, sigma: Double): Unit = nativeInstance.kuwahara(radius, sigma)
+    override fun kuwahara(
+        radius: Double,
+        sigma: Double,
+    ): Unit = nativeInstance.kuwahara(radius, sigma)
 
-    override fun linearStretch(blackPoint: Percentage, whitePoint: Percentage): Unit {
-        throwIfNegative("blackPoint", blackPoint)
-        throwIfNegative("whitePoint", whitePoint)
+    override fun linearStretch(
+        blackPoint: Percentage,
+        whitePoint: Percentage,
+    ): Unit = nativeInstance.linearStretch(PercentageHelper.toQuantum(blackPoint), PercentageHelper.toQuantum(whitePoint))
 
-        nativeInstance.linearStretch(PercentageHelper.toQuantum(blackPoint), PercentageHelper.toQuantum(whitePoint))
-    }
+    override fun liquidRescale(
+        width: UInt,
+        height: UInt,
+    ): Unit = liquidRescale(MagickGeometry(width, height))
 
-    override fun liquidRescale(width: UInt, height: UInt): Unit = liquidRescale(MagickGeometry(width, height))
-
-    override fun liquidRescale(width: UInt, height: UInt, deltaX: Double, rigidity: Double): Unit =
-        nativeInstance.liquidRescale(MagickGeometry(width, height), deltaX, rigidity)
+    override fun liquidRescale(
+        width: UInt,
+        height: UInt,
+        deltaX: Double,
+        rigidity: Double,
+    ): Unit = nativeInstance.liquidRescale(MagickGeometry(width, height), deltaX, rigidity)
 
     override fun liquidRescale(geometry: IMagickGeometry): Unit =
         nativeInstance.liquidRescale(geometry, geometry.x.toDouble(), geometry.y.toDouble())
 
-    override fun liquidRescale(percentage: Percentage): Unit {
-        throwIfNegative("percentage", percentage)
+    override fun liquidRescale(percentage: Percentage): Unit = liquidRescale(MagickGeometry(percentage, percentage))
 
-        liquidRescale(MagickGeometry(percentage, percentage))
-    }
-
-    override fun liquidRescale(percentageWidth: Percentage, percentageHeight: Percentage): Unit {
-        throwIfNegative("percentageWidth", percentageWidth)
-        throwIfNegative("percentageHeight", percentageHeight)
-
-        liquidRescale(MagickGeometry(percentageWidth, percentageHeight))
-    }
+    override fun liquidRescale(
+        percentageWidth: Percentage,
+        percentageHeight: Percentage,
+    ): Unit = liquidRescale(MagickGeometry(percentageWidth, percentageHeight))
 
     override fun liquidRescale(
         percentageWidth: Percentage,
         percentageHeight: Percentage,
         deltaX: Double,
         rigidity: Double,
-    ): Unit {
-        throwIfNegative("percentageWidth", percentageWidth)
-        throwIfNegative("percentageHeight", percentageHeight)
+    ): Unit = nativeInstance.liquidRescale(MagickGeometry(percentageWidth, percentageHeight), deltaX, rigidity)
 
-        nativeInstance.liquidRescale(MagickGeometry(percentageWidth, percentageHeight), deltaX, rigidity)
+    override fun lower(size: UInt): Unit = nativeInstance.lower(size.toULong())
+
+    override fun magnify() {
+        TODO("Not yet implemented")
     }
 
-    override fun localContrast(radius: Double, strength: Percentage, channels: Channels): Unit =
-        nativeInstance.localContrast(radius, strength.toDouble(), channels)
+    override fun localContrast(
+        radius: Double,
+        strength: Percentage,
+        channels: Channels,
+    ): Unit = nativeInstance.localContrast(radius, strength.toDouble(), channels)
 
     override fun ping(data: UByteArray): Unit = ping(data, null)
 
@@ -1073,6 +1208,8 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
         fileName: String,
         readSettings: IMagickReadSettings<QuantumType>?,
     ): Unit = read(fileName, readSettings, true)
+
+    override fun raise(size: UInt): Unit = nativeInstance.raise(size.toULong())
 
     // read UByteArray
 
@@ -1307,23 +1444,255 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
         nativeInstance.removeAttribute(name)
     }
 
-    override fun setArtifact(name: String, value: String) {
+    override fun removeRegionMask(): Unit = nativeInstance.regionMask(null)
+
+    override fun removeProfile(profile: ImageProfile): Unit = removeProfile(profile.name)
+
+    override fun removeProfile(name: String): Unit = nativeInstance.removeProfile(name)
+
+    override fun removeReadMask(): Unit = nativeInstance.setReadMask(null)
+
+    override fun removeWriteMask(): Unit = nativeInstance.setWriteMask(null)
+
+    override fun resize(
+        width: UInt,
+        height: UInt,
+    ): Unit = nativeInstance.resize(MagickGeometry(width, height).toString())
+
+    override fun resize(geometry: IMagickGeometry): Unit = nativeInstance.resize(geometry.toString())
+
+    override fun resize(percentage: Percentage): Unit = nativeInstance.resize(MagickGeometry(percentage, percentage).toString())
+
+    override fun resize(
+        percentageWidth: Percentage,
+        percentageHeight: Percentage,
+    ): Unit = nativeInstance.resize(MagickGeometry(percentageWidth, percentageHeight).toString())
+
+    override fun roll(
+        x: Int,
+        y: Int,
+    ): Unit = nativeInstance.roll(x.toLong(), y.toLong())
+
+    override fun rotate(degrees: Double): Unit = nativeInstance.rotate(degrees)
+
+    override fun rotationalBlur(
+        angle: Double,
+        channels: Channels,
+    ): Unit = nativeInstance.rotationalBlur(angle, channels)
+
+    override fun sample(
+        width: UInt,
+        height: UInt,
+    ): Unit = sample(MagickGeometry(width, height))
+
+    override fun sample(geometry: IMagickGeometry): Unit = nativeInstance.sample(geometry.toString())
+
+    override fun sample(
+        percentageWidth: Percentage,
+        percentageHeight: Percentage,
+    ): Unit = sample(MagickGeometry(percentageWidth, percentageHeight))
+
+    override fun scale(
+        width: UInt,
+        height: UInt,
+    ): Unit = scale(MagickGeometry(width, height))
+
+    override fun scale(geometry: IMagickGeometry): Unit = nativeInstance.scale(geometry.toString())
+
+    override fun scale(
+        percentageWidth: Percentage,
+        percentageHeight: Percentage,
+    ): Unit = scale(MagickGeometry(percentageWidth, percentageHeight))
+
+    override fun segment(
+        quantizeColorSpace: ColorSpace,
+        clusterThreshold: Double,
+        smoothingThreshold: Double,
+    ): Unit = nativeInstance.segment(quantizeColorSpace, clusterThreshold, smoothingThreshold)
+
+    override fun selectiveBlur(
+        radius: Double,
+        sigma: Double,
+        threshold: Double,
+        channels: Channels,
+    ): Unit = nativeInstance.selectiveBlur(radius, sigma, threshold, channels)
+
+    override fun selectiveBlur(
+        radius: Double,
+        sigma: Double,
+        thresholdPercentage: Percentage,
+        channels: Channels,
+    ): Unit = nativeInstance.selectiveBlur(radius, sigma, PercentageHelper.toQuantum(thresholdPercentage), channels)
+
+    override fun sepiaTone(threshold: Percentage): Unit = nativeInstance.sepiaTone(PercentageHelper.toQuantum(threshold))
+
+    override fun setArtifact(
+        name: String,
+        value: String,
+    ) {
         throwIfEmpty("name", name)
         nativeInstance.setArtifact(name, value)
     }
 
-    override fun setArtifact(name: String, flag: Boolean) {
+    override fun setArtifact(
+        name: String,
+        flag: Boolean,
+    ) {
         throwIfEmpty("name", name)
         nativeInstance.setArtifact(name, if (flag) "true" else "false")
     }
 
-    @Throws(MagickException::class)
-    override fun setAttribute(name: String, value: String) {
+    override fun setAttribute(
+        name: String,
+        value: String,
+    ) {
         throwIfEmpty("name", name)
         nativeInstance.setAttribute(name, value)
     }
 
-    private fun calculateContrastStretch(blackPoint: Percentage, whitePoint: Percentage): PointD {
+    override fun setAttribute(
+        name: String,
+        flag: Boolean,
+    ) {
+        throwIfEmpty("name", name)
+        nativeInstance.setAttribute(name, if (flag) "true" else "false")
+    }
+
+    override fun setAttenuate(attenuate: Double): Unit = setArtifact("attenuate", attenuate.toString())
+
+    override fun setBitDepth(
+        value: UInt,
+        channels: Channels,
+    ): Unit = nativeInstance.setBitDepth(value.toULong(), channels)
+
+    override fun setClippingPath(
+        value: String,
+        pathName: String,
+    ): Unit = setAttribute("8BIM:1999,2998:$value", pathName)
+
+    override fun setCompression(compression: CompressionMethod) {
+        nativeInstance.compression = compression
+    }
+
+    override fun setProfile(profile: ImageProfile) {
+        profile.toByteArray()
+            ?.takeUnless { it.isEmpty() }
+            ?.let { datum ->
+                nativeInstance.setProfile(profile.name, datum)
+            }
+    }
+
+    override fun setProfile(
+        profile: ColorProfile,
+        mode: ColorTransformMode,
+    ) {
+        profile.toByteArray()
+            ?.takeUnless { it.isEmpty() }
+            ?.let { datum ->
+                TemporaryDefines(this).use {
+                    if (mode == ColorTransformMode.QUANTUM) {
+                        it.setArtifact("profile:highres-transform", false)
+                    }
+
+                    nativeInstance.setProfile(profile.name, datum)
+                }
+            }
+    }
+
+    override fun setReadMask(image: IMagickImage): Unit = nativeInstance.setReadMask(image.nativeInstance())
+
+    override fun setWriteMask(image: IMagickImage): Unit = nativeInstance.setWriteMask(image.nativeInstance())
+
+    override fun shade(
+        azimuth: Double,
+        elevation: Double,
+        channels: Channels,
+    ): Unit = nativeInstance.shade(azimuth, elevation, colorShading = false, channels)
+
+    override fun shadeGrayscale(
+        azimuth: Double,
+        elevation: Double,
+        channels: Channels,
+    ): Unit = nativeInstance.shade(azimuth, elevation, colorShading = true, channels)
+
+    override fun shadow(
+        x: Int,
+        y: Int,
+        sigma: Double,
+        alpha: Percentage,
+    ): Unit = nativeInstance.shadow(x.toLong(), y.toLong(), sigma, alpha.toDouble())
+
+    override fun sharpen(
+        radius: Double,
+        sigma: Double,
+        channels: Channels,
+    ): Unit = nativeInstance.sharpen(radius, sigma, channels)
+
+    override fun shave(
+        leftRight: UInt,
+        topBottom: UInt,
+    ): Unit = nativeInstance.shave(leftRight.toULong(), topBottom.toULong())
+
+    override fun shear(
+        xAngle: Double,
+        yAngle: Double,
+    ): Unit = nativeInstance.shear(xAngle, yAngle)
+
+    override fun sigmoidalContrast(contrast: Double): Unit = sigmoidalContrast(contrast, Quantum.maxd * 0.5)
+
+    override fun sigmoidalContrast(
+        contrast: Double,
+        midpoint: Double,
+        channels: Channels,
+    ): Unit = nativeInstance.sigmoidalContrast(sharpen = true, contrast, midpoint, channels)
+
+    override fun sigmoidalContrast(
+        contrast: Double,
+        midpointPercentage: Percentage,
+    ): Unit = sigmoidalContrast(contrast, PercentageHelper.toQuantum(midpointPercentage))
+
+    override fun sketch(
+        radius: Double,
+        sigma: Double,
+        angle: Double,
+    ): Unit = nativeInstance.sketch(radius, sigma, angle)
+
+    override fun solarize(factor: Double): Unit = nativeInstance.solarize(factor)
+
+    override fun solarize(factorPercentage: Percentage): Unit = nativeInstance.solarize(PercentageHelper.toQuantum(factorPercentage))
+
+    override fun sortPixels(): Unit = nativeInstance.sortPixels()
+
+    override fun splice(geometry: IMagickGeometry): Unit =
+        MagickRectangle.fromGeometry(geometry, this).toNative().use {
+            nativeInstance.splice(it)
+        }
+
+    override fun spread(
+        method: PixelInterpolateMethod,
+        radius: Double,
+    ): Unit = nativeInstance.spread(method, radius)
+
+    override fun statistic(
+        type: StatisticType,
+        width: UInt,
+        height: UInt,
+    ): Unit = nativeInstance.statistic(type, width.toULong(), height.toULong())
+
+    override fun statistics(channels: Channels): IStatistics {
+        val list = nativeInstance.statistics(channels)
+
+        return try {
+            Statistics(this, list, channels)
+        } finally {
+            list.dispose()
+        }
+    }
+
+    private fun calculateContrastStretch(
+        blackPoint: Percentage,
+        whitePoint: Percentage,
+    ): PointD {
         val pixels = (width * height).toDouble()
 
         var x = blackPoint.toDouble()
@@ -1340,20 +1709,16 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
         internal fun clone(image: IMagickImageQ<QuantumType>?): IMagickImageQ<QuantumType>? = image?.clone()
 
         @Throws(UnsupportedOperationException::class)
-        internal fun nativeInstance(image: IMagickImage): NativeMagickImage {
-            if (image !is MagickImage) {
-                throw UnsupportedOperationException()
+        internal fun IMagickImage.nativeInstance(): NativeMagickImage =
+            (this as? MagickImage)?.nativeInstance ?: throw UnsupportedOperationException()
+
+        internal fun createErrorInfo(image: MagickImage): IMagickErrorInfo =
+            image.nativeInstance.let {
+                MagickErrorInfo(
+                    it.meanErrorPerPixel,
+                    it.normalizedMaximumError,
+                    it.normalizedMeanError,
+                )
             }
-
-            return image.nativeInstance
-        }
-
-        internal fun createErrorInfo(image: MagickImage): IMagickErrorInfo = image.nativeInstance.let {
-            MagickErrorInfo(
-                it.meanErrorPerPixel,
-                it.normalizedMaximumError,
-                it.normalizedMeanError
-            )
-        }
     }
 }

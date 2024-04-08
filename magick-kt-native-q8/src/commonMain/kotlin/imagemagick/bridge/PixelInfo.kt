@@ -15,7 +15,6 @@ import libMagickNative.MagickColor_Black_Set
 import libMagickNative.MagickColor_Blue_Get
 import libMagickNative.MagickColor_Blue_Set
 import libMagickNative.MagickColor_Count_Get
-import libMagickNative.MagickColor_Create
 import libMagickNative.MagickColor_Dispose
 import libMagickNative.MagickColor_FuzzyEquals
 import libMagickNative.MagickColor_Green_Get
@@ -30,11 +29,6 @@ import libMagickNative.PixelInfo
 @ExperimentalStdlibApi
 @ExperimentalForeignApi
 public inline fun CPointer<PixelInfo>?.toMagick(): NativeMagickColor? = this?.let { NativeMagickColor(it) }
-
-@ExperimentalForeignApi
-@Throws(IllegalStateException::class)
-public inline fun create(): CPointer<PixelInfo> =
-    MagickColor_Create() ?: error("Failed to instantiate native MagickColor")
 
 @ExperimentalForeignApi
 public inline fun CPointer<PixelInfo>.dispose(): Unit = MagickColor_Dispose(this)
@@ -79,9 +73,10 @@ public inline fun CPointer<PixelInfo>.isCMYK(): Boolean = MagickColor_IsCMYK_Get
 public inline fun CPointer<PixelInfo>.isCMYK(value: Boolean): Unit = MagickColor_IsCMYK_Set(this, value.toNative())
 
 @ExperimentalForeignApi
-public inline fun CPointer<PixelInfo>.fuzzyEquals(other: CPointer<PixelInfo>, fuzz: QuantumType): Boolean =
-    MagickColor_FuzzyEquals(this, other, fuzz).toPrimitive()
+public inline fun CPointer<PixelInfo>.fuzzyEquals(
+    other: CPointer<PixelInfo>,
+    fuzz: QuantumType,
+): Boolean = MagickColor_FuzzyEquals(this, other, fuzz).toPrimitive()
 
 @ExperimentalForeignApi
-public inline fun CPointer<PixelInfo>.initialize(value: String): Boolean =
-    MagickColor_Initialize(this, value).toPrimitive()
+public inline fun CPointer<PixelInfo>.initialize(value: String): Boolean = MagickColor_Initialize(this, value).toPrimitive()

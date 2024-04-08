@@ -17,6 +17,9 @@ kotlin {
 
         val commonMain by getting {
             dependencies {
+                implementation(project.dependencies.platform("org.jetbrains.kotlinx:kotlinx-coroutines-bom:_"))
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
+
                 implementation(project.dependencies.platform("com.squareup.okio:okio-bom:_"))
                 implementation("com.squareup.okio:okio")
                 implementation("com.squareup.okio:okio-fakefilesystem")

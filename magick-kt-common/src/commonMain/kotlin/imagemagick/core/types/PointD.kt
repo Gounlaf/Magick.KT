@@ -48,21 +48,23 @@ public data class PointD(val x: Double, val y: Double) {
             val values = value.split("x")
             throwIfTrue("value", values.size > 2, "Invalid point specified.")
 
-            val x: Double = try {
-                values[0].toDouble()
-            } catch (e: NumberFormatException) {
-                throw IllegalArgumentException("Invalid point specified.", e)
-            }
-
-            val y: Double = if (values.size == 2) {
+            val x: Double =
                 try {
-                    values[1].toDouble()
+                    values[0].toDouble()
                 } catch (e: NumberFormatException) {
                     throw IllegalArgumentException("Invalid point specified.", e)
                 }
-            } else {
-                x
-            }
+
+            val y: Double =
+                if (values.size == 2) {
+                    try {
+                        values[1].toDouble()
+                    } catch (e: NumberFormatException) {
+                        throw IllegalArgumentException("Invalid point specified.", e)
+                    }
+                } else {
+                    x
+                }
 
             return PointD(x, y)
         }

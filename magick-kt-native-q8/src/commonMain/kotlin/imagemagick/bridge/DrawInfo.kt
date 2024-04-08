@@ -9,6 +9,7 @@ import imagemagick.core.enums.Gravity
 import imagemagick.core.enums.LineCap
 import imagemagick.core.enums.LineJoin
 import imagemagick.core.enums.TextDirection
+import imagemagick.core.exceptions.MagickException
 import imagemagick.core.toMagick
 import imagemagick.core.toNative
 import imagemagick.magicknative.NativeMagickImage
@@ -16,8 +17,6 @@ import imagemagick.magicknative.colors.NativeMagickColor
 import imagemagick.magicknative.exceptions.withException
 import imagemagick.magicknative.toNative
 import imagemagick.magicknative.toPrimitive
-import kotlin.contracts.ExperimentalContracts
-import kotlin.experimental.ExperimentalNativeApi
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.convert
@@ -77,19 +76,19 @@ import libMagickNative.DrawingSettings_TextKerning_Get
 import libMagickNative.DrawingSettings_TextKerning_Set
 import libMagickNative.DrawingSettings_TextUnderColor_Get
 import libMagickNative.DrawingSettings_TextUnderColor_Set
+import kotlin.contracts.ExperimentalContracts
+import kotlin.experimental.ExperimentalNativeApi
 
 @ExperimentalForeignApi
 public inline fun CPointer<DrawInfo>.dispose(): Unit = DrawingSettings_Dispose(this)
 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
-public inline fun CPointer<DrawInfo>.borderColor(): NativeMagickColor? =
-    DrawingSettings_BorderColor_Get(this).toMagick()
+public inline fun CPointer<DrawInfo>.borderColor(): NativeMagickColor? = DrawingSettings_BorderColor_Get(this).toMagick()
 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
-public inline fun CPointer<DrawInfo>.borderColor(value: NativeMagickColor?): Unit =
-    DrawingSettings_BorderColor_Set(this, value?.ptr)
+public inline fun CPointer<DrawInfo>.borderColor(value: NativeMagickColor?): Unit = DrawingSettings_BorderColor_Set(this, value?.ptr)
 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
@@ -97,15 +96,13 @@ public inline fun CPointer<DrawInfo>.fillColor(): NativeMagickColor? = DrawingSe
 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
-public inline fun CPointer<DrawInfo>.fillColor(value: NativeMagickColor?): Unit =
-    DrawingSettings_FillColor_Set(this, value?.ptr)
+public inline fun CPointer<DrawInfo>.fillColor(value: NativeMagickColor?): Unit = DrawingSettings_FillColor_Set(this, value?.ptr)
 
 @ExperimentalForeignApi
 public inline fun CPointer<DrawInfo>.fillRule(): FillRule = DrawingSettings_FillRule_Get(this).toMagick()
 
 @ExperimentalForeignApi
-public inline fun CPointer<DrawInfo>.fillRule(value: FillRule): Unit =
-    DrawingSettings_FillRule_Set(this, value.toNative())
+public inline fun CPointer<DrawInfo>.fillRule(value: FillRule): Unit = DrawingSettings_FillRule_Set(this, value.toNative())
 
 @ExperimentalForeignApi
 public inline fun CPointer<DrawInfo>.font(): String? = DrawingSettings_Font_Get(this)?.toKString()
@@ -129,62 +126,51 @@ public inline fun CPointer<DrawInfo>.fontPointsize(value: Double): Unit = Drawin
 public inline fun CPointer<DrawInfo>.fontStyle(): FontStyleType = DrawingSettings_FontStyle_Get(this).toMagick()
 
 @ExperimentalForeignApi
-public inline fun CPointer<DrawInfo>.fontStyle(value: FontStyleType): Unit =
-    DrawingSettings_FontStyle_Set(this, value.toNative())
+public inline fun CPointer<DrawInfo>.fontStyle(value: FontStyleType): Unit = DrawingSettings_FontStyle_Set(this, value.toNative())
 
 @ExperimentalForeignApi
 public inline fun CPointer<DrawInfo>.fontWeight(): FontWeight = DrawingSettings_FontWeight_Get(this).toMagick()
 
 @ExperimentalForeignApi
-public inline fun CPointer<DrawInfo>.fontWeight(value: FontWeight): Unit =
-    DrawingSettings_FontWeight_Set(this, value.weight.convert())
+public inline fun CPointer<DrawInfo>.fontWeight(value: FontWeight): Unit = DrawingSettings_FontWeight_Set(this, value.weight.convert())
 
 @ExperimentalForeignApi
-public inline fun CPointer<DrawInfo>.strokeAntiAlias(): Boolean =
-    DrawingSettings_StrokeAntiAlias_Get(this).toPrimitive()
+public inline fun CPointer<DrawInfo>.strokeAntiAlias(): Boolean = DrawingSettings_StrokeAntiAlias_Get(this).toPrimitive()
 
 @ExperimentalForeignApi
-public inline fun CPointer<DrawInfo>.strokeAntiAlias(value: Boolean): Unit =
-    DrawingSettings_StrokeAntiAlias_Set(this, value.toNative())
+public inline fun CPointer<DrawInfo>.strokeAntiAlias(value: Boolean): Unit = DrawingSettings_StrokeAntiAlias_Set(this, value.toNative())
 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
-public inline fun CPointer<DrawInfo>.strokeColor(): NativeMagickColor? =
-    DrawingSettings_StrokeColor_Get(this).toMagick()
+public inline fun CPointer<DrawInfo>.strokeColor(): NativeMagickColor? = DrawingSettings_StrokeColor_Get(this).toMagick()
 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
-public inline fun CPointer<DrawInfo>.strokeColor(value: NativeMagickColor?): Unit =
-    DrawingSettings_StrokeColor_Set(this, value?.ptr)
+public inline fun CPointer<DrawInfo>.strokeColor(value: NativeMagickColor?): Unit = DrawingSettings_StrokeColor_Set(this, value?.ptr)
 
 @ExperimentalForeignApi
 public inline fun CPointer<DrawInfo>.strokeDashOffset(): Double = DrawingSettings_StrokeDashOffset_Get(this)
 
 @ExperimentalForeignApi
-public inline fun CPointer<DrawInfo>.strokeDashOffset(value: Double): Unit =
-    DrawingSettings_StrokeDashOffset_Set(this, value)
+public inline fun CPointer<DrawInfo>.strokeDashOffset(value: Double): Unit = DrawingSettings_StrokeDashOffset_Set(this, value)
 
 @ExperimentalForeignApi
-public inline fun CPointer<DrawInfo>.strokeLineCap(): LineCap =
-    DrawingSettings_StrokeLineCap_Get(this).toMagick()
+public inline fun CPointer<DrawInfo>.strokeLineCap(): LineCap = DrawingSettings_StrokeLineCap_Get(this).toMagick()
 
 @ExperimentalForeignApi
-public inline fun CPointer<DrawInfo>.strokeLineCap(value: LineCap): Unit =
-    DrawingSettings_StrokeLineCap_Set(this, value.toNative())
+public inline fun CPointer<DrawInfo>.strokeLineCap(value: LineCap): Unit = DrawingSettings_StrokeLineCap_Set(this, value.toNative())
 
 @ExperimentalForeignApi
 public inline fun CPointer<DrawInfo>.strokeLineJoin(): LineJoin = DrawingSettings_StrokeLineJoin_Get(this).toMagick()
 
 @ExperimentalForeignApi
-public inline fun CPointer<DrawInfo>.strokeLineJoin(value: LineJoin): Unit =
-    DrawingSettings_StrokeLineJoin_Set(this, value.toNative())
+public inline fun CPointer<DrawInfo>.strokeLineJoin(value: LineJoin): Unit = DrawingSettings_StrokeLineJoin_Set(this, value.toNative())
 
 @ExperimentalForeignApi
 public inline fun CPointer<DrawInfo>.strokeMiterLimit(): UInt = DrawingSettings_StrokeMiterLimit_Get(this).convert()
 
 @ExperimentalForeignApi
-public inline fun CPointer<DrawInfo>.strokeMiterLimit(value: UInt): Unit =
-    DrawingSettings_StrokeMiterLimit_Set(this, value.convert())
+public inline fun CPointer<DrawInfo>.strokeMiterLimit(value: UInt): Unit = DrawingSettings_StrokeMiterLimit_Set(this, value.convert())
 
 @ExperimentalForeignApi
 public inline fun CPointer<DrawInfo>.strokeWidth(): Double = DrawingSettings_StrokeWidth_Get(this)
@@ -196,15 +182,13 @@ public inline fun CPointer<DrawInfo>.strokeWidth(value: Double): Unit = DrawingS
 public inline fun CPointer<DrawInfo>.textAntiAlias(): Boolean = DrawingSettings_TextAntiAlias_Get(this).toPrimitive()
 
 @ExperimentalForeignApi
-public inline fun CPointer<DrawInfo>.textAntiAlias(value: Boolean): Unit =
-    DrawingSettings_TextAntiAlias_Set(this, value.toNative())
+public inline fun CPointer<DrawInfo>.textAntiAlias(value: Boolean): Unit = DrawingSettings_TextAntiAlias_Set(this, value.toNative())
 
 @ExperimentalForeignApi
 public inline fun CPointer<DrawInfo>.textDirection(): TextDirection = DrawingSettings_TextDirection_Get(this).toMagick()
 
 @ExperimentalForeignApi
-public inline fun CPointer<DrawInfo>.textDirection(value: TextDirection): Unit =
-    DrawingSettings_TextDirection_Set(this, value.toNative())
+public inline fun CPointer<DrawInfo>.textDirection(value: TextDirection): Unit = DrawingSettings_TextDirection_Set(this, value.toNative())
 
 @ExperimentalForeignApi
 public inline fun CPointer<DrawInfo>.textEncoding(): String? = DrawingSettings_TextEncoding_Get(this)?.toKString()
@@ -216,22 +200,19 @@ public inline fun CPointer<DrawInfo>.textEncoding(value: String?): Unit = Drawin
 public inline fun CPointer<DrawInfo>.textGravity(): Gravity = DrawingSettings_TextGravity_Get(this).toMagick()
 
 @ExperimentalForeignApi
-public inline fun CPointer<DrawInfo>.textGravity(value: Gravity): Unit =
-    DrawingSettings_TextGravity_Set(this, value.toNative())
+public inline fun CPointer<DrawInfo>.textGravity(value: Gravity): Unit = DrawingSettings_TextGravity_Set(this, value.toNative())
 
 @ExperimentalForeignApi
 public inline fun CPointer<DrawInfo>.textInterlineSpacing(): Double = DrawingSettings_TextInterlineSpacing_Get(this)
 
 @ExperimentalForeignApi
-public inline fun CPointer<DrawInfo>.textInterlineSpacing(value: Double): Unit =
-    DrawingSettings_TextInterlineSpacing_Set(this, value)
+public inline fun CPointer<DrawInfo>.textInterlineSpacing(value: Double): Unit = DrawingSettings_TextInterlineSpacing_Set(this, value)
 
 @ExperimentalForeignApi
 public inline fun CPointer<DrawInfo>.textInterwordSpacing(): Double = DrawingSettings_TextInterwordSpacing_Get(this)
 
 @ExperimentalForeignApi
-public inline fun CPointer<DrawInfo>.textInterwordSpacing(value: Double): Unit =
-    DrawingSettings_TextInterwordSpacing_Set(this, value)
+public inline fun CPointer<DrawInfo>.textInterwordSpacing(value: Double): Unit = DrawingSettings_TextInterwordSpacing_Set(this, value)
 
 @ExperimentalForeignApi
 public inline fun CPointer<DrawInfo>.textKerning(): Double = DrawingSettings_TextKerning_Get(this)
@@ -241,13 +222,11 @@ public inline fun CPointer<DrawInfo>.textKerning(value: Double): Unit = DrawingS
 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
-public inline fun CPointer<DrawInfo>.textUnderColor(): NativeMagickColor? =
-    DrawingSettings_TextUnderColor_Get(this).toMagick()
+public inline fun CPointer<DrawInfo>.textUnderColor(): NativeMagickColor? = DrawingSettings_TextUnderColor_Get(this).toMagick()
 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
-public inline fun CPointer<DrawInfo>.textUnderColor(value: NativeMagickColor?): Unit =
-    DrawingSettings_TextUnderColor_Set(this, value?.ptr)
+public inline fun CPointer<DrawInfo>.textUnderColor(value: NativeMagickColor?): Unit = DrawingSettings_TextUnderColor_Set(this, value?.ptr)
 
 @ExperimentalForeignApi
 public inline fun CPointer<DrawInfo>.setAffine(
@@ -257,21 +236,22 @@ public inline fun CPointer<DrawInfo>.setAffine(
     shearY: Double,
     translateX: Double,
     translateY: Double,
-): Unit = DrawingSettings_SetAffine(
-    this,
-    scaleX,
-    scaleY,
-    shearX,
-    shearY,
-    translateX,
-    translateY,
-)
+): Unit =
+    DrawingSettings_SetAffine(
+        this,
+        scaleX,
+        scaleY,
+        shearX,
+        shearY,
+        translateX,
+        translateY,
+    )
 
 @ExperimentalContracts
 @ExperimentalForeignApi
 @ExperimentalNativeApi
 @ExperimentalStdlibApi
-public inline fun CPointer<DrawInfo>.setFillPattern(value: NativeMagickImage): Unit =
+public inline fun CPointer<DrawInfo>.setFillPattern(value: NativeMagickImage): Pair<Unit, MagickException?> =
     withException { _, exceptionPtr ->
         DrawingSettings_SetFillPattern(this@setFillPattern, value.ptr, exceptionPtr)
     }
@@ -284,7 +264,7 @@ public inline fun CPointer<DrawInfo>.setStrokeDashArray(value: DoubleArray): Uni
 @ExperimentalForeignApi
 @ExperimentalNativeApi
 @ExperimentalStdlibApi
-public inline fun CPointer<DrawInfo>.setStrokePattern(value: NativeMagickImage): Unit =
+public inline fun CPointer<DrawInfo>.setStrokePattern(value: NativeMagickImage): Pair<Unit, MagickException?> =
     withException { _, exceptionPtr ->
         DrawingSettings_SetStrokePattern(this@setStrokePattern, value.ptr, exceptionPtr)
     }

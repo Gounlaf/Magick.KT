@@ -6,8 +6,8 @@ import okio.Path
 import okio.Source
 import imagemagick.core.MagickImage as IMagickImage
 import imagemagick.core.colors.MagickColorQuantum as IMagickColorQuantum
-import imagemagick.core.settings.MagickReadSettings as IMagickReadSettings
 import imagemagick.core.settings.CompareSettingsQuantum as ICompareSettingsQuantum
+import imagemagick.core.settings.MagickReadSettings as IMagickReadSettings
 import imagemagick.core.settings.MagickSettings as IMagickSettings
 
 /**

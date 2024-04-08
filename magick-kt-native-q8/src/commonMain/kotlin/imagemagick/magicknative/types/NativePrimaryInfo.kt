@@ -34,7 +34,6 @@ public class NativePrimaryInfo(public val ptr: CPointer<PrimaryInfo>) : AutoClos
 
     public companion object {
         @Throws(IllegalStateException::class)
-        public inline fun create(): CPointer<PrimaryInfo> =
-            PrimaryInfo_Create() ?: error("Failed to instantiate native PrimaryInfo")
+        public inline fun create(): CPointer<PrimaryInfo> = PrimaryInfo_Create() ?: error("Failed to instantiate native PrimaryInfo")
     }
 }

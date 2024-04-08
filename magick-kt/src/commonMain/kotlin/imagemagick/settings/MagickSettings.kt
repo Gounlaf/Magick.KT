@@ -29,9 +29,9 @@ import imagemagick.magicknative.NativeMagickSettings
 import imagemagick.magicknative.colors.NativeMagickColor
 import imagemagick.types.MagickGeometry
 import imagemagick.types.MagickGeometry.Companion.toMagickGeometry
+import kotlinx.cinterop.ExperimentalForeignApi
 import kotlin.contracts.ExperimentalContracts
 import kotlin.experimental.ExperimentalNativeApi
-import kotlinx.cinterop.ExperimentalForeignApi
 import imagemagick.core.drawables.DrawableAffine as IDrawableAffine
 import imagemagick.core.settings.MagickSettings as IMagickSettings
 import imagemagick.core.types.MagickGeometry as IMagickGeometry
@@ -476,7 +476,6 @@ public open class MagickSettings : IMagickSettings<QuantumType> {
             return "${module.name}:$name"
         }
 
-        private fun getModule(format: MagickFormat): MagickFormat =
-            MagickFormatInfo.create(format)?.moduleFormat ?: format
+        private fun getModule(format: MagickFormat): MagickFormat = MagickFormatInfo.create(format)?.moduleFormat ?: format
     }
 }

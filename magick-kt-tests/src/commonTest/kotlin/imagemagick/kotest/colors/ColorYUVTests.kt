@@ -110,9 +110,9 @@ class ColorYUVTests : ShouldSpec({
             should("return the correct value when instance is null") {
                 val color = ColorYUV(0.0, 0.0, 0.0)
 
-                (color < null)shouldBe false
+                (color < null) shouldBe false
                 (color <= null) shouldBe false
-                (color > null)shouldBe true
+                (color > null) shouldBe true
                 (color >= null) shouldBe true
             }
 
@@ -122,9 +122,9 @@ class ColorYUVTests : ShouldSpec({
 
                 (first == second) shouldBe true
                 (first != second) shouldBe false
-                (first < second)shouldBe false
+                (first < second) shouldBe false
                 (first <= second) shouldBe true
-                (first > second)shouldBe false
+                (first > second) shouldBe false
                 (first >= second) shouldBe true
             }
 
@@ -134,9 +134,9 @@ class ColorYUVTests : ShouldSpec({
 
                 (first == second) shouldBe false
                 (first != second) shouldBe true
-                (first < second)shouldBe false
+                (first < second) shouldBe false
                 (first <= second) shouldBe false
-                (first > second)shouldBe true
+                (first > second) shouldBe true
                 (first >= second) shouldBe true
             }
         }

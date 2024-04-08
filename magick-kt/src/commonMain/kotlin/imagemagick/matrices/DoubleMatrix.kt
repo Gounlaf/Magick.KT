@@ -17,13 +17,23 @@ public abstract class DoubleMatrix protected constructor(
     override val order: UInt,
     protected val values: D2Array<Double>,
 ) : IDoubleMatrix {
-    override fun get(x: UInt, y: UInt): Double = values[y.toInt(), x.toInt()]
+    override fun get(
+        x: UInt,
+        y: UInt,
+    ): Double = values[y.toInt(), x.toInt()]
 
-    override fun set(x: UInt, y: UInt, value: Double) {
+    override fun set(
+        x: UInt,
+        y: UInt,
+        value: Double,
+    ) {
         values[y.toInt(), x.toInt()] = value
     }
 
-    override fun setColumn(x: UInt, vararg values: Double) {
+    override fun setColumn(
+        x: UInt,
+        vararg values: Double,
+    ) {
         throwIfOutOfRange("x", x, order)
         throwIfTrue("values", values.size != order.toInt(), "Invalid length")
         for (y in 0u until order) {
@@ -31,7 +41,10 @@ public abstract class DoubleMatrix protected constructor(
         }
     }
 
-    override fun setRow(y: UInt, vararg values: Double) {
+    override fun setRow(
+        y: UInt,
+        vararg values: Double,
+    ) {
         throwIfOutOfRange("y", y, order)
         throwIfTrue("values", values.size != order.toInt(), "Invalid length")
         for (x in 0u until order) {

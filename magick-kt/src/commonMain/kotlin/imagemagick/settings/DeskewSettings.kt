@@ -8,5 +8,5 @@ import imagemagick.core.settings.DeskewSettings as IDeskewSettings
  */
 public data class DeskewSettings(
     override var autoCrop: Boolean = false,
-    override var threshold: Percentage = Percentage()
+    override var threshold: Percentage = Percentage(),
 ) : IDeskewSettings

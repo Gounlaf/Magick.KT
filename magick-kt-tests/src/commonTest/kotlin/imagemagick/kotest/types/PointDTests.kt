@@ -43,13 +43,11 @@ class PointDTests : ShouldSpec({
                 point.y shouldBe 0.0
             }
 
-
             should("set the x and y value") {
                 val point = PointD(5, 10)
                 point.x shouldBe 5.0
                 point.y shouldBe 10.0
             }
-
 
             should("use the x value when t value is not set") {
                 val point = PointD(5.0)

@@ -17,7 +17,10 @@ public class NativeDoubleMatrix(public val ptr: CPointer<KernelInfo>) : AutoClos
 
     public companion object {
         @Throws(IllegalStateException::class)
-        public inline fun create(order: ULong, values: DoubleArray): NativeDoubleMatrix =
+        public inline fun create(
+            order: ULong,
+            values: DoubleArray,
+        ): NativeDoubleMatrix =
             values.usePinned { valuesFixed ->
                 DoubleMatrix_Create(valuesFixed.addressOf(0), order)
             }?.let {

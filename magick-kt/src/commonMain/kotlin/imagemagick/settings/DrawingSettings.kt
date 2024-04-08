@@ -1,6 +1,7 @@
 package imagemagick.settings
 
 import imagemagick.MagickImage
+import imagemagick.MagickImage.Companion.nativeInstance
 import imagemagick.QuantumType
 import imagemagick.colors.MagickColor
 import imagemagick.core.drawables.DrawableAffine
@@ -13,9 +14,9 @@ import imagemagick.core.enums.LineJoin
 import imagemagick.core.enums.TextDirection
 import imagemagick.helpers.isNotNullOrEmpty
 import imagemagick.magicknative.settings.NativeDrawingSettings
+import kotlinx.cinterop.ExperimentalForeignApi
 import kotlin.contracts.ExperimentalContracts
 import kotlin.experimental.ExperimentalNativeApi
-import kotlinx.cinterop.ExperimentalForeignApi
 import imagemagick.core.MagickImageQuantum as IMagickImage
 import imagemagick.core.colors.MagickColorQuantum as IMagickColor
 
@@ -157,11 +158,11 @@ public class DrawingSettings internal constructor() {
                 instance.setAffine(it.scaleX, it.scaleY, it.shearX, it.shearY, it.translateX, it.translateY)
             }
 
-            fillPattern?.let { instance.setFillPattern(MagickImage.nativeInstance(it)) }
+            fillPattern?.let { instance.setFillPattern(it.nativeInstance()) }
 
             strokeDashArray?.let { instance.setStrokeDashArray(it) }
 
-            strokePattern?.let { instance.setStrokePattern(MagickImage.nativeInstance(it)) }
+            strokePattern?.let { instance.setStrokePattern(it.nativeInstance()) }
 
             text.takeIf { it.isNotNullOrEmpty() }?.let { instance.setText(it) }
         }

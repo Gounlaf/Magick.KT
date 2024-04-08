@@ -29,7 +29,7 @@ public class MagickColorMatrix : DoubleMatrix, ConvolveMatrix {
      */
     public constructor(order: UInt, vararg values: Double) : super(
         order,
-        mk.ndarray<Double, D2>(values.asList(), intArrayOf(order.toInt(), order.toInt()))
+        mk.ndarray<Double, D2>(values.asList(), intArrayOf(order.toInt(), order.toInt())),
     ) {
         throwIfTrue("order", order < 1u, "Invalid order specified, value has to be at least 1.")
         throwIfTrue("order", order > 6u, "Invalid order specified, range 1-6.")

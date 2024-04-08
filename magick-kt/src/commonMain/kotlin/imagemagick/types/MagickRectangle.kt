@@ -14,17 +14,21 @@ public data class MagickRectangle(val x: Int, val y: Int, val width: UInt, val h
         public fun fromPageSize(pageSize: String): MagickRectangle? =
             NativeMagickRectangle.fromPageSize(pageSize)?.use { it.toMagickRectangle() }
 
-        public fun fromGeometry(geometry: IMagickGeometry, image: IMagickImage): MagickRectangle {
-            var width = geometry.width
-            var height = geometry.height
+        public fun fromGeometry(
+            geometry: IMagickGeometry,
+            image: IMagickImage,
+        ): MagickRectangle =
+            when (geometry.isPercentage) {
+                true ->
+                    MagickRectangle(
+                        geometry.x,
+                        geometry.y,
+                        geometry.width.percent() * image.width,
+                        geometry.height.percent() * image.height,
+                    )
 
-            if (geometry.isPercentage) {
-                width = width.percent() * image.width
-                height = height.percent() * image.height
+                false -> MagickRectangle(geometry.x, geometry.y, geometry.width, geometry.height)
             }
-
-            return MagickRectangle(geometry.x, geometry.y, width, height)
-        }
 
         @ExperimentalStdlibApi
         @ExperimentalForeignApi
@@ -32,11 +36,12 @@ public data class MagickRectangle(val x: Int, val y: Int, val width: UInt, val h
 
         @ExperimentalForeignApi
         @ExperimentalStdlibApi
-        public inline fun MagickRectangle.toNative(): NativeMagickRectangle = NativeMagickRectangle().apply {
-            x = this@toNative.x
-            y = this@toNative.y
-            width = this@toNative.width
-            height = this@toNative.height
-        }
+        public inline fun MagickRectangle.toNative(): NativeMagickRectangle =
+            NativeMagickRectangle().apply {
+                x = this@toNative.x
+                y = this@toNative.y
+                width = this@toNative.width
+                height = this@toNative.height
+            }
     }
 }

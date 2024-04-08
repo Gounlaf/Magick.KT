@@ -2,12 +2,11 @@ package imagemagick.core.settings
 
 import imagemagick.core.types.MagickGeometry
 
-
 /**
  * Class that contains setting for when an image is being read.
  */
 public interface MagickReadSettings<TQuantumType> : MagickSettings<TQuantumType> where TQuantumType : Any {
-    /** Gets or sets the defines that should be set before the image is read. */
+//    /** Gets or sets the defines that should be set before the image is read. */
 //    public var defines: IReadDefines?
 
     /** Gets or sets the specified area to extract from the image. */
@@ -15,7 +14,7 @@ public interface MagickReadSettings<TQuantumType> : MagickSettings<TQuantumType>
 
     /** Gets or sets the index of the image to read from a multi layer/frame image. */
     public var frameIndex: UInt?
-//
+
     /** Gets or sets the number of images to read from a multi layer/frame image. */
     public var frameCount: UInt?
 

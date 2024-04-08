@@ -2,11 +2,11 @@ package imagemagick.colors
 
 import imagemagick.Quantum
 import imagemagick.QuantumType
+import kotlinx.cinterop.ExperimentalForeignApi
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
-import kotlinx.cinterop.ExperimentalForeignApi
 import imagemagick.core.colors.MagickColorQuantum as IMagickColor
 
 /**

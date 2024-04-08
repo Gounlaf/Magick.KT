@@ -15,6 +15,7 @@ public interface Flags {
 }
 
 public infix fun Flags.and(other: ULong): BitMask = BitMask(bit and other)
+
 public infix fun <T : Flags> Flags.or(other: T): BitMask = BitMask(bit or other.bit)
 
 public infix operator fun Flags.plus(other: Flags): BitMask = BitMask(bit or other.bit)
@@ -28,6 +29,7 @@ public inline fun <reified T> enabledValues(mask: BitMask): List<T> where T : En
 public infix fun BitMask.or(other: Flags): BitMask = BitMask(value or other.bit)
 
 public infix operator fun BitMask.plus(other: BitMask): BitMask = BitMask(value or other.value)
+
 public infix operator fun BitMask.plus(other: Flags): BitMask = BitMask(value or other.bit)
 
 public infix fun <T : Flags> BitMask.hasFlag(which: T): Boolean {

@@ -25,8 +25,7 @@ public class NativeMagickGeometry(private val ptr: CPointer<GeometryInfo>) : Aut
         ptr.dispose()
     }
 
-    public fun initialize(value: String): List<GeometryFlags> =
-        enabledValues<GeometryFlags>(BitMask(ptr.initialize(value).toULong()))
+    public fun initialize(value: String): List<GeometryFlags> = enabledValues<GeometryFlags>(BitMask(ptr.initialize(value).toULong()))
 
     public val width: Double get() = ptr.width()
 
@@ -38,7 +37,6 @@ public class NativeMagickGeometry(private val ptr: CPointer<GeometryInfo>) : Aut
 
     public companion object {
         @Throws(IllegalStateException::class)
-        public inline fun create(): CPointer<GeometryInfo> =
-            MagickGeometry_Create() ?: error("Failed to instantiate native MagickGeometry")
+        public inline fun create(): CPointer<GeometryInfo> = MagickGeometry_Create() ?: error("Failed to instantiate native MagickGeometry")
     }
 }

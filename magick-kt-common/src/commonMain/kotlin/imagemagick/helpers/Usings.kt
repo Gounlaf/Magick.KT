@@ -15,7 +15,11 @@ import kotlin.contracts.contract
  */
 @ExperimentalContracts
 @ExperimentalStdlibApi
-public inline fun <A : AutoCloseable?, B : AutoCloseable?, C> using(argA: A, argB: B, block: (A, B) -> C): C {
+public inline fun <A : AutoCloseable?, B : AutoCloseable?, C> using(
+    argA: A,
+    argB: B,
+    block: (A, B) -> C,
+): C {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }

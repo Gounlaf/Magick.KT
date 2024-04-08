@@ -3,8 +3,7 @@ package imagemagick.core.settings
 /**
  * Class that contains setting for the kmeans operation.
  */
-public interface KmeansSettings
-{
+public interface KmeansSettings {
     /**
      * Gets or sets the seed clusters from color list (e.g. red;green;blue).
      */

@@ -60,7 +60,11 @@ public interface MagickImageInfo {
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
     @Throws(MagickException::class)
-    public fun read(data: UByteArray, offset: UInt, count: UInt)
+    public fun read(
+        data: UByteArray,
+        offset: UInt,
+        count: UInt,
+    )
 
     /**
      * Read basic information about an image.

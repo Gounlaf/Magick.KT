@@ -24,7 +24,6 @@ public data class PixelImportSettings(
     override val storageType: StorageType,
     override var mapping: String,
 ) : IPixelImportSettings {
-
     /**
      * Initializes a new instance of the [PixelImportSettings] class.
      *
@@ -37,7 +36,7 @@ public data class PixelImportSettings(
         width,
         height,
         storageType,
-        mapping.toString()
+        mapping.toString(),
     )
 
     /**
@@ -54,7 +53,7 @@ public data class PixelImportSettings(
         width,
         height,
         storageType,
-        mapping
+        mapping,
     )
 
     /**
@@ -80,6 +79,6 @@ public data class PixelImportSettings(
         width,
         height,
         storageType,
-        mapping.toString()
+        mapping.toString(),
     )
 }

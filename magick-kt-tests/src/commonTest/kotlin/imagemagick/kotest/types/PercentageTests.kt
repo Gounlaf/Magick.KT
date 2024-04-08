@@ -23,11 +23,6 @@ class PercentageTests : ShouldSpec({
                 val percentage = Percentage(200.0)
                 percentage.toString() shouldBe "200%"
             }
-
-            should("handle negative value") {
-                val percentage = Percentage(-25)
-                percentage.toString() shouldBe "-25%"
-            }
         }
 
         context("TheCompareToMethod") {

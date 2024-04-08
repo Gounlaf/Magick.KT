@@ -25,5 +25,5 @@ public enum class GeometryFlags(override val bit: ULong) : Flags {
     LIMIT_PIXELS(0x20000u),
 
     /** '~' special handling needed */
-    ASPECT_RATIO(0x100000u)
+    ASPECT_RATIO(0x100000u),
 }

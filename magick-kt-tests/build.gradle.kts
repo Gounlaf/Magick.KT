@@ -1,5 +1,5 @@
-import java.util.Properties
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
+import java.util.Properties
 
 plugins {
     kotlin("multiplatform")

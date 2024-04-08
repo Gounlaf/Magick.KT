@@ -1,9 +1,9 @@
 package imagemagick.helpers
 
 import imagemagick.MagickImage
+import kotlinx.cinterop.ExperimentalForeignApi
 import kotlin.contracts.ExperimentalContracts
 import kotlin.experimental.ExperimentalNativeApi
-import kotlinx.cinterop.ExperimentalForeignApi
 
 @ExperimentalForeignApi
 @ExperimentalContracts
@@ -18,7 +18,10 @@ internal class TemporaryDefines(private val image: MagickImage) : AutoCloseable 
         }
     }
 
-    fun setArtifact(name: String, value: String): Unit {
+    fun setArtifact(
+        name: String,
+        value: String,
+    ) {
         if (value.isEmpty()) {
             return
         }
@@ -27,12 +30,18 @@ internal class TemporaryDefines(private val image: MagickImage) : AutoCloseable 
         image.setArtifact(name, value)
     }
 
-    fun setArtifact(name: String, value: Boolean): Unit {
+    fun setArtifact(
+        name: String,
+        value: Boolean,
+    ) {
         names.add(name)
         image.setArtifact(name, value)
     }
 
-    fun <TValue> setArtifact(name: String, value: TValue?): Unit {
+    fun <TValue> setArtifact(
+        name: String,
+        value: TValue?,
+    ) {
         if (value == null) {
             return
         }

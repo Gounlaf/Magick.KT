@@ -25,7 +25,6 @@ public class NativeOffsetInfo(public val ptr: CPointer<OffsetInfo>) : AutoClosea
 
     public companion object {
         @Throws(IllegalStateException::class)
-        public inline fun create(): CPointer<OffsetInfo> =
-            OffsetInfo_Create() ?: error("Failed to instantiate native OffsetInfo")
+        public inline fun create(): CPointer<OffsetInfo> = OffsetInfo_Create() ?: error("Failed to instantiate native OffsetInfo")
     }
 }

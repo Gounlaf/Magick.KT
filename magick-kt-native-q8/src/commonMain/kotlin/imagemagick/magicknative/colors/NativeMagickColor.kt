@@ -49,14 +49,16 @@ public class NativeMagickColor(public val ptr: CPointer<PixelInfo> = create()) :
         get() = ptr.isCMYK()
         set(value) = ptr.isCMYK(value)
 
-    public fun fuzzyEquals(other: NativeMagickColor, fuzz: QuantumType): Boolean = ptr.fuzzyEquals(other.ptr, fuzz)
+    public fun fuzzyEquals(
+        other: NativeMagickColor,
+        fuzz: QuantumType,
+    ): Boolean = ptr.fuzzyEquals(other.ptr, fuzz)
 
     public fun initialize(value: String): Boolean = ptr.initialize(value)
 
     public companion object {
         @ExperimentalForeignApi
         @Throws(IllegalStateException::class)
-        public inline fun create(): CPointer<PixelInfo> =
-            MagickColor_Create() ?: error("Failed to instantiate native MagickColor")
+        public inline fun create(): CPointer<PixelInfo> = MagickColor_Create() ?: error("Failed to instantiate native MagickColor")
     }
 }

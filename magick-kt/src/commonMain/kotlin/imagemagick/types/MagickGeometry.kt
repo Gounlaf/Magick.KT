@@ -3,7 +3,6 @@ package imagemagick.types
 import imagemagick.core.types.Percentage
 import imagemagick.enums.GeometryFlags
 import imagemagick.exceptions.throwIfEmpty
-import imagemagick.exceptions.throwIfNegative
 import imagemagick.magicknative.types.NativeMagickGeometry
 import imagemagick.magicknative.types.NativeMagickRectangle
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -66,7 +65,7 @@ public data class MagickGeometry(
         0,
         0,
         percentageWith,
-        percentageHeight
+        percentageHeight,
     )
 
     /**
@@ -78,9 +77,6 @@ public data class MagickGeometry(
      * @param percentageHeight The percentage of the height.
      */
     public constructor(x: Int, y: Int, percentageWith: Percentage, percentageHeight: Percentage) : this() {
-        throwIfNegative("percentageWith", percentageWith)
-        throwIfNegative("percentageHeight", percentageHeight)
-
         initializeFromPercentage(x, y, percentageWith.toUInt(), percentageHeight.toUInt())
     }
 
@@ -141,37 +137,38 @@ public data class MagickGeometry(
         return if (left < right) -1 else 1
     }
 
-    override fun toString(): String = buildString {
-        if (aspectRatio) {
-            append("$width:$height")
-            return@buildString
+    override fun toString(): String =
+        buildString {
+            if (aspectRatio) {
+                append("$width:$height")
+                return@buildString
+            }
+
+            if (width > 0u) append(width)
+
+            if (height > 0u) {
+                append("x$height")
+            } else if (!isPercentage) {
+                append('x')
+            }
+
+            if (x != 0 || y != 0) {
+                if (x >= 0) append('+')
+
+                append(x)
+
+                if (y >= 0) append('+')
+
+                append(y)
+            }
+
+            if (isPercentage) append('%')
+            if (ignoreAspectRatio) append('!')
+            if (greater) append('>')
+            if (less) append('<')
+            if (fillArea) append('^')
+            if (limitPixels) append('@')
         }
-
-        if (width > 0u) append(width)
-
-        if (height > 0u) {
-            append("x$height")
-        } else if (!isPercentage) {
-            append('x')
-        }
-
-        if (x != 0 || y != 0) {
-            if (x >= 0) append('+')
-
-            append(x)
-
-            if (y >= 0) append('+')
-
-            append(y)
-        }
-
-        if (isPercentage) append('%')
-        if (ignoreAspectRatio) append('!')
-        if (greater) append('>')
-        if (less) append('<')
-        if (fillArea) append('^')
-        if (limitPixels) append('@')
-    }
 
     private fun initializeFromPercentage(
         x: Int,

@@ -1,26 +1,14 @@
 package imagemagick
 
-import imagemagick.bridge.MagickFormatInfoList
-import imagemagick.bridge.canReadMultithreaded
-import imagemagick.bridge.canWriteMultithreaded
-import imagemagick.bridge.description
-import imagemagick.bridge.format
-import imagemagick.bridge.getInfo
-import imagemagick.bridge.getInfoWithBlob
-import imagemagick.bridge.mimeType
-import imagemagick.bridge.moduleFormat
-import imagemagick.bridge.supportsMultipleFrames
-import imagemagick.bridge.supportsReading
-import imagemagick.bridge.supportsWriting
 import imagemagick.core.enums.MagickFormat
+import imagemagick.exceptions.throwIfEmpty
 import imagemagick.helpers.toString
-import kotlin.contracts.ExperimentalContracts
-import kotlinx.cinterop.CPointer
+import imagemagick.magicknative.NativeMagickFormatInfo
 import kotlinx.cinterop.ExperimentalForeignApi
-import libMagickNative.MagickInfo
 import okio.Path
-import platform.posix.free
-import imagemagick.core.MagickFormatInfo as Interface
+import platform.posix.warn
+import kotlin.contracts.ExperimentalContracts
+import imagemagick.core.MagickFormatInfo as IMagickFormatInfo
 
 /**
  * Class that contains information about an image format.
@@ -35,28 +23,41 @@ public data class MagickFormatInfo private constructor(
     override val supportsMultipleFrames: Boolean,
     override val supportsReading: Boolean,
     override val supportsWriting: Boolean,
-) : Interface {
+) : IMagickFormatInfo {
     @ExperimentalStdlibApi
     @ExperimentalForeignApi
     @ExperimentalContracts
     public companion object {
-        public val allFormats: Map<MagickFormat, Interface> by lazy {
+        @Suppress("KDocMissingDocumentation")
+        public val allFormats: Map<MagickFormat, IMagickFormatInfo> by lazy {
             loadFormats()
         }
 
-        private fun loadFormats(): Map<MagickFormat, Interface> {
-            val formats = mutableMapOf<MagickFormat, Interface>()
+        private fun loadFormats(): Map<MagickFormat, IMagickFormatInfo> {
+            val formats = mutableMapOf<MagickFormat, IMagickFormatInfo>()
 
-            MagickFormatInfoList.create()?.use { list ->
-                for (i in 0u..list.length) {
-                    list.getInfo(i)?.let { ptr ->
-                        ptr.toMagickFormatInfo().also {
-                            formats[it.format] = it
+            NativeMagickFormatInfo().let {
+                it.createList().use { list ->
+                    for (i in 0u..list.length) {
+                        val (ptr, warning) = list.getInfo(i)
+                        warning?.message?.let { message -> warn(message) }
+
+                        NativeMagickFormatInfo(ptr).toMagickFormatInfo()?.let { magicFormatInfo ->
+                            formats[magicFormatInfo.format] = magicFormatInfo
                         }
                     }
                 }
 
-                // TODO AddStealthCoders(instance, formats)
+                // AddStealthCoders(instance, formats)
+                it.getInfoByName("DIB")
+                it.toMagickFormatInfo()?.let { magicFormatInfo ->
+                    formats[magicFormatInfo.format] = magicFormatInfo
+                }
+
+                it.getInfoByName("TIF")
+                it.toMagickFormatInfo()?.let { magicFormatInfo ->
+                    formats[magicFormatInfo.format] = magicFormatInfo
+                }
             }
 
             return formats
@@ -79,18 +80,22 @@ public data class MagickFormatInfo private constructor(
                 MagickFormat.UNKNOWN
             }
 
-        private inline fun CPointer<MagickInfo>.toMagickFormatInfo(): MagickFormatInfo =
-            MagickFormatInfo(
-                canReadMultithreaded = this.canReadMultithreaded(),
-                canWriteMultithreaded = this.canWriteMultithreaded(),
-                description = this.description(),
-                format = formatCleaner(this.format()),
-                mimeType = this.mimeType(),
-                moduleFormat = formatCleaner(this.moduleFormat()),
-                supportsMultipleFrames = this.supportsMultipleFrames(),
-                supportsReading = this.supportsReading(),
-                supportsWriting = this.supportsWriting(),
-            )
+        private inline fun NativeMagickFormatInfo.toMagickFormatInfo(): MagickFormatInfo? =
+            if (!this.hasInstance) {
+                null
+            } else {
+                MagickFormatInfo(
+                    this.canReadMultithreaded,
+                    this.canWriteMultithreaded,
+                    this.description,
+                    formatCleaner(this.format),
+                    this.mimeType,
+                    formatCleaner(this.module),
+                    this.supportsMultipleFrames,
+                    this.supportsReading,
+                    this.supportsWriting,
+                )
+            }
 
         /**
          * Returns the format information. The extension of the supplied [file] is used to determine the format.
@@ -98,7 +103,7 @@ public data class MagickFormatInfo private constructor(
          * @param file The file to check.
          * @return The format information.
          */
-        public fun create(file: Path): Interface? = create(file.normalized().toString())
+        public fun create(file: Path): IMagickFormatInfo? = create(file.normalized().toString())
 
         /**
          * Returns the format information of the specified [format].
@@ -106,23 +111,26 @@ public data class MagickFormatInfo private constructor(
          * @param format The image format.
          * @return The format information.
          */
-        public fun create(format: MagickFormat): Interface? =
+        public fun create(format: MagickFormat): IMagickFormatInfo? =
             when (format) {
                 MagickFormat.UNKNOWN -> null
                 else -> allFormats[format]
             }
 
-        @Throws(IllegalArgumentException::class)
-        public fun create(data: UByteArray): Interface? {
-            require(data.isNotEmpty())
+        /**
+         * Returns the format information. The header of the image in the array of bytes is used to
+         * determine the format. Null will be returned when the format could not be determined.
+         *
+         * @param data The array of bytes to read the image header from.
+         *
+         * @return The format information.
+         */
+        public fun create(data: UByteArray): IMagickFormatInfo? {
+            throwIfEmpty(data)
 
-            return data.getInfoWithBlob()?.let {
-                val info = it.toMagickFormatInfo()
-
-                free(it)
-
-                info
-            }
+            return NativeMagickFormatInfo().apply {
+                getInfoWithBlob(data)
+            }.toMagickFormatInfo()
         }
 
         /**
@@ -131,8 +139,9 @@ public data class MagickFormatInfo private constructor(
          * @param fileName The name of the file to check.
          * @return The format information.
          */
-        public fun create(fileName: String): Interface? {
-            require(fileName.isNotBlank()) // TODO Set error message
+        public fun create(fileName: String): IMagickFormatInfo? {
+            throwIfEmpty(fileName)
+
             return create(formatCleaner(fileName.substringAfterLast('.')))
         }
     }

@@ -60,22 +60,25 @@ public data class Density(val x: Double, val y: Double, val units: DensityUnit) 
      *
      * @return A string that represents the current [Density].
      */
-    public fun toString(units: DensityUnit): String = when {
-        this.units == units || units == DensityUnit.UNDEFINED -> Companion.toString(x, y, units)
-        this.units == DensityUnit.PIXELS_PER_CENTIMETER && units == DensityUnit.PIXELS_PER_INCH -> toString(
-            x * 2.54,
-            y * 2.54,
-            units
-        )
+    public fun toString(units: DensityUnit): String =
+        when {
+            this.units == units || units == DensityUnit.UNDEFINED -> Companion.toString(x, y, units)
+            this.units == DensityUnit.PIXELS_PER_CENTIMETER && units == DensityUnit.PIXELS_PER_INCH ->
+                toString(
+                    x * 2.54,
+                    y * 2.54,
+                    units,
+                )
 
-        else -> toString(x / 2.54, y / 2.54, units)
-    }
+            else -> toString(x / 2.54, y / 2.54, units)
+        }
 
     public companion object {
-        private val REGEX = Regex(
-            pattern = "(?<x>[0-9]*\\.[0-9]+)x(?<y>[0-9]*\\.[0-9]+)(?>\\s(?<unit>cm|inch))?",
-            options = setOf(RegexOption.IGNORE_CASE)
-        )
+        private val REGEX =
+            Regex(
+                pattern = "(?<x>[0-9]*\\.[0-9]+)x(?<y>[0-9]*\\.[0-9]+)(?>\\s(?<unit>cm|inch))?",
+                options = setOf(RegexOption.IGNORE_CASE),
+            )
 
         /**
          * Initializes a new instance of the [Density] class.
@@ -86,39 +89,45 @@ public data class Density(val x: Double, val y: Double, val units: DensityUnit) 
         public fun create(value: String): Density {
             throwIfEmpty(value)
 
-            val density = try {
-                val match = REGEX.matchEntire(value)
+            val density =
+                try {
+                    val match = REGEX.matchEntire(value)
 
-                match?.let {
-                    val (rawX, rawY, rawUnit) = match.destructured
+                    match?.let {
+                        val (rawX, rawY, rawUnit) = match.destructured
 
-                    val x = rawX.toDouble()
-                    val y = if (rawY.isBlank()) x else rawY.toDouble()
-                    // RegexOption.IGNORE_CASE -> force lowercase
-                    val units = when (rawUnit.lowercase()) {
-                        "cm" -> DensityUnit.PIXELS_PER_CENTIMETER
-                        "inch" -> DensityUnit.PIXELS_PER_INCH
-                        else -> DensityUnit.UNDEFINED
+                        val x = rawX.toDouble()
+                        val y = if (rawY.isBlank()) x else rawY.toDouble()
+                        // RegexOption.IGNORE_CASE -> force lowercase
+                        val units =
+                            when (rawUnit.lowercase()) {
+                                "cm" -> DensityUnit.PIXELS_PER_CENTIMETER
+                                "inch" -> DensityUnit.PIXELS_PER_INCH
+                                else -> DensityUnit.UNDEFINED
+                            }
+
+                        Density(x, y, units)
                     }
-
-                    Density(x, y, units)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    throw IllegalArgumentException("Invalid density specified.", e)
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                throw IllegalArgumentException("Invalid density specified.", e)
-            }
 
             return density ?: throw IllegalArgumentException("Invalid density specified.")
         }
 
-        private fun toString(x: Number, y: Number, units: DensityUnit): String =
+        private fun toString(
+            x: Number,
+            y: Number,
+            units: DensityUnit,
+        ): String =
             "${x.toDouble().toString(true)}x${y.toDouble().toString(true)}"
                 .plus(
                     when (units) {
                         DensityUnit.PIXELS_PER_INCH -> " inch"
                         DensityUnit.PIXELS_PER_CENTIMETER -> " cm"
                         DensityUnit.UNDEFINED -> ""
-                    }
+                    },
                 )
     }
 }

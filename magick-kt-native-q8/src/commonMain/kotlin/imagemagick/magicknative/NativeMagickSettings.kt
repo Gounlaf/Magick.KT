@@ -117,7 +117,10 @@ public class NativeMagickSettings : AutoCloseable {
 
     public inline fun numberScenes(value: UInt): Unit = ptr.numberScenes(value)
 
-    public inline fun option(key: String, value: String?): Unit = ptr.option(key, value)
+    public inline fun option(
+        key: String,
+        value: String?,
+    ): Unit = ptr.option(key, value)
 
     public inline fun page(value: String?): Unit = ptr.page(value)
 

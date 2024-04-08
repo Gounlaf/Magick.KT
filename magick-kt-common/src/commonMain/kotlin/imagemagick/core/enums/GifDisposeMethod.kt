@@ -7,8 +7,7 @@ package imagemagick.core.enums
 /**
  * Specifies gif disposal methods.
  */
-public enum class GifDisposeMethod
-{
+public enum class GifDisposeMethod {
     /** Undefined. */
     UNDEFINED,
 

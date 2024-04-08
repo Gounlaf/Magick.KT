@@ -5,8 +5,7 @@ import imagemagick.core.enums.StorageType
 /**
  * Class that contains setting for when pixels are imported.
  */
-public interface PixelImportSettings
-{
+public interface PixelImportSettings {
     /**
      * Gets the height of the pixel area.
      */

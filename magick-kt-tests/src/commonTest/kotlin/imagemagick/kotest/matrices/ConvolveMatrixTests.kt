@@ -176,9 +176,10 @@ class ConvolveMatrixTests : ShouldSpec({
             should("return array") {
                 val matrix = ConvolveMatrix(1u, 6.0)
 
-                matrix.toArray() shouldBe DoubleArray(1) {
-                    6.0
-                }
+                matrix.toArray() shouldBe
+                    DoubleArray(1) {
+                        6.0
+                    }
             }
         }
     }

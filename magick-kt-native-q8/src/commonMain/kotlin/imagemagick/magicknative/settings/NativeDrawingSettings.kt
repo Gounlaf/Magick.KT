@@ -38,19 +38,21 @@ import imagemagick.core.enums.Gravity
 import imagemagick.core.enums.LineCap
 import imagemagick.core.enums.LineJoin
 import imagemagick.core.enums.TextDirection
+import imagemagick.magicknative.NativeInstance
 import imagemagick.magicknative.NativeMagickImage
 import imagemagick.magicknative.colors.NativeMagickColor
-import kotlin.contracts.ExperimentalContracts
-import kotlin.experimental.ExperimentalNativeApi
+import imagemagick.magicknative.exceptions.MagickExceptionHelper.checkException
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.ExperimentalForeignApi
 import libMagickNative.DrawInfo
 import libMagickNative.DrawingSettings_Create
+import kotlin.contracts.ExperimentalContracts
+import kotlin.experimental.ExperimentalNativeApi
 
 @ExperimentalForeignApi
 @ExperimentalStdlibApi
-public class NativeDrawingSettings : AutoCloseable {
-    public val ptr: CPointer<DrawInfo> = create()
+public class NativeDrawingSettings : NativeInstance<DrawInfo>(), AutoCloseable {
+    public override var ptr: CPointer<DrawInfo> = create()
 
     override fun close(): Unit = ptr.dispose()
 
@@ -157,20 +159,26 @@ public class NativeDrawingSettings : AutoCloseable {
 
     @ExperimentalContracts
     @ExperimentalNativeApi
-    public fun setFillPattern(value: NativeMagickImage): Unit = ptr.setFillPattern(value)
+    public fun setFillPattern(value: NativeMagickImage) {
+        checkException {
+            ptr.setFillPattern(value)
+        }
+    }
 
-    public fun setStrokeDashArray(value: Iterable<Double>): Unit =
-        ptr.setStrokeDashArray(value.toList().toDoubleArray())
+    public fun setStrokeDashArray(value: Iterable<Double>): Unit = ptr.setStrokeDashArray(value.toList().toDoubleArray())
 
     @ExperimentalContracts
     @ExperimentalNativeApi
-    public fun setStrokePattern(value: NativeMagickImage): Unit = ptr.setStrokePattern(value)
+    public fun setStrokePattern(value: NativeMagickImage) {
+        checkException {
+            ptr.setStrokePattern(value)
+        }
+    }
 
     public fun setText(value: String?): Unit = ptr.setText(value)
 
     public companion object {
         @Throws(IllegalStateException::class)
-        public inline fun create(): CPointer<DrawInfo> =
-            DrawingSettings_Create() ?: error("Failed to instantiate native DrawingSettings")
+        public inline fun create(): CPointer<DrawInfo> = DrawingSettings_Create() ?: error("Failed to instantiate native DrawingSettings")
     }
 }

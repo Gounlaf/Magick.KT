@@ -33,38 +33,42 @@ public object HexColor {
         return tryParseQ16(value)
     }
 
-    private fun tryParseQ8(value: String): HexColorParsingResult = try {
-        when (value.length) {
-            // 3: rgb
-            // 4: rgba
-            3, 4 -> HexColorParsingResult(true, value.chunked(1) { it.repeat(2).hexToUByte().quantum() }.toList())
+    private fun tryParseQ8(value: String): HexColorParsingResult =
+        try {
+            when (value.length) {
+                // 3: rgb
+                // 4: rgba
+                3, 4 -> HexColorParsingResult(true, value.chunked(1) { it.repeat(2).hexToUByte().quantum() }.toList())
 
-            // 2: same color for all channels
-            // 6: rrggbb
-            // 8: rrggbbaa
-            2, 6, 8 -> HexColorParsingResult(
-                true,
-                value.chunked(2) { it.hexToUByte().quantum() }.toList(),
-            )
+                // 2: same color for all channels
+                // 6: rrggbb
+                // 8: rrggbbaa
+                2, 6, 8 ->
+                    HexColorParsingResult(
+                        true,
+                        value.chunked(2) { it.hexToUByte().quantum() }.toList(),
+                    )
 
-            else -> HexColorParsingResult(false, emptyList())
+                else -> HexColorParsingResult(false, emptyList())
+            }
+        } catch (e: IllegalArgumentException) {
+            HexColorParsingResult(false, emptyList())
         }
-    } catch (e: IllegalArgumentException) {
-        HexColorParsingResult(false, emptyList())
-    }
 
-    private fun tryParseQ16(value: String): HexColorParsingResult = try {
-        when (value.length) {
-            // 12: rrrrggggbbbb
-            // 16: rrrrggggbbbbaaaa
-            12, 16 -> HexColorParsingResult(
-                true,
-                value.chunked(4) { it.toString().hexToUShort().quantum() }.toList(),
-            )
+    private fun tryParseQ16(value: String): HexColorParsingResult =
+        try {
+            when (value.length) {
+                // 12: rrrrggggbbbb
+                // 16: rrrrggggbbbbaaaa
+                12, 16 ->
+                    HexColorParsingResult(
+                        true,
+                        value.chunked(4) { it.toString().hexToUShort().quantum() }.toList(),
+                    )
 
-            else -> HexColorParsingResult(false, emptyList())
+                else -> HexColorParsingResult(false, emptyList())
+            }
+        } catch (e: IllegalArgumentException) {
+            HexColorParsingResult(false, emptyList())
         }
-    } catch (e: IllegalArgumentException) {
-        HexColorParsingResult(false, emptyList())
-    }
 }
