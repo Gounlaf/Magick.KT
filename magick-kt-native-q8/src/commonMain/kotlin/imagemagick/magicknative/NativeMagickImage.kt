@@ -200,6 +200,7 @@ import imagemagick.bridge.vignette
 import imagemagick.bridge.virtualPixelMethod
 import imagemagick.bridge.wave
 import imagemagick.bridge.whiteBalance
+import imagemagick.bridge.whiteThreshold
 import imagemagick.bridge.width
 import imagemagick.bridge.writeStream
 import imagemagick.core.enums.AlphaOption
@@ -1547,8 +1548,11 @@ public class NativeMagickImage : NativeInstance<Image>, AutoCloseable {
         checkException { ptr.whiteBalance() }
     }
 
+    @ExperimentalContracts
+    @ExperimentalNativeApi
+    @Throws(MagickException::class)
     public fun whiteThreshold(threshold: String, channels: Channels): Unit {
-        checkException { ptr.whiteBalance() }
+        checkException { ptr.whiteThreshold(threshold, channels) }
     }
 
     @ExperimentalContracts
