@@ -13,6 +13,7 @@ import imagemagick.bridge.supportsReading
 import imagemagick.bridge.supportsWriting
 import imagemagick.core.exceptions.MagickException
 import imagemagick.magicknative.exceptions.withException
+import imagemagick.magicknative.exceptions.withExceptionOnly
 import kotlinx.cinterop.ByteVar
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.CPointerVar
@@ -59,36 +60,36 @@ public class NativeMagickFormatInfo() : ConstNativeInstance<MagickInfo>() {
     }
 
     public inline val canReadMultithreaded: Boolean
-        get() = ptr.canReadMultithreaded()
+        get() = ptr.canReadMultithreaded
 
     public inline val canWriteMultithreaded: Boolean
-        get() = ptr.canWriteMultithreaded()
+        get() = ptr.canWriteMultithreaded
 
     public inline val description: String
-        get() = ptr.description()
+        get() = ptr.description
 
     public inline val format: String
-        get() = ptr.format()
+        get() = ptr.format
 
     public inline val mimeType: String?
-        get() = ptr.mimeType()
+        get() = ptr.mimeType
 
     public inline val module: String
-        get() = ptr.moduleFormat()
+        get() = ptr.moduleFormat
 
     public inline val supportsMultipleFrames: Boolean
-        get() = ptr.supportsMultipleFrames()
+        get() = ptr.supportsMultipleFrames
 
     public inline val supportsReading: Boolean
-        get() = ptr.supportsReading()
+        get() = ptr.supportsReading
 
     public inline val supportsWriting: Boolean
-        get() = ptr.supportsWriting()
+        get() = ptr.supportsWriting
 
     @ExperimentalContracts
     public fun getInfoWithBlob(data: UByteArray) {
         checkException {
-            withException { _, exceptionPtr ->
+            withExceptionOnly { _, exceptionPtr ->
                 data.usePinned {
                     MagickFormatInfo_GetInfoWithBlob(it.addressOf(0), data.size.convert(), exceptionPtr)
                 }
@@ -99,7 +100,7 @@ public class NativeMagickFormatInfo() : ConstNativeInstance<MagickInfo>() {
     @ExperimentalContracts
     public fun getInfoByName(name: String) {
         checkException {
-            withException { _, exceptionPtr ->
+            withExceptionOnly { _, exceptionPtr ->
                 MagickFormatInfo_GetInfoByName(name, exceptionPtr)
             }
         }.selfUpdate()
@@ -123,7 +124,6 @@ public class NativeMagickFormatInfo() : ConstNativeInstance<MagickInfo>() {
 
 @ExperimentalContracts
 @ExperimentalForeignApi
-@ExperimentalStdlibApi
 public data class NativeMagickFormatInfoList(val ptr: CPointer<CPointerVar<ByteVar>>, val length: UInt) :
     AutoCloseable {
     override fun close() {

@@ -2,8 +2,8 @@ package imagemagick.core
 
 import imagemagick.core.enums.Channels
 import imagemagick.core.exceptions.MagickException
-import okio.Path
-import okio.Source
+import kotlinx.io.Source
+import kotlinx.io.files.Path
 import imagemagick.core.MagickImage as IMagickImage
 import imagemagick.core.colors.MagickColorQuantum as IMagickColorQuantum
 import imagemagick.core.settings.CompareSettingsQuantum as ICompareSettingsQuantum
@@ -845,7 +845,7 @@ public interface MagickImageQuantum<TQuantumType> : IMagickImage where TQuantumT
         fileName: String,
         readSettings: IMagickReadSettings<TQuantumType>?,
     )
-//
+
 //    /**
 //     * Read single image frame.
 //     *
@@ -855,7 +855,7 @@ public interface MagickImageQuantum<TQuantumType> : IMagickImage where TQuantumT
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-// //     public fun readAsync(file: Path, readSettings: IMagickReadSettings<TQuantumType>?): Task
+//    public fun readAsync(file: Path, readSettings: IMagickReadSettings<TQuantumType>?): Task
 //
 //    /**
 //     * Read single image frame.
@@ -867,7 +867,7 @@ public interface MagickImageQuantum<TQuantumType> : IMagickImage where TQuantumT
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-// //     public fun readAsync(file: Path, readSettings: IMagickReadSettings<TQuantumType>?, cancellationToken: CancellationToken): Task
+//    public fun readAsync(file: Path, readSettings: IMagickReadSettings<TQuantumType>?, cancellationToken: CancellationToken): Task
 //
 //    /**
 //     * Read single image frame.
@@ -878,7 +878,7 @@ public interface MagickImageQuantum<TQuantumType> : IMagickImage where TQuantumT
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-// //     public fun readAsync(stream: Source, readSettings: IMagickReadSettings<TQuantumType>?): Task
+//    public fun readAsync(stream: Source, readSettings: IMagickReadSettings<TQuantumType>?): Task
 //
 //    /**
 //     * Read single image frame.
@@ -890,7 +890,7 @@ public interface MagickImageQuantum<TQuantumType> : IMagickImage where TQuantumT
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-// //     public fun readAsync(stream: Source, readSettings: IMagickReadSettings<TQuantumType>?, cancellationToken: CancellationToken): Task
+//    public fun readAsync(stream: Source, readSettings: IMagickReadSettings<TQuantumType>?, cancellationToken: CancellationToken): Task
 //
 //    /**
 //     * Read single image frame.
@@ -901,7 +901,7 @@ public interface MagickImageQuantum<TQuantumType> : IMagickImage where TQuantumT
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-// //     public fun readAsync(fileName: String, readSettings: IMagickReadSettings<TQuantumType>?): Task
+//    public fun readAsync(fileName: String, readSettings: IMagickReadSettings<TQuantumType>?): Task
 //
 //    /**
 //     * Read single image frame.
@@ -913,10 +913,10 @@ public interface MagickImageQuantum<TQuantumType> : IMagickImage where TQuantumT
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-// //     public fun readAsync(fileName: String, readSettings: IMagickReadSettings<TQuantumType>?, cancellationToken: CancellationToken): Task
-//
+//    public fun readAsync(fileName: String, readSettings: IMagickReadSettings<TQuantumType>?, cancellationToken: CancellationToken): Task
+
 //    /**
-//     * Read single image frame.
+//     * Read single image frame from pixel data.
 //     *
 //     * @param data The byte array to read the image data from.
 //     * @param settings The pixel settings to use when reading the image.
@@ -936,7 +936,7 @@ public interface MagickImageQuantum<TQuantumType> : IMagickImage where TQuantumT
 //     */
 //    @Throws(MagickException::class)
 //    public fun readPixels(data: UByteArray, offset: Int, count: Int, settings: IPixelReadSettings<TQuantumType>)
-//
+
 //    #if !Q8
 //
 //    /**
@@ -961,7 +961,7 @@ public interface MagickImageQuantum<TQuantumType> : IMagickImage where TQuantumT
 //    @Throws(MagickException::class)
 //    public fun readPixels(data: TQuantumType[], offset: Int, count: Int, settings: IPixelReadSettings<TQuantumType>)
 //    #endif
-//
+
 //    /**
 //     * Read single image frame from pixel data.
 //     *
@@ -991,7 +991,7 @@ public interface MagickImageQuantum<TQuantumType> : IMagickImage where TQuantumT
 //     */
 //    @Throws(MagickException::class)
 //    public fun readPixels(fileName: String, settings: IPixelReadSettings<TQuantumType>)
-//
+
 //    /**
 //     * Read single image frame from pixel data.
 //     *
@@ -1001,7 +1001,7 @@ public interface MagickImageQuantum<TQuantumType> : IMagickImage where TQuantumT
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-// //     public fun readPixelsAsync(file: Path, settings: IPixelReadSettings<TQuantumType>): Task
+//    public fun readPixelsAsync(file: Path, settings: IPixelReadSettings<TQuantumType>): Task
 //
 //    /**
 //     * Read single image frame from pixel data.
@@ -1013,7 +1013,7 @@ public interface MagickImageQuantum<TQuantumType> : IMagickImage where TQuantumT
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-// //     public fun readPixelsAsync(file: Path, settings: IPixelReadSettings<TQuantumType>, cancellationToken: CancellationToken): Task
+//    public fun readPixelsAsync(file: Path, settings: IPixelReadSettings<TQuantumType>, cancellationToken: CancellationToken): Task
 //
 //    /**
 //     * Read single image frame from pixel data.
@@ -1024,7 +1024,7 @@ public interface MagickImageQuantum<TQuantumType> : IMagickImage where TQuantumT
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-// //     public fun readPixelsAsync(stream: Source, settings: IPixelReadSettings<TQuantumType>): Task
+//    public fun readPixelsAsync(stream: Source, settings: IPixelReadSettings<TQuantumType>): Task
 //
 //    /**
 //     * Read single image frame from pixel data.
@@ -1036,7 +1036,7 @@ public interface MagickImageQuantum<TQuantumType> : IMagickImage where TQuantumT
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-// //     public fun readPixelsAsync(stream: Source, settings: IPixelReadSettings<TQuantumType>, cancellationToken: CancellationToken): Task
+//    public fun readPixelsAsync(stream: Source, settings: IPixelReadSettings<TQuantumType>, cancellationToken: CancellationToken): Task
 //
 //    /**
 //     * Read single image frame from pixel data.
@@ -1047,7 +1047,7 @@ public interface MagickImageQuantum<TQuantumType> : IMagickImage where TQuantumT
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-// //     public fun readPixelsAsync(fileName: String, settings: IPixelReadSettings<TQuantumType>): Task
+//    public fun readPixelsAsync(fileName: String, settings: IPixelReadSettings<TQuantumType>): Task
 //
 //    /**
 //     * Read single image frame from pixel data.
@@ -1059,8 +1059,8 @@ public interface MagickImageQuantum<TQuantumType> : IMagickImage where TQuantumT
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-// //     public fun readPixelsAsync(fileName: String, settings: IPixelReadSettings<TQuantumType>, cancellationToken: CancellationToken): Task
-//
+//    public fun readPixelsAsync(fileName: String, settings: IPixelReadSettings<TQuantumType>, cancellationToken: CancellationToken): Task
+
 //    /**
 //     * Separates the channels from the image and returns it as grayscale images.
 //     *

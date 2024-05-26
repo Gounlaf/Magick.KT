@@ -1,3 +1,5 @@
+@file:Suppress("KDocMissingDocumentation")
+
 package imagemagick.helpers
 
 public inline fun CharSequence?.isNotNullOrEmpty(): Boolean = !isNullOrEmpty()
@@ -33,3 +35,5 @@ public inline fun <reified T : Enum<T>> enumValueOf(
             default
         }
     } ?: default
+
+public inline val String.Companion.empty: String inline get() = ""

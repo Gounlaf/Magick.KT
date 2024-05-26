@@ -10,7 +10,6 @@ import kotlinx.cinterop.usePinned
 import libMagickNative.DoubleMatrix_Create
 import libMagickNative.KernelInfo
 
-@ExperimentalStdlibApi
 @ExperimentalForeignApi
 public class NativeDoubleMatrix(public val ptr: CPointer<KernelInfo>) : AutoCloseable {
     override fun close(): Unit = ptr.dispose()

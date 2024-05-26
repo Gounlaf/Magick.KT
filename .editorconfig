@@ -1,2 +1,5 @@
 [*.{kt,kts}]
 ktlint_code_style = ktlint_official
+
+[magick-kt-tests/src/commonTest/kotlin/imagemagick/Files.kt]
+ktlint = disabled

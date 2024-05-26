@@ -22,35 +22,34 @@ import libMagickNative.MagickInfo
 import platform.posix.size_t
 
 @ExperimentalForeignApi
-public inline fun CPointer<MagickInfo>.canReadMultithreaded(): Boolean = MagickFormatInfo_CanReadMultithreaded_Get(this).toPrimitive()
+public inline val CPointer<MagickInfo>.canReadMultithreaded: Boolean get() = MagickFormatInfo_CanReadMultithreaded_Get(this).toPrimitive()
 
 @ExperimentalForeignApi
-public inline fun CPointer<MagickInfo>.canWriteMultithreaded(): Boolean = MagickFormatInfo_CanWriteMultithreaded_Get(this).toPrimitive()
+public inline val CPointer<MagickInfo>.canWriteMultithreaded: Boolean get() = MagickFormatInfo_CanWriteMultithreaded_Get(this).toPrimitive()
 
 @ExperimentalForeignApi
-@Throws(IllegalStateException::class)
-public inline fun CPointer<MagickInfo>.description(): String = MagickFormatInfo_Description_Get(this).toNonNullKString()
+public inline val CPointer<MagickInfo>.description: String get() = MagickFormatInfo_Description_Get(this).toNonNullKString()
 
 @ExperimentalForeignApi
-@Throws(IllegalStateException::class)
-public inline fun CPointer<MagickInfo>.format(): String = MagickFormatInfo_Format_Get(this).toNonNullKString()
+public inline val CPointer<MagickInfo>.format: String get() = MagickFormatInfo_Format_Get(this).toNonNullKString()
 
 @ExperimentalForeignApi
-@Throws(IllegalStateException::class)
-public inline fun CPointer<MagickInfo>.mimeType(): String? = MagickFormatInfo_MimeType_Get(this)?.toKString()
+public inline val CPointer<MagickInfo>.mimeType: String? get() = MagickFormatInfo_MimeType_Get(this)?.toKString()
 
 @ExperimentalForeignApi
-@Throws(IllegalStateException::class)
-public inline fun CPointer<MagickInfo>.moduleFormat(): String = MagickFormatInfo_Module_Get(this).toNonNullKString()
+public inline val CPointer<MagickInfo>.moduleFormat: String get() = MagickFormatInfo_Module_Get(this).toNonNullKString()
 
 @ExperimentalForeignApi
-public inline fun CPointer<MagickInfo>.supportsMultipleFrames(): Boolean = MagickFormatInfo_SupportsMultipleFrames_Get(this).toPrimitive()
+public inline val CPointer<MagickInfo>.supportsMultipleFrames: Boolean get() =
+    MagickFormatInfo_SupportsMultipleFrames_Get(
+        this,
+    ).toPrimitive()
 
 @ExperimentalForeignApi
-public inline fun CPointer<MagickInfo>.supportsReading(): Boolean = MagickFormatInfo_SupportsReading_Get(this).toPrimitive()
+public inline val CPointer<MagickInfo>.supportsReading: Boolean get() = MagickFormatInfo_SupportsReading_Get(this).toPrimitive()
 
 @ExperimentalForeignApi
-public inline fun CPointer<MagickInfo>.supportsWriting(): Boolean = MagickFormatInfo_SupportsWriting_Get(this).toPrimitive()
+public inline val CPointer<MagickInfo>.supportsWriting: Boolean get() = MagickFormatInfo_SupportsWriting_Get(this).toPrimitive()
 
 @ExperimentalForeignApi
 public typealias MagickFormatInfo_CreateList_Result = CPointer<CPointerVarOf<CPointer<ByteVarOf<Byte>>>>

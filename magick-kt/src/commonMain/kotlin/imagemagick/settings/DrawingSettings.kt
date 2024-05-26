@@ -20,6 +20,7 @@ import kotlin.experimental.ExperimentalNativeApi
 import imagemagick.core.MagickImageQuantum as IMagickImage
 import imagemagick.core.colors.MagickColorQuantum as IMagickColor
 
+@Suppress("KDocMissingDocumentation")
 @ExperimentalContracts
 @ExperimentalForeignApi
 @ExperimentalNativeApi
@@ -113,57 +114,57 @@ public class DrawingSettings internal constructor() {
             it.strokeDashArray = strokeDashArray?.toList()
         }
 
-    public fun createNativeInstance(): NativeDrawingSettings =
-        NativeDrawingSettings().also { instance: NativeDrawingSettings ->
+    internal fun createNativeInstance(): NativeDrawingSettings =
+        NativeDrawingSettings().also { ni ->
             borderColor?.let { color ->
                 MagickColor.createNativeInstance(color).use { native ->
-                    instance.borderColor = native
+                    ni.borderColor = native
                 }
-            } ?: run { instance.borderColor = null }
+            } ?: run { ni.borderColor = null }
 
             fillColor?.let { color ->
                 MagickColor.createNativeInstance(color).use { native ->
-                    instance.fillColor = native
+                    ni.fillColor = native
                 }
-            } ?: run { instance.fillColor = null }
+            } ?: run { ni.fillColor = null }
 
-            instance.fillRule = fillRule
-            instance.font = font
-            instance.fontFamily = fontFamily
-            instance.fontPointsize = fontPointsize
-            instance.fontStyle = fontStyle
-            instance.fontWeight = fontWeight
-            instance.strokeAntiAlias = strokeAntiAlias
+            ni.fillRule = fillRule
+            ni.font = font
+            ni.fontFamily = fontFamily
+            ni.fontPointsize = fontPointsize
+            ni.fontStyle = fontStyle
+            ni.fontWeight = fontWeight
+            ni.strokeAntiAlias = strokeAntiAlias
             strokeColor?.let { color ->
                 MagickColor.createNativeInstance(color).use { native ->
-                    instance.strokeColor = native
+                    ni.strokeColor = native
                 }
-            } ?: run { instance.strokeColor = null }
-            instance.strokeDashOffset = strokeDashOffset
-            instance.strokeLineCap = strokeLineCap
-            instance.strokeLineJoin = strokeLineJoin
-            instance.strokeMiterLimit = strokeMiterLimit
-            instance.strokeWidth = strokeWidth
-            instance.textAntiAlias = textAntiAlias
-            instance.textDirection = textDirection
-            instance.textEncoding = textEncoding
+            } ?: run { ni.strokeColor = null }
+            ni.strokeDashOffset = strokeDashOffset
+            ni.strokeLineCap = strokeLineCap
+            ni.strokeLineJoin = strokeLineJoin
+            ni.strokeMiterLimit = strokeMiterLimit
+            ni.strokeWidth = strokeWidth
+            ni.textAntiAlias = textAntiAlias
+            ni.textDirection = textDirection
+            ni.textEncoding = textEncoding
 
-            textUnderColor?.let { color ->
-                MagickColor.createNativeInstance(color).use { native ->
-                    instance.textUnderColor = native
+            textUnderColor?.let {
+                MagickColor.createNativeInstance(it).use { native ->
+                    ni.textUnderColor = native
                 }
-            } ?: run { instance.textUnderColor = null }
+            } ?: run { ni.textUnderColor = null }
 
             affine?.let {
-                instance.setAffine(it.scaleX, it.scaleY, it.shearX, it.shearY, it.translateX, it.translateY)
+                ni.setAffine(it.scaleX, it.scaleY, it.shearX, it.shearY, it.translateX, it.translateY)
             }
 
-            fillPattern?.let { instance.setFillPattern(it.nativeInstance()) }
+            fillPattern?.let { ni.setFillPattern(it.nativeInstance()) }
 
-            strokeDashArray?.let { instance.setStrokeDashArray(it) }
+            strokeDashArray?.let { ni.setStrokeDashArray(it) }
 
-            strokePattern?.let { instance.setStrokePattern(it.nativeInstance()) }
+            strokePattern?.let { ni.setStrokePattern(it.nativeInstance()) }
 
-            text.takeIf { it.isNotNullOrEmpty() }?.let { instance.setText(it) }
+            text.takeIf { it.isNotNullOrEmpty() }?.let { ni.setText(it) }
         }
 }

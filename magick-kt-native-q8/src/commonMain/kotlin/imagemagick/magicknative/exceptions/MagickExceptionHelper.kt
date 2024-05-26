@@ -1,3 +1,5 @@
+@file:Suppress("KDocMissingDocumentation")
+
 package imagemagick.magicknative.exceptions
 
 import imagemagick.core.exceptions.MagickException
@@ -83,6 +85,27 @@ public typealias ExceptionInfoPtrVar = CPointerVar<ExceptionInfo>
 @ExperimentalForeignApi
 @ExperimentalContracts
 @Throws(MagickException::class)
+public inline fun <T : Any, O : T?> withExceptionOnly(
+    body: (NativePlacement, CPointer<CPointerVar<ExceptionInfo>>) -> O,
+): Pair<O, MagickException?> {
+    contract {
+        callsInPlace(body, InvocationKind.EXACTLY_ONCE)
+    }
+
+    return memScoped {
+        val exceptionInfo = alloc<CPointerVar<ExceptionInfo>>()
+
+        val result = body(this, exceptionInfo.ptr)
+
+        val exception = MagickExceptionHelper.check(exceptionInfo.value)
+
+        Pair(result, exception)
+    }
+}
+
+@ExperimentalForeignApi
+@ExperimentalContracts
+@Throws(MagickException::class)
 public inline fun <T : Any, O : T?> withException(
     body: (NativePlacement, CPointer<CPointerVar<ExceptionInfo>>) -> O,
 ): Pair<T, MagickException?> {
@@ -93,11 +116,10 @@ public inline fun <T : Any, O : T?> withException(
     return memScoped {
         val exceptionInfo = alloc<CPointerVar<ExceptionInfo>>()
 
+        val r = body(this, exceptionInfo.ptr)
+
         val (result, exception) =
-            MagickExceptionHelper.checkException(
-                exceptionInfo.value,
-                body(this, exceptionInfo.ptr),
-            ) {
+            MagickExceptionHelper.checkException(exceptionInfo.value, r) {
                 // NO-OP
             }
 
@@ -249,13 +271,13 @@ public object MagickExceptionHelper {
         onError: (T) -> Unit,
     ): Pair<T, MagickException?> {
         val magickException = create(exception)
-        if (magickException == null) {
-            if (result == null) {
-                throw MagickErrorException("The operation returned null but did not raise an exception.")
-            }
-
-            return Pair(result, magickException)
-        }
+//        if (magickException == null) {
+//            if (result == null) {
+//                throw MagickErrorException("The operation returned null but did not raise an exception.")
+//            }
+//
+//            return Pair(result, magickException)
+//        }
 
         if (magickException is MagickErrorException) {
             result?.let { onError(it) }

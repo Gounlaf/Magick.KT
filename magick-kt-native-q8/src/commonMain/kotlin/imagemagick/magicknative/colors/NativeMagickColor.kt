@@ -18,7 +18,6 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import libMagickNative.MagickColor_Create
 import libMagickNative.PixelInfo
 
-@ExperimentalStdlibApi
 @ExperimentalForeignApi
 public class NativeMagickColor(public val ptr: CPointer<PixelInfo> = create()) : AutoCloseable {
     public override fun close(): Unit = ptr.dispose()

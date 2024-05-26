@@ -14,7 +14,6 @@ import kotlin.contracts.contract
  * @return the result of the [block] function invoked on the 2 resources.
  */
 @ExperimentalContracts
-@ExperimentalStdlibApi
 public inline fun <A : AutoCloseable?, B : AutoCloseable?, C> using(
     argA: A,
     argB: B,

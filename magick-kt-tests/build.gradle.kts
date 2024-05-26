@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import java.util.Properties
 
@@ -18,10 +20,16 @@ val localLib = file(localProperties.getProperty("local.lib", "/usr/lib"))
 val localInclude = file(localProperties.getProperty("local.include", "/usr/include"))
 
 kotlin {
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    compilerOptions {
+        languageVersion.set(KotlinVersion.KOTLIN_2_0)
+        apiVersion.set(KotlinVersion.KOTLIN_2_0)
+    }
+
     linuxX64 {
         binaries {
             all {
-                freeCompilerArgs += "-Xruntime-logs=gc=info"
+//                freeCompilerArgs += "-Xruntime-logs=gc=info"
 
                 linkerOpts += "-L${localLib.absolutePath}"
                 // THIS ONE SHOULD BE DYNAMIC
@@ -32,11 +40,6 @@ kotlin {
 
     sourceSets {
         all {
-            languageSettings.apply {
-                languageVersion = "1.9"
-                apiVersion = "1.9"
-            }
-
             listOf(
                 "kotlin.ExperimentalStdlibApi",
                 "kotlin.native.runtime.NativeRuntimeApi",

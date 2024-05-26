@@ -15,7 +15,6 @@ import kotlin.coroutines.CoroutineContext
  *
  * This class implements [CoroutineScope] to allow event emission using coroutines.
  */
-@ExperimentalStdlibApi
 public class EventHolder<T> : CoroutineScope, AutoCloseable {
     /** The underlying job that can be cancelled to stop all the current operations. */
     private val job = Job()

@@ -8,8 +8,8 @@ import imagemagick.core.enums.MagickFormat
 import imagemagick.core.exceptions.MagickException
 import imagemagick.core.types.Density
 import kotlinx.cinterop.ExperimentalForeignApi
-import okio.Path
-import okio.Source
+import kotlinx.io.Source
+import kotlinx.io.files.Path
 import kotlin.contracts.ExperimentalContracts
 import kotlin.experimental.ExperimentalNativeApi
 import imagemagick.core.MagickImageInfo as IMagickImageInfo

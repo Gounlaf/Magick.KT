@@ -19,7 +19,7 @@ import imagemagick.core.colors.MagickColorQuantum as IMagickColor
  */
 @ExperimentalStdlibApi
 @ExperimentalForeignApi
-public data class MagickColor constructor(
+public data class MagickColor(
     override var a: QuantumType = 0u.quantum(),
     override var b: QuantumType = 0u.quantum(),
     override var g: QuantumType = 0u.quantum(),

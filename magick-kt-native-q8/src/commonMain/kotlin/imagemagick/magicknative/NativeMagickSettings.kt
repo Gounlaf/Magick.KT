@@ -40,7 +40,6 @@ import libMagickNative.ImageInfo
 import libMagickNative.MagickSettings_Create
 
 @ExperimentalForeignApi
-@ExperimentalStdlibApi
 public class NativeMagickSettings : AutoCloseable {
     public val ptr: CPointer<ImageInfo> =
         MagickSettings_Create() ?: error("Failed to instantiate native MagickSettings")

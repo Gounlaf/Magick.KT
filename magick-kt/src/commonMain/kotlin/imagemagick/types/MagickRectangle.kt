@@ -1,6 +1,6 @@
 package imagemagick.types
 
-import imagemagick.core.types.Percentage.Companion.percent
+import imagemagick.core.types.percent
 import imagemagick.magicknative.types.NativeMagickRectangle
 import kotlinx.cinterop.ExperimentalForeignApi
 import imagemagick.core.MagickImage as IMagickImage

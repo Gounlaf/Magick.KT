@@ -5,7 +5,7 @@ import imagemagick.exceptions.throwIfEmpty
 import imagemagick.helpers.toString
 import imagemagick.magicknative.NativeMagickFormatInfo
 import kotlinx.cinterop.ExperimentalForeignApi
-import okio.Path
+import kotlinx.io.files.Path
 import platform.posix.warn
 import kotlin.contracts.ExperimentalContracts
 import imagemagick.core.MagickFormatInfo as IMagickFormatInfo
@@ -81,20 +81,21 @@ public data class MagickFormatInfo private constructor(
             }
 
         private inline fun NativeMagickFormatInfo.toMagickFormatInfo(): MagickFormatInfo? =
-            if (!this.hasInstance) {
-                null
-            } else {
-                MagickFormatInfo(
-                    this.canReadMultithreaded,
-                    this.canWriteMultithreaded,
-                    this.description,
-                    formatCleaner(this.format),
-                    this.mimeType,
-                    formatCleaner(this.module),
-                    this.supportsMultipleFrames,
-                    this.supportsReading,
-                    this.supportsWriting,
-                )
+            when (hasInstance) {
+                true ->
+                    MagickFormatInfo(
+                        this.canReadMultithreaded,
+                        this.canWriteMultithreaded,
+                        this.description,
+                        formatCleaner(this.format),
+                        this.mimeType,
+                        formatCleaner(this.module),
+                        this.supportsMultipleFrames,
+                        this.supportsReading,
+                        this.supportsWriting,
+                    )
+
+                false -> null
             }
 
         /**
@@ -103,7 +104,7 @@ public data class MagickFormatInfo private constructor(
          * @param file The file to check.
          * @return The format information.
          */
-        public fun create(file: Path): IMagickFormatInfo? = create(file.normalized().toString())
+        public fun create(file: Path): IMagickFormatInfo? = create(file.toString())
 
         /**
          * Returns the format information of the specified [format].

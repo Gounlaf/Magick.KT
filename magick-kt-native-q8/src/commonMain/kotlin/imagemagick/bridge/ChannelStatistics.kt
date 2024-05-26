@@ -27,25 +27,25 @@ public inline fun CPointer<ChannelStatistics>.getInstance(channel: PixelChannel)
     Statistics_GetInstance(this, channel.toNative())
 
 @ExperimentalForeignApi
-public inline fun CPointer<ChannelStatistics>.depth(): size_t = ChannelStatistics_Depth_Get(this)
+public inline val CPointer<ChannelStatistics>.depth: size_t get() = ChannelStatistics_Depth_Get(this)
 
 @ExperimentalForeignApi
-public inline fun CPointer<ChannelStatistics>.entropy(): Double = ChannelStatistics_Entropy_Get(this)
+public inline val CPointer<ChannelStatistics>.entropy: Double get() = ChannelStatistics_Entropy_Get(this)
 
 @ExperimentalForeignApi
-public inline fun CPointer<ChannelStatistics>.kurtosis(): Double = ChannelStatistics_Kurtosis_Get(this)
+public inline val CPointer<ChannelStatistics>.kurtosis: Double get() = ChannelStatistics_Kurtosis_Get(this)
 
 @ExperimentalForeignApi
-public inline fun CPointer<ChannelStatistics>.maximum(): Double = ChannelStatistics_Maximum_Get(this)
+public inline val CPointer<ChannelStatistics>.maximum: Double get() = ChannelStatistics_Maximum_Get(this)
 
 @ExperimentalForeignApi
-public inline fun CPointer<ChannelStatistics>.mean(): Double = ChannelStatistics_Mean_Get(this)
+public inline val CPointer<ChannelStatistics>.mean: Double get() = ChannelStatistics_Mean_Get(this)
 
 @ExperimentalForeignApi
-public inline fun CPointer<ChannelStatistics>.minimum(): Double = ChannelStatistics_Minimum_Get(this)
+public inline val CPointer<ChannelStatistics>.minimum: Double get() = ChannelStatistics_Minimum_Get(this)
 
 @ExperimentalForeignApi
-public inline fun CPointer<ChannelStatistics>.skewness(): Double = ChannelStatistics_Skewness_Get(this)
+public inline val CPointer<ChannelStatistics>.skewness: Double get() = ChannelStatistics_Skewness_Get(this)
 
 @ExperimentalForeignApi
-public inline fun CPointer<ChannelStatistics>.standardDeviation(): Double = ChannelStatistics_StandardDeviation_Get(this)
+public inline val CPointer<ChannelStatistics>.standardDeviation: Double get() = ChannelStatistics_StandardDeviation_Get(this)

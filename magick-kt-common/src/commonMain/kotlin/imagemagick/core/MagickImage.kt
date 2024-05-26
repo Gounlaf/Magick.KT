@@ -10,6 +10,7 @@ import imagemagick.core.enums.ColorType
 import imagemagick.core.enums.CompositeOperator
 import imagemagick.core.enums.CompressionMethod
 import imagemagick.core.enums.DistortMethod
+import imagemagick.core.enums.DitherMethod
 import imagemagick.core.enums.Endian
 import imagemagick.core.enums.ErrorMetric
 import imagemagick.core.enums.EvaluateFunction
@@ -18,7 +19,9 @@ import imagemagick.core.enums.FilterType
 import imagemagick.core.enums.GifDisposeMethod
 import imagemagick.core.enums.Gravity
 import imagemagick.core.enums.Interlace
+import imagemagick.core.enums.Kernel
 import imagemagick.core.enums.MagickFormat
+import imagemagick.core.enums.MorphologyMethod
 import imagemagick.core.enums.NoiseType
 import imagemagick.core.enums.OrientationType
 import imagemagick.core.enums.PixelChannel
@@ -30,10 +33,13 @@ import imagemagick.core.enums.VirtualPixelMethod
 import imagemagick.core.exceptions.MagickException
 import imagemagick.core.types.Density
 import imagemagick.core.types.Percentage
-import imagemagick.core.types.Percentage.Companion.percent
-import okio.Path
-import okio.Source
+import imagemagick.core.types.PointD
+import imagemagick.core.types.percent
+import imagemagick.helpers.empty
+import kotlinx.io.Source
+import kotlinx.io.files.Path
 import kotlin.math.sqrt
+import imagemagick.core.defines.WriteDefines as IWriteDefines
 import imagemagick.core.drawables.DrawableAffine as IDrawableAffine
 import imagemagick.core.matrices.ConvolveMatrix as IConvolveMatrix
 import imagemagick.core.matrices.MagickColorMatrix as IMagickColorMatrix
@@ -42,6 +48,10 @@ import imagemagick.core.profiles.color.ColorProfile as IColorProfile
 import imagemagick.core.settings.DeskewSettings as IDeskewSettings
 import imagemagick.core.settings.DistortSettings as IDistortSettings
 import imagemagick.core.settings.KmeansSettings as IKmeansSettings
+import imagemagick.core.settings.MorphologySettings as IMorphologySettings
+import imagemagick.core.settings.QuantizeSettings as IQuantizeSettings
+import imagemagick.core.statistics.Moments as IMoments
+import imagemagick.core.statistics.PerceptualHash as IPerceptualHash
 import imagemagick.core.statistics.Statistics as IStatistics
 import imagemagick.core.types.ChromaticityInfo as IChromaticityInfo
 import imagemagick.core.types.MagickErrorInfo as IMagickErrorInfo
@@ -1059,6 +1069,19 @@ public interface MagickImage {
      */
     @Throws(MagickException::class)
     public fun clut(image: MagickImage): Unit = clut(image, PixelInterpolateMethod.UNDEFINED)
+
+    /**
+     * Apply a color lookup table (CLUT) to the image.
+     *
+     * @param image The image to use.
+     * @param channels The channel(s) to clut.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun clut(
+        image: MagickImage,
+        channels: Channels,
+    ): Unit = clut(image, PixelInterpolateMethod.UNDEFINED, channels)
 
     /**
      * Apply a color lookup table (CLUT) to the image.
@@ -2442,7 +2465,20 @@ public interface MagickImage {
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
     @Throws(MagickException::class)
-    public fun haldClut(image: MagickImage): Unit
+    public fun haldClut(image: MagickImage): Unit = haldClut(image, Channels.UNDEFINED)
+
+    /**
+     * Apply a color lookup table (Hald CLUT) to the image.
+     *
+     * @param image The image to use.
+     * @param channels The channel(s) to hald clut.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun haldClut(
+        image: MagickImage,
+        channels: Channels,
+    ): Unit
 
     /**
      * Gets a value indicating whether a profile with the specified name already exists on the image.
@@ -2891,401 +2927,497 @@ public interface MagickImage {
     @Throws(MagickException::class)
     public fun magnify(): Unit
 
-//    /**
-//     * Remap image colors with closest color from reference image.
-//     *
-//     * @param image The image to use.
-//     * @return The error informaton.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun map(image: MagickImage): IMagickErrorInfo
-//
-//    /**
-//     * Remap image colors with closest color from reference image.
-//     *
-//     * @param image The image to use.
-//     * @param settings Quantize settings.
-//     * @return The error informaton.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun map(image: MagickImage, settings: IQuantizeSettings): IMagickErrorInfo
-//
-//    /**
-//     * Delineate arbitrarily shaped clusters in the image.
-//     *
-//     * @param size The width and height of the pixels neighborhood.
-//     */
-//    public fun meanShift(size: Int)
-//
-//    /**
-//     * Delineate arbitrarily shaped clusters in the image.
-//     *
-//     * @param size The width and height of the pixels neighborhood.
-//     * @param colorDistance The color distance.
-//     */
-//    public fun meanShift(size: Int, colorDistance: Percentage)
-//
-//    /**
-//     * Delineate arbitrarily shaped clusters in the image.
-//     *
-//     * @param width The width of the pixels neighborhood.
-//     * @param height The height of the pixels neighborhood.
-//     */
-//    public fun meanShift(width: Int, height: Int)
-//
-//    /**
-//     * Delineate arbitrarily shaped clusters in the image.
-//     *
-//     * @param width The width of the pixels neighborhood.
-//     * @param height The height of the pixels neighborhood.
-//     * @param colorDistance The color distance.
-//     */
-//    public fun meanShift(width: Int, height: Int, colorDistance: Percentage)
-//
-//    /**
-//     * Filter image by replacing each pixel component with the median color in a circular neighborhood.
-//     *
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun medianFilter()
-//
-//    /**
-//     * Filter image by replacing each pixel component with the median color in a circular neighborhood.
-//     *
-//     * @param radius The radius of the pixel neighborhood.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun medianFilter(radius: Int)
-//
-//    /**
-//     * Reduce image by integral size.
-//     *
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun minify()
-//
-//    /**
-//     * Returns the points that form the minimum bounding box around the image foreground objects with
-//     * the "Rotating Calipers" algorithm. he method also returns these properties: minimum-bounding-box:area,
-//     * minimum-bounding-box:width, minimum-bounding-box:height, and minimum-bounding-box:angle.
-//     *
-//     * @return The points that form the minimum bounding box around the image foreground objects.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    IEnumerable<PointD> MinimumBoundingBox();
-//
-//    /**
-//     * Modulate percent brightness of an image.
-//     *
-//     * @param brightness The brightness percentage.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun modulate(brightness: Percentage)
-//
-//    /**
-//     * Modulate percent saturation and brightness of an image.
-//     *
-//     * @param brightness The brightness percentage.
-//     * @param saturation The saturation percentage.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun modulate(brightness: Percentage, saturation: Percentage)
-//
-//    /**
-//     * Modulate percent hue, saturation, and brightness of an image.
-//     *
-//     * @param brightness The brightness percentage.
-//     * @param saturation The saturation percentage.
-//     * @param hue The hue percentage.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun modulate(brightness: Percentage, saturation: Percentage, hue: Percentage)
-//
-//    /**
-//     * Applies a kernel to the image according to the given mophology method.
-//     *
-//     * @param method The morphology method.
-//     * @param kernel Built-in kernel.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun morphology(method: MorphologyMethod, kernel: Kernel)
-//
-//    /**
-//     * Applies a kernel to the image according to the given mophology method.
-//     *
-//     * @param method The morphology method.
-//     * @param kernel Built-in kernel.
-//     * @param channels The channels to apply the kernel to.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun morphology(method: MorphologyMethod, kernel: Kernel, channels: Channels)
-//
-//    /**
-//     * Applies a kernel to the image according to the given mophology method.
-//     *
-//     * @param method The morphology method.
-//     * @param kernel Built-in kernel.
-//     * @param channels The channels to apply the kernel to.
-//     * @param iterations The number of iterations.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun morphology(method: MorphologyMethod, kernel: Kernel, channels: Channels, iterations: Int)
-//
-//    /**
-//     * Applies a kernel to the image according to the given mophology method.
-//     *
-//     * @param method The morphology method.
-//     * @param kernel Built-in kernel.
-//     * @param iterations The number of iterations.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun morphology(method: MorphologyMethod, kernel: Kernel, iterations: Int)
-//
-//    /**
-//     * Applies a kernel to the image according to the given mophology method.
-//     *
-//     * @param method The morphology method.
-//     * @param kernel Built-in kernel.
-//     * @param arguments Kernel arguments.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun morphology(method: MorphologyMethod, kernel: Kernel)
-//
-//    /**
-//     * Applies a kernel to the image according to the given mophology method.
-//     *
-//     * @param method The morphology method.
-//     * @param kernel Built-in kernel.
-//     * @param arguments Kernel arguments.
-//     * @param channels The channels to apply the kernel to.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun morphology(method: MorphologyMethod, kernel: Kernel, channels: Channels)
-//
-//    /**
-//     * Applies a kernel to the image according to the given mophology method.
-//     *
-//     * @param method The morphology method.
-//     * @param kernel Built-in kernel.
-//     * @param arguments Kernel arguments.
-//     * @param channels The channels to apply the kernel to.
-//     * @param iterations The number of iterations.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun morphology(method: MorphologyMethod, kernel: Kernel, channels: Channels, iterations: Int)
-//
-//    /**
-//     * Applies a kernel to the image according to the given mophology method.
-//     *
-//     * @param method The morphology method.
-//     * @param kernel Built-in kernel.
-//     * @param arguments Kernel arguments.
-//     * @param iterations The number of iterations.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun morphology(method: MorphologyMethod, kernel: Kernel, iterations: Int)
-//
-//    /**
-//     * Applies a kernel to the image according to the given mophology method.
-//     *
-//     * @param method The morphology method.
-//     * @param userKernel User suplied kernel.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun morphology(method: MorphologyMethod, userKernel: String)
-//
-//    /**
-//     * Applies a kernel to the image according to the given mophology method.
-//     *
-//     * @param method The morphology method.
-//     * @param userKernel User suplied kernel.
-//     * @param channels The channels to apply the kernel to.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun morphology(method: MorphologyMethod, userKernel: String, channels: Channels)
-//
-//    /**
-//     * Applies a kernel to the image according to the given mophology method.
-//     *
-//     * @param method The morphology method.
-//     * @param userKernel User suplied kernel.
-//     * @param channels The channels to apply the kernel to.
-//     * @param iterations The number of iterations.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun morphology(method: MorphologyMethod, userKernel: String, channels: Channels, iterations: Int)
-//
-//    /**
-//     * Applies a kernel to the image according to the given mophology method.
-//     *
-//     * @param method The morphology method.
-//     * @param userKernel User suplied kernel.
-//     * @param iterations The number of iterations.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun morphology(method: MorphologyMethod, userKernel: String, iterations: Int)
-//
-//    /**
-//     * Applies a kernel to the image according to the given mophology settings.
-//     *
-//     * @param settings The morphology settings.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun morphology(settings: IMorphologySettings)
-//
-//    /**
-//     * Returns the normalized moments of one or more image channels.
-//     *
-//     * @return The normalized moments of one or more image channels.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun moments(): IMoments
-//
-//    /**
-//     * Motion blur image with specified blur factor.
-//     *
-//     * @param radius The radius of the Gaussian, in pixels, not counting the center pixel.
-//     * @param sigma The standard deviation of the Laplacian, in pixels.
-//     * @param angle The angle the object appears to be comming from (zero degrees is from the right).
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun motionBlur(radius: Double, sigma: Double, angle: Double)
-//
-//    /**
-//     * Negate colors in image.
-//     *
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun negate()
-//
-//    /**
-//     * Negate colors in image for the specified channel.
-//     *
-//     * @param channels The channel(s) that should be negated.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun negate(channels: Channels)
-//
-//    /**
-//     * Negate the grayscale colors in image.
-//     *
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun negateGrayscale()
-//
-//    /**
-//     * Negate the grayscale colors in image for the specified channel.
-//     *
-//     * @param channels The channel(s) that should be negated.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun negateGrayscale(channels: Channels)
-//
-//    /**
-//     * Normalize image (increase contrast by normalizing the pixel values to span the full range
-//     * of color values).
-//     *
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun normalize()
-//
-//    /**
-//     * Oilpaint image (image looks like oil painting).
-//     */
-//    public fun oilPaint()
-//
-//    /**
-//     * Oilpaint image (image looks like oil painting).
-//     *
-//     * @param radius The radius of the circular neighborhood.
-//     * @param sigma The standard deviation of the Laplacian, in pixels.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun oilPaint(radius: Double, sigma: Double)
-//
-//    /**
-//     * Perform a ordered dither based on a number of pre-defined dithering threshold maps, but over
-//     * multiple intensity levels.
-//     *
-//    /// <param name="thresholdMap">A string containing the name of the threshold dither map to use,
-//    /// followed by zero or more numbers representing the number of color levels tho dither between.</param>
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun orderedDither(thresholdMap: String)
-//
-//    /**
-//     * Perform a ordered dither based on a number of pre-defined dithering threshold maps, but over
-//     * multiple intensity levels.
-//     *
-//    /// <param name="thresholdMap">A string containing the name of the threshold dither map to use,
-//    /// followed by zero or more numbers representing the number of color levels tho dither between.</param>
-//     * @param channels The channel(s) to dither.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun orderedDither(thresholdMap: String, channels: Channels)
-//
-//    /**
-//     * Set each pixel whose value is less than epsilon to epsilon or -epsilon (whichever is closer)
-//     * otherwise the pixel value remains unchanged.
-//     *
-//     * @param epsilon The epsilon threshold.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun perceptible(epsilon: Double)
-//
-//    /**
-//     * Set each pixel whose value is less than epsilon to epsilon or -epsilon (whichever is closer)
-//     * otherwise the pixel value remains unchanged.
-//     *
-//     * @param epsilon The epsilon threshold.
-//     * @param channels The channel(s) to perceptible.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun perceptible(epsilon: Double, channels: Channels)
-//
-//    /**
-//     * Returns the perceptual hash of this image.
-//     *
-//     * @return The perceptual hash of this image.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    IPerceptualHash? PerceptualHash();
-//
+    /**
+     * Remap image colors with closest color from reference image.
+     *
+     * @param image The image to use.
+     * @return The error informaton.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun map(image: MagickImage): IMagickErrorInfo
+
+    /**
+     * Remap image colors with closest color from reference image.
+     *
+     * @param image The image to use.
+     * @param settings Quantize settings.
+     * @return The error informaton.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun map(
+        image: MagickImage,
+        settings: IQuantizeSettings,
+    ): IMagickErrorInfo
+
+    /**
+     * Delineate arbitrarily shaped clusters in the image.
+     *
+     * @param size The width and height of the pixels neighborhood.
+     */
+    public fun meanShift(size: UInt): Unit = meanShift(size, size)
+
+    /**
+     * Delineate arbitrarily shaped clusters in the image.
+     *
+     * @param size The width and height of the pixels neighborhood.
+     * @param colorDistance The color distance.
+     */
+    public fun meanShift(
+        size: UInt,
+        colorDistance: Percentage,
+    ): Unit = meanShift(size, size, colorDistance)
+
+    /**
+     * Delineate arbitrarily shaped clusters in the image.
+     *
+     * @param width The width of the pixels neighborhood.
+     * @param height The height of the pixels neighborhood.
+     */
+    public fun meanShift(
+        width: UInt,
+        height: UInt,
+    ): Unit = meanShift(width, height, 0.percent())
+
+    /**
+     * Delineate arbitrarily shaped clusters in the image.
+     *
+     * @param width The width of the pixels neighborhood.
+     * @param height The height of the pixels neighborhood.
+     * @param colorDistance The color distance.
+     */
+    public fun meanShift(
+        width: UInt,
+        height: UInt,
+        colorDistance: Percentage,
+    ): Unit
+
+    /**
+     * Filter image by replacing each pixel component with the median color in a circular neighborhood.
+     *
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun medianFilter(): Unit = medianFilter(0u)
+
+    /**
+     * Filter image by replacing each pixel component with the median color in a circular neighborhood.
+     *
+     * @param radius The radius of the pixel neighborhood.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun medianFilter(radius: UInt): Unit = statistic(StatisticType.MEDIAN, radius, radius)
+
+    /**
+     * Reduce image by integral size.
+     *
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun minify(): Unit
+
+    /**
+     * Returns the points that form the minimum bounding box around the image foreground objects with
+     * the "Rotating Calipers" algorithm. he method also returns these properties: minimum-bounding-box:area,
+     * minimum-bounding-box:width, minimum-bounding-box:height, and minimum-bounding-box:angle.
+     *
+     * @return The points that form the minimum bounding box around the image foreground objects.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun minimumBoundingBox(): Sequence<PointD>
+
+    /**
+     * Modulate percent brightness of an image.
+     *
+     * @param brightness The brightness percentage.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun modulate(brightness: Percentage): Unit = modulate(brightness, 100.percent(), 100.percent())
+
+    /**
+     * Modulate percent saturation and brightness of an image.
+     *
+     * @param brightness The brightness percentage.
+     * @param saturation The saturation percentage.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun modulate(
+        brightness: Percentage,
+        saturation: Percentage,
+    ): Unit = modulate(brightness, saturation, 100.percent())
+
+    /**
+     * Modulate percent hue, saturation, and brightness of an image.
+     *
+     * @param brightness The brightness percentage.
+     * @param saturation The saturation percentage.
+     * @param hue The hue percentage.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun modulate(
+        brightness: Percentage,
+        saturation: Percentage,
+        hue: Percentage,
+    ): Unit
+
+    /**
+     * Applies a kernel to the image according to the given mophology method.
+     *
+     * @param method The morphology method.
+     * @param kernel Built-in kernel.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun morphology(
+        method: MorphologyMethod,
+        kernel: Kernel,
+    ): Unit = morphology(method, kernel, String.empty)
+
+    /**
+     * Applies a kernel to the image according to the given mophology method.
+     *
+     * @param method The morphology method.
+     * @param kernel Built-in kernel.
+     * @param channels The channels to apply the kernel to.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun morphology(
+        method: MorphologyMethod,
+        kernel: Kernel,
+        channels: Channels,
+    ): Unit = morphology(method, kernel, String.empty, channels)
+
+    /**
+     * Applies a kernel to the image according to the given mophology method.
+     *
+     * @param method The morphology method.
+     * @param kernel Built-in kernel.
+     * @param channels The channels to apply the kernel to.
+     * @param iterations The number of iterations. A value of -1 means loop until no change found.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun morphology(
+        method: MorphologyMethod,
+        kernel: Kernel,
+        channels: Channels,
+        iterations: Int,
+    ): Unit = morphology(method, kernel, String.empty, channels, iterations)
+
+    /**
+     * Applies a kernel to the image according to the given mophology method.
+     *
+     * @param method The morphology method.
+     * @param kernel Built-in kernel.
+     * @param iterations The number of iterations. A value of -1 means loop until no change found.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun morphology(
+        method: MorphologyMethod,
+        kernel: Kernel,
+        iterations: Int,
+    ): Unit = morphology(method, kernel, String.empty, Channels.UNDEFINED, iterations)
+
+    /**
+     * Applies a kernel to the image according to the given mophology method.
+     *
+     * @param method The morphology method.
+     * @param kernel Built-in kernel.
+     * @param arguments Kernel arguments.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun morphology(
+        method: MorphologyMethod,
+        kernel: Kernel,
+        arguments: String?,
+    ): Unit = morphology(method, kernel, arguments, Channels.UNDEFINED)
+
+    /**
+     * Applies a kernel to the image according to the given mophology method.
+     *
+     * @param method The morphology method.
+     * @param kernel Built-in kernel.
+     * @param arguments Kernel arguments.
+     * @param channels The channels to apply the kernel to.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun morphology(
+        method: MorphologyMethod,
+        kernel: Kernel,
+        arguments: String?,
+        channels: Channels,
+    ): Unit = morphology(method, kernel, arguments, channels, 1)
+
+    /**
+     * Applies a kernel to the image according to the given mophology method.
+     *
+     * @param method The morphology method.
+     * @param kernel Built-in kernel.
+     * @param arguments Kernel arguments.
+     * @param channels The channels to apply the kernel to.
+     * @param iterations The number of iterations. A value of -1 means loop until no change found.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun morphology(
+        method: MorphologyMethod,
+        kernel: Kernel,
+        arguments: String?,
+        channels: Channels,
+        iterations: Int,
+    ): Unit = morphology(method, "${kernel.name.lowercase()}:$arguments", channels, iterations)
+
+    /**
+     * Applies a kernel to the image according to the given mophology method.
+     *
+     * @param method The morphology method.
+     * @param kernel Built-in kernel.
+     * @param arguments Kernel arguments.
+     * @param iterations The number of iterations. A value of -1 means loop until no change found.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun morphology(
+        method: MorphologyMethod,
+        kernel: Kernel,
+        arguments: String?,
+        iterations: Int,
+    ): Unit = morphology(method, kernel, arguments, Channels.UNDEFINED, iterations)
+
+    /**
+     * Applies a kernel to the image according to the given mophology method.
+     *
+     * @param method The morphology method.
+     * @param userKernel User suplied kernel.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun morphology(
+        method: MorphologyMethod,
+        userKernel: String,
+    ): Unit = morphology(method, userKernel, Channels.UNDEFINED)
+
+    /**
+     * Applies a kernel to the image according to the given mophology method.
+     *
+     * @param method The morphology method.
+     * @param userKernel User suplied kernel.
+     * @param channels The channels to apply the kernel to.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun morphology(
+        method: MorphologyMethod,
+        userKernel: String,
+        channels: Channels,
+    ): Unit = morphology(method, userKernel, channels, 1)
+
+    /**
+     * Applies a kernel to the image according to the given mophology method.
+     *
+     * @param method The morphology method.
+     * @param userKernel User suplied kernel.
+     * @param channels The channels to apply the kernel to.
+     * @param iterations The number of iterations. A value of -1 means loop until no change found.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun morphology(
+        method: MorphologyMethod,
+        userKernel: String,
+        channels: Channels,
+        iterations: Int,
+    )
+
+    /**
+     * Applies a kernel to the image according to the given mophology method.
+     *
+     * @param method The morphology method.
+     * @param userKernel User suplied kernel.
+     * @param iterations The number of iterations. A value of -1 means loop until no change found.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun morphology(
+        method: MorphologyMethod,
+        userKernel: String,
+        iterations: Int,
+    ): Unit = morphology(method, userKernel, Channels.UNDEFINED, iterations)
+
+    /**
+     * Applies a kernel to the image according to the given mophology settings.
+     *
+     * @param settings The morphology settings.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun morphology(settings: IMorphologySettings): Unit
+
+    /**
+     * Returns the normalized moments of one or more image channels.
+     *
+     * @return The normalized moments of one or more image channels.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun moments(): IMoments
+
+    /**
+     * Motion blur image with specified blur factor.
+     *
+     * @param radius The radius of the Gaussian, in pixels, not counting the center pixel.
+     * @param sigma The standard deviation of the Laplacian, in pixels.
+     * @param angle The angle the object appears to be comming from (zero degrees is from the right).
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun motionBlur(
+        radius: Double,
+        sigma: Double,
+        angle: Double,
+    ): Unit
+
+    /**
+     * Negate colors in image.
+     *
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun negate(): Unit = negate(Channels.UNDEFINED)
+
+    /**
+     * Negate colors in image for the specified channel.
+     *
+     * @param channels The channel(s) that should be negated.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun negate(channels: Channels): Unit
+
+    /**
+     * Negate the grayscale colors in image.
+     *
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun negateGrayscale(): Unit = negateGrayscale(Channels.UNDEFINED)
+
+    /**
+     * Negate the grayscale colors in image for the specified channel.
+     *
+     * @param channels The channel(s) that should be negated.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun negateGrayscale(channels: Channels): Unit
+
+    /**
+     * Normalize image (increase contrast by normalizing the pixel values to span the full range
+     * of color values).
+     *
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun normalize(): Unit
+
+    /**
+     * Oilpaint image (image looks like oil painting).
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun oilPaint(): Unit = oilPaint(radius = 3.0, sigma = 1.0)
+
+    /**
+     * Oilpaint image (image looks like oil painting).
+     *
+     * @param radius The radius of the circular neighborhood.
+     * @param sigma The standard deviation of the Laplacian, in pixels.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun oilPaint(
+        radius: Double,
+        sigma: Double,
+    ): Unit
+
+    /**
+     * Perform a ordered dither based on a number of pre-defined dithering threshold maps, but over
+     * multiple intensity levels.
+     *
+     * @param thresholdMap A string containing the name of the threshold dither map to use,
+     * followed by zero or more numbers representing the number of color levels tho dither between.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun orderedDither(thresholdMap: String): Unit = orderedDither(thresholdMap, Channels.UNDEFINED)
+
+    /**
+     * Perform a ordered dither based on a number of pre-defined dithering threshold maps, but over
+     * multiple intensity levels.
+     *
+     * @param thresholdMap A string containing the name of the threshold dither map to use,
+     * followed by zero or more numbers representing the number of color levels tho dither between.
+     * @param channels The channel(s) to dither.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun orderedDither(
+        thresholdMap: String,
+        channels: Channels,
+    ): Unit
+
+    /**
+     * Set each pixel whose value is less than epsilon to epsilon or -epsilon (whichever is closer)
+     * otherwise the pixel value remains unchanged.
+     *
+     * @param epsilon The epsilon threshold.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun perceptible(epsilon: Double): Unit = perceptible(epsilon, Channels.UNDEFINED)
+
+    /**
+     * Set each pixel whose value is less than epsilon to epsilon or -epsilon (whichever is closer)
+     * otherwise the pixel value remains unchanged.
+     *
+     * @param epsilon The epsilon threshold.
+     * @param channels The channel(s) to perceptible.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun perceptible(
+        epsilon: Double,
+        channels: Channels,
+    ): Unit
+
+    /**
+     * Returns the perceptual hash of this image.
+     *
+     * @return The perceptual hash of this image.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun perceptualHash(): IPerceptualHash?
+
+    /**
+     * Returns the perceptual hash of this image.
+     *
+     * @param colorSpaces The colorspaces to get the perceptual hash for.
+     * @return The perceptual hash of this image.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun perceptualHash(vararg colorSpaces: ColorSpace): IPerceptualHash?
 
     /**
      * Reads only metadata and not the pixel data.
@@ -3293,7 +3425,8 @@ public interface MagickImage {
      * @param data The byte array to read the information from.
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
-    public fun ping(data: UByteArray)
+    @Throws(MagickException::class)
+    public fun ping(data: UByteArray): Unit
 
     /**
      * Reads only metadata and not the pixel data.
@@ -3303,11 +3436,12 @@ public interface MagickImage {
      * @param count The maximum number of bytes to read.
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
+    @Throws(MagickException::class)
     public fun ping(
         data: UByteArray,
         offset: UInt,
         count: UInt,
-    )
+    ): Unit
 
     /**
      * Reads only metadata and not the pixel data.
@@ -3315,7 +3449,8 @@ public interface MagickImage {
      * @param file The file to read the image from.
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
-    public fun ping(file: Path)
+    @Throws(MagickException::class)
+    public fun ping(file: Path): Unit
 
     /**
      * Reads only metadata and not the pixel data.
@@ -3323,7 +3458,8 @@ public interface MagickImage {
      * @param stream The stream to read the image data from.
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
-    public fun ping(stream: Source)
+    @Throws(MagickException::class)
+    public fun ping(stream: Source): Unit
 
     /**
      * Reads only metadata and not the pixel data.
@@ -3331,77 +3467,91 @@ public interface MagickImage {
      * @param fileName The fully qualified name of the image file, or the relative image file name.
      * @throws MagickException Thrown when an error is raised by ImageMagick.
      */
-    public fun ping(fileName: String)
-//
-//    /**
-//     * Simulates a polaroid picture.
-//     *
-//     * @param caption The caption to put on the image.
-//     * @param angle The angle of image.
-//     * @param method Pixel interpolate method.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun polaroid(caption: String, angle: Double, method: PixelInterpolateMethod)
-//
-//    /**
-//     * Reduces the image to a limited number of colors for a "poster" effect.
-//     *
-//     * @param levels Number of color levels allowed in each channel.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun posterize(levels: Int)
-//
-//    /**
-//     * Reduces the image to a limited number of colors for a "poster" effect.
-//     *
-//     * @param levels Number of color levels allowed in each channel.
-//     * @param channels The channel(s) to posterize.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun posterize(levels: Int, channels: Channels)
-//
-//    /**
-//     * Reduces the image to a limited number of colors for a "poster" effect.
-//     *
-//     * @param levels Number of color levels allowed in each channel.
-//     * @param method Dither method to use.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun posterize(levels: Int, method: DitherMethod)
-//
-//    /**
-//     * Reduces the image to a limited number of colors for a "poster" effect.
-//     *
-//     * @param levels Number of color levels allowed in each channel.
-//     * @param method Dither method to use.
-//     * @param channels The channel(s) to posterize.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun posterize(levels: Int, method: DitherMethod, channels: Channels)
-//
-//    /**
-//     * Sets an internal option to preserve the color type.
-//     *
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun preserveColorType()
-//
-//    /**
-//     * Quantize image (reduce number of colors).
-//     *
-//     * @param settings Quantize settings.
-//     * @return The error information.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    IMagickErrorInfo? Quantize(IQuantizeSettings settings);
-//
+    @Throws(MagickException::class)
+    public fun ping(fileName: String): Unit
+
+    /**
+     * Simulates a polaroid picture.
+     *
+     * @param caption The caption to put on the image.
+     * @param angle The angle of image.
+     * @param method Pixel interpolate method.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun polaroid(
+        caption: String,
+        angle: Double,
+        method: PixelInterpolateMethod,
+    ): Unit
+
+    /**
+     * Reduces the image to a limited number of colors for a "poster" effect.
+     *
+     * @param levels Number of color levels allowed in each channel.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun posterize(levels: UInt): Unit = posterize(levels, DitherMethod.NO)
+
+    /**
+     * Reduces the image to a limited number of colors for a "poster" effect.
+     *
+     * @param levels Number of color levels allowed in each channel.
+     * @param channels The channel(s) to posterize.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun posterize(
+        levels: UInt,
+        channels: Channels,
+    ): Unit = posterize(levels, DitherMethod.NO, channels)
+
+    /**
+     * Reduces the image to a limited number of colors for a "poster" effect.
+     *
+     * @param levels Number of color levels allowed in each channel.
+     * @param method Dither method to use.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun posterize(
+        levels: UInt,
+        method: DitherMethod,
+    ): Unit = posterize(levels, method, Channels.UNDEFINED)
+
+    /**
+     * Reduces the image to a limited number of colors for a "poster" effect.
+     *
+     * @param levels Number of color levels allowed in each channel.
+     * @param method Dither method to use.
+     * @param channels The channel(s) to posterize.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun posterize(
+        levels: UInt,
+        method: DitherMethod,
+        channels: Channels,
+    ): Unit
+
+    /**
+     * Sets an internal option to preserve the color type.
+     *
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun preserveColorType(): Unit
+
+    /**
+     * Quantize image (reduce number of colors).
+     *
+     * @param settings Quantize settings.
+     * @return The error information.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun quantize(settings: IQuantizeSettings): IMagickErrorInfo?
 
     /**
      * Raise image (lighten the edges of an image to give a 3-D raised effect).
@@ -3412,41 +3562,52 @@ public interface MagickImage {
     @Throws(MagickException::class)
     public fun raise(size: UInt): Unit
 
-//    /**
-//     * Changes the value of individual pixels based on the intensity of each pixel compared to a
-//     * random threshold. The result is a low-contrast, two color image.
-//     *
-//     * @param percentageLow The low threshold.
-//     * @param percentageHigh The high threshold.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun randomThreshold(percentageLow: Percentage, percentageHigh: Percentage)
-//
-//    /**
-//     * Changes the value of individual pixels based on the intensity of each pixel compared to a
-//     * random threshold. The result is a low-contrast, two color image.
-//     *
-//     * @param percentageLow The low threshold.
-//     * @param percentageHigh The high threshold.
-//     * @param channels The channel(s) to use.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun randomThreshold(percentageLow: Percentage, percentageHigh: Percentage, channels: Channels)
-//
-//    /**
-//     * Applies soft and hard thresholding.
-//     *
-//     * @param percentageLowBlack Defines the minimum black threshold value.
-//     * @param percentageLowWhite Defines the minimum white threshold value.
-//     * @param percentageHighWhite Defines the maximum white threshold value.
-//     * @param percentageHighBlack Defines the maximum black threshold value.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun rangeThreshold(percentageLowBlack: Percentage, percentageLowWhite: Percentage, percentageHighWhite: Percentage, percentageHighBlack: Percentage)
-//
+    /**
+     * Changes the value of individual pixels based on the intensity of each pixel compared to a
+     * random threshold. The result is a low-contrast, two color image.
+     *
+     * @param percentageLow The low threshold.
+     * @param percentageHigh The high threshold.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun randomThreshold(
+        percentageLow: Percentage,
+        percentageHigh: Percentage,
+    ): Unit = randomThreshold(percentageLow, percentageHigh, Channels.UNDEFINED)
+
+    /**
+     * Changes the value of individual pixels based on the intensity of each pixel compared to a
+     * random threshold. The result is a low-contrast, two color image.
+     *
+     * @param percentageLow The low threshold.
+     * @param percentageHigh The high threshold.
+     * @param channels The channel(s) to use.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun randomThreshold(
+        percentageLow: Percentage,
+        percentageHigh: Percentage,
+        channels: Channels,
+    ): Unit
+
+    /**
+     * Applies soft and hard thresholding.
+     *
+     * @param percentageLowBlack Defines the minimum black threshold value.
+     * @param percentageLowWhite Defines the minimum white threshold value.
+     * @param percentageHighWhite Defines the maximum white threshold value.
+     * @param percentageHighBlack Defines the maximum black threshold value.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun rangeThreshold(
+        percentageLowBlack: Percentage,
+        percentageLowWhite: Percentage,
+        percentageHighWhite: Percentage,
+        percentageHighBlack: Percentage,
+    )
 
     /**
      * Read single image frame.
@@ -3594,7 +3755,7 @@ public interface MagickImage {
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-// //     public fun readAsync(file: Path): Task
+//    public fun readAsync(file: Path): Task
 //
 //    /**
 //     * Read single image frame.
@@ -3605,7 +3766,7 @@ public interface MagickImage {
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-// //     public fun readAsync(file: Path, cancellationToken: CancellationToken): Task
+//    public fun readAsync(file: Path, cancellationToken: CancellationToken): Task
 //
 //    /**
 //     * Read single image frame.
@@ -3616,7 +3777,7 @@ public interface MagickImage {
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-// //     public fun readAsync(file: Path, format: MagickFormat): Task
+//    public fun readAsync(file: Path, format: MagickFormat): Task
 //
 //    /**
 //     * Read single image frame.
@@ -3628,7 +3789,7 @@ public interface MagickImage {
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-// //     public fun readAsync(file: Path, format: MagickFormat, cancellationToken: CancellationToken): Task
+//    public fun readAsync(file: Path, format: MagickFormat, cancellationToken: CancellationToken): Task
 //
 //    /**
 //     * Read single image frame.
@@ -3638,7 +3799,7 @@ public interface MagickImage {
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-// //     public fun readAsync(stream: Source): Task
+//    public fun readAsync(stream: Source): Task
 //
 //    /**
 //     * Read single image frame.
@@ -3649,7 +3810,7 @@ public interface MagickImage {
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-// //     public fun readAsync(stream: Source, cancellationToken: CancellationToken): Task
+//    public fun readAsync(stream: Source, cancellationToken: CancellationToken): Task
 //
 //    /**
 //     * Read single image frame.
@@ -3660,7 +3821,7 @@ public interface MagickImage {
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-// //     public fun readAsync(stream: Source, format: MagickFormat): Task
+//    public fun readAsync(stream: Source, format: MagickFormat): Task
 //
 //    /**
 //     * Read single image frame.
@@ -3672,7 +3833,7 @@ public interface MagickImage {
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-// //     public fun readAsync(stream: Source, format: MagickFormat, cancellationToken: CancellationToken): Task
+//    public fun readAsync(stream: Source, format: MagickFormat, cancellationToken: CancellationToken): Task
 //
 //    /**
 //     * Read single image frame.
@@ -3682,7 +3843,7 @@ public interface MagickImage {
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-// //     public fun readAsync(fileName: String): Task
+//    public fun readAsync(fileName: String): Task
 //
 //    /**
 //     * Read single image frame.
@@ -3693,7 +3854,7 @@ public interface MagickImage {
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-// //     public fun readAsync(fileName: String, cancellationToken: CancellationToken): Task
+//    public fun readAsync(fileName: String, cancellationToken: CancellationToken): Task
 //
 //    /**
 //     * Read single image frame.
@@ -3704,7 +3865,7 @@ public interface MagickImage {
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-// //     public fun readAsync(fileName: String, format: MagickFormat): Task
+//    public fun readAsync(fileName: String, format: MagickFormat): Task
 //
 //    /**
 //     * Read single image frame.
@@ -3716,31 +3877,31 @@ public interface MagickImage {
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-// //     public fun readAsync(fileName: String, format: MagickFormat, cancellationToken: CancellationToken): Task
-//
-//    /**
-//     * Reduce noise in image using a noise peak elimination filter.
-//     *
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun reduceNoise()
-//
-//    /**
-//     * Reduce noise in image using a noise peak elimination filter.
-//     *
-//     * @param order The order to use.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun reduceNoise(order: Int)
-//
-//    /**
-//     * Associates a mask with the image as defined by the specified region.
-//     *
-//     * @param region The mask region.
-//     */
-//    public fun regionMask(region: IMagickGeometry)
+//    public fun readAsync(fileName: String, format: MagickFormat, cancellationToken: CancellationToken): Task
+
+    /**
+     * Reduce noise in image using a noise peak elimination filter.
+     *
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun reduceNoise(): Unit = reduceNoise(3u)
+
+    /**
+     * Reduce noise in image using a noise peak elimination filter.
+     *
+     * @param order The order to use.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun reduceNoise(order: UInt): Unit = statistic(StatisticType.NONPEAK, order, order)
+
+    /**
+     * Associates a mask with the image as defined by the specified region.
+     *
+     * @param region The mask region.
+     */
+    public fun regionMask(region: IMagickGeometry)
 
     /**
      * Removes the artifact with the specified name.
@@ -3791,33 +3952,35 @@ public interface MagickImage {
     @Throws(MagickException::class)
     public fun removeWriteMask(): Unit
 
-//    /**
-//     * Resets the page property of this image.
-//     *
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun rePage()
-//
-//    /**
-//     * Resize image in terms of its pixel size.
-//     *
-//     * @param resolutionX The new X resolution.
-//     * @param resolutionY The new Y resolution.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun resample(resolutionX: Double, resolutionY: Double)
-//
-//    /**
-//     * Resize image in terms of its pixel size.
-//     *
-//     * @param density The density to use.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun resample(density: PointD)
-//
+    /**
+     * Resets the page property of this image.
+     *
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun rePage(): Unit
+
+    /**
+     * Resize image in terms of its pixel size.
+     *
+     * @param resolutionX The new X resolution.
+     * @param resolutionY The new Y resolution.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun resample(
+        resolutionX: Double,
+        resolutionY: Double,
+    ): Unit
+
+    /**
+     * Resize image in terms of its pixel size.
+     *
+     * @param density The density to use.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun resample(density: PointD): Unit = resample(density.x, density.y)
 
     /**
      * Resize image to specified size.
@@ -4646,364 +4809,423 @@ public interface MagickImage {
     @Throws(MagickException::class)
     public fun statistics(channels: Channels): IStatistics
 
-//
-//    /**
-//     * Add a digital watermark to the image (based on second image).
-//     *
-//     * @param watermark The image to use as a watermark.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun stegano(watermark: MagickImage)
-//
-//    /**
-//     * Create an image which appears in stereo when viewed with red-blue glasses (Red image on
-//     * left, blue on right).
-//     *
-//     * @param rightImage The image to use as the right part of the resulting image.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun stereo(rightImage: MagickImage)
-//
-//    /**
-//     * Strips an image of all profiles and comments.
-//     *
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun strip()
-//
-//    /**
-//     * Swirl image (image pixels are rotated by degrees).
-//     *
-//     * @param degrees The number of degrees.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun swirl(degrees: Double)
-//
-//    /**
-//     * Swirl image (image pixels are rotated by degrees).
-//     *
-//     * @param method Pixel interpolate method.
-//     * @param degrees The number of degrees.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun swirl(method: PixelInterpolateMethod, degrees: Double)
-//
-//    /**
-//     * Channel a texture on image background.
-//     *
-//     * @param image The image to use as a texture on the image background.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun texture(image: MagickImage)
-//
-//    /**
-//     * Threshold image.
-//     *
-//     * @param percentage The threshold percentage.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun threshold(percentage: Percentage)
-//
-//    /**
-//     * Threshold image.
-//     *
-//     * @param percentage The threshold percentage.
-//     * @param channels The channel(s) that should be thresholded.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun threshold(percentage: Percentage, channels: Channels)
-//
-//    /**
-//     * Resize image to thumbnail size and remove all the image profiles except the icc/icm profile.
-//     * <para />
-//     * Resize will fit the image into the requested size. It does NOT fill, the requested box size.
-//     * Use the [IMagickGeometry] overload for more control over the resulting size.
-//     *
-//     * @param width The new width.
-//     * @param height The new height.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun thumbnail(width: Int, height: Int)
-//
-//    /**
-//     * Resize image to thumbnail size and remove all the image profiles except the icc/icm profile.
-//     *
-//     * @param geometry The geometry to use.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun thumbnail(geometry: IMagickGeometry)
-//
-//    /**
-//     * Resize image to thumbnail size and remove all the image profiles except the icc/icm profile.
-//     *
-//     * @param percentage The percentage.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun thumbnail(percentage: Percentage)
-//
-//    /**
-//     * Resize image to thumbnail size and remove all the image profiles except the icc/icm profile.
-//     *
-//     * @param percentageWidth The percentage of the width.
-//     * @param percentageHeight The percentage of the height.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun thumbnail(percentageWidth: Percentage, percentageHeight: Percentage)
-//
-//    /**
-//     * Compose an image repeated across and down the image.
-//     *
-//     * @param image The image to composite with this image.
-//     * @param compose The algorithm to use.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun tile(image: MagickImage, compose: CompositeOperator)
-//
-//    /**
-//     * Compose an image repeated across and down the image.
-//     *
-//     * @param image The image to composite with this image.
-//     * @param compose The algorithm to use.
-//     * @param args The arguments for the algorithm (compose:args).
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun tile(image: MagickImage, compose: CompositeOperator)
-//
-//    /**
-//     * Converts this instance to a base64 [string].
-//     *
-//     * @return A base64 [string].
-//     */
-//    public fun toBase64(): String
-//
-//    /**
-//     * Converts this instance to a base64 [string].
-//     *
-//     * @param format The format to use.
-//     * @return A base64 [string].
-//     */
-//    public fun toBase64(format: MagickFormat): String
-//
-//    /**
-//     * Converts this instance to a [byte] array.
-//     *
-//     * @return A [byte] array.
-//     */
-//    public fun toUByteArray(): UByteArray
-//
-//    /**
-//     * Converts this instance to a [byte] array.
-//     *
-//     * @param defines The defines to set.
-//     * @return A [byte] array.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun toUByteArray(defines: IWriteDefines): UByteArray
-//
-//    /**
-//     * Converts this instance to a [byte] array.
-//     *
-//     * @param format The format to use.
-//     * @return A [byte] array.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun toUByteArray(format: MagickFormat): UByteArray
-//
-//    /**
-//     * Transforms the image from the colorspace of the source profile to the target profile. This
-//     * requires the image to have a color profile. Nothing will happen if the image has no color profile.
-//     *
-//     * @param target The target color profile.
-//     * @return True when the colorspace was transformed otherwise false.
-//     */
-//    public fun transformColorSpace(target: IColorProfile): Boolean
-//
-//    /**
-//     * Transforms the image from the colorspace of the source profile to the target profile. This
-//     * requires the image to have a color profile. Nothing will happen if the image has no color profile.
-//     *
-//     * @param target The target color profile.
-//     * @param mode The color transformation mode.
-//     * @return True when the colorspace was transformed otherwise false.
-//     */
-//    public fun transformColorSpace(target: IColorProfile, mode: ColorTransformMode): Boolean
-//
-//    /**
-//     * Transforms the image from the colorspace of the source profile to the target profile. The
-//     * source profile will only be used if the image does not contain a color profile. Nothing
-//     * will happen if the source profile has a different colorspace then that of the image.
-//     *
-//     * @param source The source color profile.
-//     * @param target The target color profile.
-//     * @return True when the colorspace was transformed otherwise false.
-//     */
-//    public fun transformColorSpace(source: IColorProfile, target: IColorProfile): Boolean
-//
-//    /**
-//     * Transforms the image from the colorspace of the source profile to the target profile. The
-//     * source profile will only be used if the image does not contain a color profile. Nothing
-//     * will happen if the source profile has a different colorspace then that of the image.
-//     *
-//     * @param source The source color profile.
-//     * @param target The target color profile.
-//     * @param mode The color transformation mode.
-//     * @return True when the colorspace was transformed otherwise false.
-//     */
-//    public fun transformColorSpace(source: IColorProfile, target: IColorProfile, mode: ColorTransformMode): Boolean
-//
-//    /**
-//     * Creates a horizontal mirror image by reflecting the pixels around the central y-axis while
-//     * rotating them by 90 degrees.
-//     *
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun transpose()
-//
-//    /**
-//     * Creates a vertical mirror image by reflecting the pixels around the central x-axis while
-//     * rotating them by 270 degrees.
-//     *
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun transverse()
-//
-//    /**
-//     * Trim edges that are the background color from the image.
-//     *
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun trim()
-//
-//    /**
-//     * Trim the specified edges that are the background color from the image.
-//     *
-//     * @param edges The edges that need to be trimmed.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun trim(vararg edges: Gravity)
-//
-//    /**
-//     * Trim edges that are the background color from the image.
-//     *
-//     * @param percentBackground The percentage of background pixels permitted in the outer rows and columns.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun trim(percentBackground: Percentage)
-//
-//    /**
-//     * Replace image with a sharpened version of the original image using the unsharp mask algorithm.
-//     *
-//     * @param radius The radius of the Gaussian, in pixels, not counting the center pixel.
-//     * @param sigma The standard deviation of the Laplacian, in pixels.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun unsharpMask(radius: Double, sigma: Double)
-//
-//    /**
-//     * Replace image with a sharpened version of the original image using the unsharp mask algorithm.
-//     *
-//     * @param radius The radius of the Gaussian, in pixels, not counting the center pixel.
-//     * @param sigma The standard deviation of the Laplacian, in pixels.
-//     * @param channels The channel(s) that should be sharpened.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun unsharpMask(radius: Double, sigma: Double, channels: Channels)
-//
-//    /**
-//     * Replace image with a sharpened version of the original image using the unsharp mask algorithm.
-//     *
-//     * @param radius The radius of the Gaussian, in pixels, not counting the center pixel.
-//     * @param sigma The standard deviation of the Laplacian, in pixels.
-//    /// <param name="amount">The percentage of the difference between the original and the blur image
-//    /// that is added back into the original.</param>
-//     * @param threshold The threshold in pixels needed to apply the diffence amount.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun unsharpMask(radius: Double, sigma: Double, amount: Double, threshold: Double)
-//
-//    /**
-//     * Replace image with a sharpened version of the original image using the unsharp mask algorithm.
-//     *
-//     * @param radius The radius of the Gaussian, in pixels, not counting the center pixel.
-//     * @param sigma The standard deviation of the Laplacian, in pixels.
-//    /// <param name="amount">The percentage of the difference between the original and the blur image
-//    /// that is added back into the original.</param>
-//     * @param threshold The threshold in pixels needed to apply the diffence amount.
-//     * @param channels The channel(s) that should be sharpened.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun unsharpMask(radius: Double, sigma: Double, amount: Double, threshold: Double, channels: Channels)
-//
-//    /**
-//     * Softens the edges of the image in vignette style.
-//     *
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun vignette()
-//
-//    /**
-//     * Softens the edges of the image in vignette style.
-//     *
-//     * @param radius The radius of the Gaussian, in pixels, not counting the center pixel.
-//     * @param sigma The standard deviation of the Laplacian, in pixels.
-//     * @param x The x ellipse offset.
-//     * @param y the y ellipse offset.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun vignette(radius: Double, sigma: Double, x: Int, y: Int)
-//
-//    /**
-//     * Map image pixels to a sine wave.
-//     *
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun wave()
-//
-//    /**
-//     * Map image pixels to a sine wave.
-//     *
-//     * @param method Pixel interpolate method.
-//     * @param amplitude The amplitude.
-//     * @param length The length of the wave.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun wave(method: PixelInterpolateMethod, amplitude: Double, length: Double)
-//
+    /**
+     * Add a digital watermark to the image (based on second image).
+     *
+     * @param watermark The image to use as a watermark.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun stegano(watermark: MagickImage): Unit
+
+    /**
+     * Create an image which appears in stereo when viewed with red-blue glasses (Red image on
+     * left, blue on right).
+     *
+     * @param rightImage The image to use as the right part of the resulting image.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun stereo(rightImage: MagickImage): Unit
+
+    /**
+     * Strips an image of all profiles and comments.
+     *
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun strip(): Unit
+
+    /**
+     * Swirl image (image pixels are rotated by degrees).
+     *
+     * @param degrees The number of degrees.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun swirl(degrees: Double) = swirl(interpolate, degrees)
+
+    /**
+     * Swirl image (image pixels are rotated by degrees).
+     *
+     * @param method Pixel interpolate method.
+     * @param degrees The number of degrees.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun swirl(
+        method: PixelInterpolateMethod,
+        degrees: Double,
+    )
+
+    /**
+     * Channel a texture on image background.
+     *
+     * @param image The image to use as a texture on the image background.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun texture(image: MagickImage): Unit
+
+    /**
+     * Threshold image.
+     *
+     * @param percentage The threshold percentage.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun threshold(percentage: Percentage): Unit = threshold(percentage, Channels.UNDEFINED)
+
+    /**
+     * Threshold image.
+     *
+     * @param percentage The threshold percentage.
+     * @param channels The channel(s) that should be thresholded.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun threshold(
+        percentage: Percentage,
+        channels: Channels,
+    ): Unit
+
+    /**
+     * Resize image to thumbnail size and remove all the image profiles except the icc/icm profile.
+     *
+     * Resize will fit the image into the requested size. It does NOT fill, the requested box size.
+     * Use the [IMagickGeometry] overload for more control over the resulting size.
+     *
+     * @param width The new width.
+     * @param height The new height.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun thumbnail(
+        width: UInt,
+        height: UInt,
+    ): Unit
+
+    /**
+     * Resize image to thumbnail size and remove all the image profiles except the icc/icm profile.
+     *
+     * @param geometry The geometry to use.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun thumbnail(geometry: IMagickGeometry): Unit
+
+    /**
+     * Resize image to thumbnail size and remove all the image profiles except the icc/icm profile.
+     *
+     * @param percentage The percentage.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun thumbnail(percentage: Percentage): Unit
+
+    /**
+     * Resize image to thumbnail size and remove all the image profiles except the icc/icm profile.
+     *
+     * @param percentageWidth The percentage of the width.
+     * @param percentageHeight The percentage of the height.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun thumbnail(
+        percentageWidth: Percentage,
+        percentageHeight: Percentage,
+    ): Unit
+
+    /**
+     * Compose an image repeated across and down the image.
+     *
+     * @param image The image to composite with this image.
+     * @param compose The algorithm to use.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun tile(
+        image: MagickImage,
+        compose: CompositeOperator,
+    ): Unit = tile(image, compose, null)
+
+    /**
+     * Compose an image repeated across and down the image.
+     *
+     * @param image The image to composite with this image.
+     * @param compose The algorithm to use.
+     * @param args The arguments for the algorithm (compose:args).
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun tile(
+        image: MagickImage,
+        compose: CompositeOperator,
+        args: String?,
+    ): Unit
+
+    /**
+     * Converts this instance to a base64 [String].
+     *
+     * @return A base64 [String].
+     */
+    public fun toBase64(): String
+
+    /**
+     * Converts this instance to a base64 [String].
+     *
+     * @param format The format to use.
+     * @return A base64 [String].
+     */
+    public fun toBase64(format: MagickFormat): String
+
+    /**
+     * Converts this instance to a base64 [String].
+     *
+     * @param defines The defines to set.
+     * @return A base64 [String].
+     */
+    public fun toBase64(defines: IWriteDefines): String
+
+    /**
+     * Converts this instance to a [UByte] array.
+     *
+     * @return A [UByte] array.
+     */
+    public fun toByteArray(): UByteArray
+
+    /**
+     * Converts this instance to a [byte] array.
+     *
+     * @param defines The defines to set.
+     * @return A [byte] array.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun toByteArray(defines: IWriteDefines): UByteArray
+
+    /**
+     * Converts this instance to a [byte] array.
+     *
+     * @param format The format to use.
+     * @return A [byte] array.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun toByteArray(format: MagickFormat): UByteArray
+
+    /**
+     * Transforms the image from the colorspace of the source profile to the target profile. This
+     * requires the image to have a color profile. Nothing will happen if the image has no color profile.
+     *
+     * @param target The target color profile.
+     * @return True when the colorspace was transformed otherwise false.
+     */
+    public fun transformColorSpace(target: IColorProfile): Boolean = transformColorSpace(target, ColorTransformMode.QUANTUM)
+
+    /**
+     * Transforms the image from the colorspace of the source profile to the target profile. This
+     * requires the image to have a color profile. Nothing will happen if the image has no color profile.
+     *
+     * @param target The target color profile.
+     * @param mode The color transformation mode.
+     * @return True when the colorspace was transformed otherwise false.
+     */
+    public fun transformColorSpace(
+        target: IColorProfile,
+        mode: ColorTransformMode,
+    ): Boolean
+
+    /**
+     * Transforms the image from the colorspace of the source profile to the target profile. The
+     * source profile will only be used if the image does not contain a color profile. Nothing
+     * will happen if the source profile has a different colorspace then that of the image.
+     *
+     * @param source The source color profile.
+     * @param target The target color profile.
+     * @return True when the colorspace was transformed otherwise false.
+     */
+    public fun transformColorSpace(
+        source: IColorProfile,
+        target: IColorProfile,
+    ): Boolean = transformColorSpace(source, target, ColorTransformMode.QUANTUM)
+
+    /**
+     * Transforms the image from the colorspace of the source profile to the target profile. The
+     * source profile will only be used if the image does not contain a color profile. Nothing
+     * will happen if the source profile has a different colorspace then that of the image.
+     *
+     * @param source The source color profile.
+     * @param target The target color profile.
+     * @param mode The color transformation mode.
+     * @return True when the colorspace was transformed otherwise false.
+     */
+    public fun transformColorSpace(
+        source: IColorProfile,
+        target: IColorProfile,
+        mode: ColorTransformMode,
+    ): Boolean
+
+    /**
+     * Creates a horizontal mirror image by reflecting the pixels around the central y-axis while
+     * rotating them by 90 degrees.
+     *
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun transpose(): Unit
+
+    /**
+     * Creates a vertical mirror image by reflecting the pixels around the central x-axis while
+     * rotating them by 270 degrees.
+     *
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun transverse(): Unit
+
+    /**
+     * Trim edges that are the background color from the image.
+     *
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun trim(): Unit
+
+    /**
+     * Trim the specified edges that are the background color from the image.
+     *
+     * @param edges The edges that need to be trimmed.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun trim(vararg edges: Gravity): Unit
+
+    /**
+     * Trim edges that are the background color from the image.
+     *
+     * @param percentBackground The percentage of background pixels permitted in the outer rows and columns.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun trim(percentBackground: Percentage): Unit
+
+    /**
+     * Replace image with a sharpened version of the original image using the unsharp mask algorithm.
+     *
+     * @param radius The radius of the Gaussian, in pixels, not counting the center pixel.
+     * @param sigma The standard deviation of the Laplacian, in pixels.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun unsharpMask(
+        radius: Double,
+        sigma: Double,
+    ): Unit = unsharpMask(radius, sigma, amount = 1.0, threshold = 0.05)
+
+    /**
+     * Replace image with a sharpened version of the original image using the unsharp mask algorithm.
+     *
+     * @param radius The radius of the Gaussian, in pixels, not counting the center pixel.
+     * @param sigma The standard deviation of the Laplacian, in pixels.
+     * @param channels The channel(s) that should be sharpened.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun unsharpMask(
+        radius: Double,
+        sigma: Double,
+        channels: Channels,
+    ): Unit = unsharpMask(radius, sigma, amount = 1.0, threshold = 0.05, channels)
+
+    /**
+     * Replace image with a sharpened version of the original image using the unsharp mask algorithm.
+     *
+     * @param radius The radius of the Gaussian, in pixels, not counting the center pixel.
+     * @param sigma The standard deviation of the Laplacian, in pixels.
+     * @param amount The percentage of the difference between the original and the blur image
+     * that is added back into the original.
+     * @param threshold The threshold in pixels needed to apply the diffence amount.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun unsharpMask(
+        radius: Double,
+        sigma: Double,
+        amount: Double,
+        threshold: Double,
+    ): Unit = unsharpMask(radius, sigma, amount, threshold, Channels.UNDEFINED)
+
+    /**
+     * Replace image with a sharpened version of the original image using the unsharp mask algorithm.
+     *
+     * @param radius The radius of the Gaussian, in pixels, not counting the center pixel.
+     * @param sigma The standard deviation of the Laplacian, in pixels.
+     * @param amount The percentage of the difference between the original and the blur image
+     * that is added back into the original.
+     * @param threshold The threshold in pixels needed to apply the diffence amount.
+     * @param channels The channel(s) that should be sharpened.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun unsharpMask(
+        radius: Double,
+        sigma: Double,
+        amount: Double,
+        threshold: Double,
+        channels: Channels,
+    ): Unit
+
+    /**
+     * Softens the edges of the image in vignette style.
+     *
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun vignette(): Unit = vignette(radius = 0.0, sigma = 1.0, x = 1, y = 1)
+
+    /**
+     * Softens the edges of the image in vignette style.
+     *
+     * @param radius The radius of the Gaussian, in pixels, not counting the center pixel.
+     * @param sigma The standard deviation of the Laplacian, in pixels.
+     * @param x The x ellipse offset.
+     * @param y the y ellipse offset.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun vignette(
+        radius: Double,
+        sigma: Double,
+        x: Int,
+        y: Int,
+    ): Unit
+
+    /**
+     * Map image pixels to a sine wave.
+     *
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun wave(): Unit = wave(interpolate, amplitude = 25.0, length = 150.0)
+
+    /**
+     * Map image pixels to a sine wave.
+     *
+     * @param method Pixel interpolate method.
+     * @param amplitude The amplitude.
+     * @param length The length of the wave.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun wave(method: PixelInterpolateMethod, amplitude: Double, length: Double): Unit
+
 //    /**
 //     * Removes noise from the image using a wavelet transform.
 //     *
 //     * @param thresholdPercentage The threshold for smoothing.
 //     */
-//    public fun waveletDenoise(thresholdPercentage: Percentage)
+//    public fun waveletDenoise(thresholdPercentage: Percentage): Unit
 //
 //    /**
 //     * Removes noise from the image using a wavelet transform.
@@ -5011,88 +5233,88 @@ public interface MagickImage {
 //     * @param thresholdPercentage The threshold for smoothing.
 //     * @param softness Attenuate the smoothing threshold.
 //     */
-//    public fun waveletDenoise(thresholdPercentage: Percentage, softness: Double)
-//
-//    /**
-//     * Apply a white balancing to an image according to a grayworld assumption in the LAB colorspace.
-//     */
-//    public fun whiteBalance()
-//
-//    /**
-//     * Apply a white balancing to an image according to a grayworld assumption in the LAB colorspace.
-//     *
-//     * @param vibrance The vibrance.
-//     */
-//    public fun whiteBalance(vibrance: Percentage)
-//
-//    /**
-//     * Forces all pixels above the threshold into white while leaving all pixels at or below
-//     * the threshold unchanged.
-//     *
-//     * @param threshold The threshold to use.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun whiteThreshold(threshold: Percentage)
-//
-//    /**
-//     * Forces all pixels above the threshold into white while leaving all pixels at or below
-//     * the threshold unchanged.
-//     *
-//     * @param threshold The threshold to use.
-//     * @param channels The channel(s) to make black.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun whiteThreshold(threshold: Percentage, channels: Channels)
-//
-//    /**
-//     * Writes the image to the specified file.
-//     *
-//     * @param file The file to write the image to.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun write(file: Path)
-//
-//    /**
-//     * Writes the image to the specified file.
-//     *
-//     * @param file The file to write the image to.
-//     * @param defines The defines to set.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun write(file: Path, defines: IWriteDefines)
-//
-//    /**
-//     * Writes the image to the specified file.
-//     *
-//     * @param file The file to write the image to.
-//     * @param format The format to use.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun write(file: Path, format: MagickFormat)
-//
-//    /**
-//     * Writes the image to the specified stream.
-//     *
-//     * @param stream The stream to write the image data to.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun write(stream: Source)
+//    public fun waveletDenoise(thresholdPercentage: Percentage, softness: Double): Unit
+
+    /**
+     * Apply a white balancing to an image according to a grayworld assumption in the LAB colorspace.
+     */
+    public fun whiteBalance(): Unit
+
+    /**
+     * Apply a white balancing to an image according to a grayworld assumption in the LAB colorspace.
+     *
+     * @param vibrance The vibrance.
+     */
+    public fun whiteBalance(vibrance: Percentage): Unit
+
+    /**
+     * Forces all pixels above the threshold into white while leaving all pixels at or below
+     * the threshold unchanged.
+     *
+     * @param threshold The threshold to use.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun whiteThreshold(threshold: Percentage): Unit = whiteThreshold(threshold, channels = Channels.UNDEFINED)
+
+    /**
+     * Forces all pixels above the threshold into white while leaving all pixels at or below
+     * the threshold unchanged.
+     *
+     * @param threshold The threshold to use.
+     * @param channels The channel(s) to make black.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun whiteThreshold(threshold: Percentage, channels: Channels): Unit
+
+    /**
+     * Writes the image to the specified file.
+     *
+     * @param file The file to write the image to.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun write(file: Path): Unit = write(file.toString())
+
+    /**
+     * Writes the image to the specified file.
+     *
+     * @param file The file to write the image to.
+     * @param defines The defines to set.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun write(file: Path, defines: IWriteDefines): Unit
+
+    /**
+     * Writes the image to the specified file.
+     *
+     * @param file The file to write the image to.
+     * @param format The format to use.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun write(file: Path, format: MagickFormat): Unit
 //
 //    /**
 //     * Writes the image to the specified stream.
 //     *
 //     * @param stream The stream to write the image data to.
+//     * @throws MagickException Thrown when an error is raised by ImageMagick.
+//     */
+//    @Throws(MagickException::class)
+//    public fun write(stream: Source): Unit
+//
+//    /**
+//     * Writes the image to the specified stream.
+//     *
+//     * @param stream The stream to write the image data to.
 //     * @param defines The defines to set.
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-//    public fun write(stream: Source, defines: IWriteDefines)
+//    public fun write(stream: Source, defines: IWriteDefines): Unit
 //
 //    /**
 //     * Writes the image to the specified stream.
@@ -5102,37 +5324,37 @@ public interface MagickImage {
 //     * @throws MagickException Thrown when an error is raised by ImageMagick.
 //     */
 //    @Throws(MagickException::class)
-//    public fun write(stream: Source, format: MagickFormat)
-//
-//    /**
-//     * Writes the image to the specified file name.
-//     *
-//     * @param fileName The fully qualified name of the image file, or the relative image file name.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun write(fileName: String)
-//
-//    /**
-//     * Writes the image to the specified file name.
-//     *
-//     * @param fileName The fully qualified name of the image file, or the relative image file name.
-//     * @param defines The defines to set.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun write(fileName: String, defines: IWriteDefines)
-//
-//    /**
-//     * Writes the image to the specified file name.
-//     *
-//     * @param fileName The fully qualified name of the image file, or the relative image file name.
-//     * @param format The format to use.
-//     * @throws MagickException Thrown when an error is raised by ImageMagick.
-//     */
-//    @Throws(MagickException::class)
-//    public fun write(fileName: String, format: MagickFormat)
-//
+//    public fun write(stream: Source, format: MagickFormat): Unit
+
+    /**
+     * Writes the image to the specified file name.
+     *
+     * @param fileName The fully qualified name of the image file, or the relative image file name.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun write(fileName: String): Unit
+
+    /**
+     * Writes the image to the specified file name.
+     *
+     * @param fileName The fully qualified name of the image file, or the relative image file name.
+     * @param defines The defines to set.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun write(fileName: String, defines: IWriteDefines): Unit
+
+    /**
+     * Writes the image to the specified file name.
+     *
+     * @param fileName The fully qualified name of the image file, or the relative image file name.
+     * @param format The format to use.
+     * @throws MagickException Thrown when an error is raised by ImageMagick.
+     */
+    @Throws(MagickException::class)
+    public fun write(fileName: String, format: MagickFormat): Unit
+
 //    /**
 //     * Writes the image to the specified file.
 //     *

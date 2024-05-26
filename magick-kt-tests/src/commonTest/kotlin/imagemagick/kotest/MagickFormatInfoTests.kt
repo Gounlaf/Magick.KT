@@ -14,7 +14,7 @@ import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import okio.Path.Companion.toPath
+import kotlinx.io.files.Path
 
 class MagickFormatInfoTests : ShouldSpec() {
     companion object {
@@ -69,7 +69,7 @@ class MagickFormatInfoTests : ShouldSpec() {
                     should("return the correct info for the png format") {
                         checkGcUsage {
                             // it doesn't have to be a real file; it guesses only the format from the extension
-                            val formatInfo = MagickFormatInfo.create(Resources.Images.Magick_NET_iconPNG.path.toPath())
+                            val formatInfo = MagickFormatInfo.create(Path(Resources.Images.Magick_NET_iconPNG.path))
 
                             formatInfo.shouldNotBeNull()
 

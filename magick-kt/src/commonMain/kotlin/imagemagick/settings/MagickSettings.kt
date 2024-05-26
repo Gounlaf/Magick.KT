@@ -36,6 +36,9 @@ import imagemagick.core.drawables.DrawableAffine as IDrawableAffine
 import imagemagick.core.settings.MagickSettings as IMagickSettings
 import imagemagick.core.types.MagickGeometry as IMagickGeometry
 
+/**
+ * Class that contains various settings.
+ */
 @ExperimentalContracts
 @ExperimentalForeignApi
 @ExperimentalNativeApi

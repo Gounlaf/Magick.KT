@@ -7,16 +7,31 @@ import imagemagick.core.enums.ColorType
 import imagemagick.core.enums.CompressionMethod
 import imagemagick.core.enums.Endian
 import imagemagick.core.enums.Interlace
+import imagemagick.core.exceptions.MagickException
 import imagemagick.core.toMagick
 import imagemagick.core.toNative
 import imagemagick.magicknative.colors.NativeMagickColor
+import imagemagick.magicknative.exceptions.withException
 import imagemagick.magicknative.toNative
 import imagemagick.magicknative.toPrimitive
+import kotlinx.cinterop.COpaquePointer
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.StableRef
+import kotlinx.cinterop.UByteVar
+import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.convert
+import kotlinx.cinterop.staticCFunction
 import kotlinx.cinterop.toKString
+import kotlinx.cinterop.usePinned
+import libMagickNative.CustomStreamHandler
+import libMagickNative.CustomStreamSeeker
+import libMagickNative.CustomStreamTeller
+import libMagickNative.Image
 import libMagickNative.ImageInfo
+import libMagickNative.MagickImage_ReadBlob
+import libMagickNative.MagickImage_ReadFile
+import libMagickNative.MagickImage_ReadStream
 import libMagickNative.MagickSettings_AntiAlias_Get
 import libMagickNative.MagickSettings_AntiAlias_Set
 import libMagickNative.MagickSettings_BackgroundColor_Get
@@ -58,6 +73,8 @@ import libMagickNative.MagickSettings_SetScenes
 import libMagickNative.MagickSettings_SetSize
 import libMagickNative.MagickSettings_Verbose_Get
 import libMagickNative.MagickSettings_Verbose_Set
+import platform.posix.size_t
+import kotlin.contracts.ExperimentalContracts
 
 @ExperimentalForeignApi
 public inline fun CPointer<ImageInfo>.dispose(): Unit = MagickSettings_Dispose(this)
@@ -173,6 +190,52 @@ public inline fun CPointer<ImageInfo>.ping(value: Boolean): Unit = MagickSetting
 
 @ExperimentalForeignApi
 public inline fun CPointer<ImageInfo>.quality(value: UInt): Unit = MagickSettings_SetQuality(this, value.convert())
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+public inline fun CPointer<ImageInfo>.readBlob(
+    data: UByteArray,
+    offset: size_t,
+    length: size_t,
+): Pair<CPointer<Image>, MagickException?> =
+    withException(onError = { it.dispose() }) { _, exceptionPtr ->
+        data.usePinned { pinnedData ->
+            MagickImage_ReadBlob(
+                this@readBlob,
+                pinnedData.addressOf(0),
+                offset,
+                length,
+                exceptionPtr,
+            )
+        }
+    }
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+public inline fun CPointer<ImageInfo>.readFile(): Pair<CPointer<Image>, MagickException?> =
+    withException(onError = { it.dispose() }) { _, exceptionPtr ->
+        MagickImage_ReadFile(this@readFile, exceptionPtr)
+    }
+
+@ExperimentalContracts
+@ExperimentalForeignApi
+public inline fun CPointer<ImageInfo>.readStream(
+    userData: StableRef<Any>,
+    reader: CustomStreamHandler?,
+    seeker: CustomStreamSeeker?,
+    teller: CustomStreamTeller?,
+): Pair<CPointer<Image>, MagickException?> =
+    withException(onError = { it.dispose() }) { _, exceptionPtr ->
+        MagickImage_ReadStream(
+            this@readStream,
+            staticCFunction { p1: CPointer<UByteVar>?, p2: size_t, p3: COpaquePointer? -> 0L },
+            seeker,
+            teller,
+            // data
+            userData.asCPointer(),
+            exceptionPtr,
+        )
+    }
 
 @ExperimentalForeignApi
 public inline fun CPointer<ImageInfo>.scene(value: UInt): Unit = MagickSettings_SetScene(this, value.convert())

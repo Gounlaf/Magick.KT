@@ -8,6 +8,9 @@ import kotlin.experimental.ExperimentalNativeApi
 import imagemagick.core.settings.MagickReadSettings as IMagickReadSettings
 import imagemagick.core.types.MagickGeometry as IMagickGeometry
 
+/**
+ * Class that contains setting for when an image is being read.
+ */
 @ExperimentalContracts
 @ExperimentalForeignApi
 @ExperimentalNativeApi

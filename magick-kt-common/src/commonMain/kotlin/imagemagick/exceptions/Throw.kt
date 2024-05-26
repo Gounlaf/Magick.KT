@@ -118,6 +118,53 @@ public inline fun throwIfOutOfRange(
 @Throws(IllegalArgumentException::class)
 public inline fun throwIfOutOfRange(
     parameterName: String,
+    index: UInt,
+    length: UInt,
+    lazyMessage: () -> Any,
+): Unit = require(index <= length, lazyMessage)
+
+@Throws(IllegalArgumentException::class)
+public inline fun throwIfOutOfRange(
+    parameterName: String,
+    index: Int,
+    length: Int,
+    lazyMessage: () -> Any,
+): Unit = require(index <= length, lazyMessage)
+
+@Throws(IllegalArgumentException::class)
+public inline fun throwIfOutOfRange(
+    parameterName: String,
+    min: Int,
+    max: Int,
+    value: Int,
+    lazyMessage: () -> Any,
+): Unit = require(value in min..max, lazyMessage)
+
+@Throws(IllegalArgumentException::class)
+public inline fun throwIfOutOfRange(
+    parameterName: String,
     value: Double,
     range: ClosedFloatingPointRange<Double>,
 ): Unit = require(value in range)
+
+@Throws(IllegalArgumentException::class)
+public inline fun throwIfOutOfRange(
+    parameterName: String,
+    value: Int,
+    range: ClosedRange<Int>,
+): Unit = require(value in range)
+
+@Throws(IllegalArgumentException::class)
+public inline fun throwIfOutOfRange(
+    parameterName: String,
+    value: UInt,
+    range: ClosedRange<UInt>,
+): Unit = require(value in range)
+
+@Throws(IllegalArgumentException::class)
+public inline fun throwIfOutOfRange(
+    parameterName: String,
+    value: Double,
+    range: ClosedFloatingPointRange<Double>,
+    lazyMessage: () -> Any,
+): Unit = require(value in range, lazyMessage)

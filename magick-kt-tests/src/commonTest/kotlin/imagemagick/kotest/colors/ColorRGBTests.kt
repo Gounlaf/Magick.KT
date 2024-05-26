@@ -3,7 +3,7 @@ package imagemagick.kotest.colors
 import imagemagick.Quantum
 import imagemagick.colors.ColorRGB
 import imagemagick.colors.MagickColor
-import imagemagick.core.types.Percentage.Companion.percent
+import imagemagick.core.types.percent
 import imagemagick.quantum
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.shouldBe

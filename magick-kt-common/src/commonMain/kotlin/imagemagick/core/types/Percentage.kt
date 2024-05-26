@@ -29,14 +29,6 @@ public value class Percentage(private val value: Double = 0.0) : Comparable<Perc
      */
     public constructor(value: UInt) : this(value.toDouble())
 
-    public companion object {
-        public inline fun Int.percent(): Percentage = Percentage(this.toDouble())
-
-        public inline fun UInt.percent(): Percentage = Percentage(this.toDouble())
-
-        public inline fun Double.percent(): Percentage = Percentage(this)
-    }
-
     public operator fun times(other: Int): Int = other.times(value).div(100.0).toInt()
 
     public operator fun times(other: UInt): UInt = other.toDouble().times(value).div(100.0).toUInt()
@@ -64,3 +56,9 @@ public value class Percentage(private val value: Double = 0.0) : Comparable<Perc
     // https://github.com/dlemstra/Magick.NET/discussions/1445#discussioncomment-7111873
     override fun toString(): String = value.toString().substringBefore(".0").plus('%')
 }
+
+public inline fun Int.percent(): Percentage = Percentage(this.toDouble())
+
+public inline fun UInt.percent(): Percentage = Percentage(this.toDouble())
+
+public inline fun Double.percent(): Percentage = Percentage(this)

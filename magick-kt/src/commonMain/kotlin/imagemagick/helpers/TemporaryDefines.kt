@@ -5,8 +5,8 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import kotlin.contracts.ExperimentalContracts
 import kotlin.experimental.ExperimentalNativeApi
 
-@ExperimentalForeignApi
 @ExperimentalContracts
+@ExperimentalForeignApi
 @ExperimentalNativeApi
 @ExperimentalStdlibApi
 internal class TemporaryDefines(private val image: MagickImage) : AutoCloseable {

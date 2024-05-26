@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import java.util.Properties
 
 plugins {
@@ -14,6 +16,12 @@ val localProperties =
 val localInclude = file(localProperties.getProperty("local.include", "/usr/include"))
 
 kotlin {
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    compilerOptions {
+        languageVersion.set(KotlinVersion.KOTLIN_2_0)
+        apiVersion.set(KotlinVersion.KOTLIN_2_0)
+    }
+
     explicitApiWarning()
 
     linuxX64 {
@@ -32,16 +40,10 @@ kotlin {
     }
 
     sourceSets {
-        all {
-            languageSettings.apply {
-                languageVersion = "1.9"
-                apiVersion = "1.9"
-            }
-        }
-
         val commonMain by getting {
             dependencies {
                 implementation(project(":magick-kt-common"))
+                implementation("com.benasher44:uuid:_")
             }
         }
     }

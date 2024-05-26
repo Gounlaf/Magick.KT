@@ -11,7 +11,6 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import libMagickNative.PrimaryInfo
 import libMagickNative.PrimaryInfo_Create
 
-@ExperimentalStdlibApi
 @ExperimentalForeignApi
 public class NativePrimaryInfo(public val ptr: CPointer<PrimaryInfo>) : AutoCloseable {
     public constructor() : this(create())

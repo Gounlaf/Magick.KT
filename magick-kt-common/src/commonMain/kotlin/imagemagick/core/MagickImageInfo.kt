@@ -6,8 +6,8 @@ import imagemagick.core.enums.Interlace
 import imagemagick.core.enums.MagickFormat
 import imagemagick.core.exceptions.MagickException
 import imagemagick.core.types.Density
-import okio.Path
-import okio.Source
+import kotlinx.io.Source
+import kotlinx.io.files.Path
 
 /**
  * Interface that contains basic information about an image.

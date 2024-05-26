@@ -14,7 +14,6 @@ import libMagickNative.MagickRectangle_Create
 import libMagickNative.MagickRectangle_FromPageSize
 import libMagickNative.RectangleInfo
 
-@ExperimentalStdlibApi
 @ExperimentalForeignApi
 public class NativeMagickRectangle(public val ptr: CPointer<RectangleInfo>) : AutoCloseable {
     public constructor() : this(create())

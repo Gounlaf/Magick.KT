@@ -5,6 +5,7 @@ import imagemagick.colors.MagickColor.Companion.toMagick
 import imagemagick.colors.MagickColor.Companion.toNative
 import imagemagick.core.MagickImageQuantum
 import imagemagick.core.colors.MagickColorQuantum
+import imagemagick.core.defines.WriteDefines
 import imagemagick.core.drawables.DrawableAffine
 import imagemagick.core.enums.AlphaOption
 import imagemagick.core.enums.AutoThresholdMethod
@@ -16,6 +17,7 @@ import imagemagick.core.enums.ColorType
 import imagemagick.core.enums.CompositeOperator
 import imagemagick.core.enums.CompressionMethod
 import imagemagick.core.enums.DistortMethod
+import imagemagick.core.enums.DitherMethod
 import imagemagick.core.enums.Endian
 import imagemagick.core.enums.ErrorMetric
 import imagemagick.core.enums.EvaluateFunction
@@ -25,6 +27,7 @@ import imagemagick.core.enums.GifDisposeMethod
 import imagemagick.core.enums.Gravity
 import imagemagick.core.enums.Interlace
 import imagemagick.core.enums.MagickFormat
+import imagemagick.core.enums.MorphologyMethod
 import imagemagick.core.enums.NoiseType
 import imagemagick.core.enums.OrientationType
 import imagemagick.core.enums.PixelChannel
@@ -38,17 +41,22 @@ import imagemagick.core.profiles.ImageProfile
 import imagemagick.core.profiles.color.ColorProfile
 import imagemagick.core.settings.CompareSettingsQuantum
 import imagemagick.core.settings.KmeansSettings
+import imagemagick.core.settings.MorphologySettings
 import imagemagick.core.types.Density
 import imagemagick.core.types.Percentage
 import imagemagick.core.types.PointD
 import imagemagick.exceptions.MagickErrorException
 import imagemagick.exceptions.throwIfEmpty
 import imagemagick.exceptions.throwIfTrue
+import imagemagick.helpers.ByteArrayWrapper
 import imagemagick.helpers.PercentageHelper
 import imagemagick.helpers.TemporaryDefines
+import imagemagick.helpers.TemporaryMagickFormat
 import imagemagick.helpers.enumValueOf
+import imagemagick.helpers.toString
 import imagemagick.helpers.using
 import imagemagick.magicknative.NativeMagickImage
+import imagemagick.magicknative.Registry
 import imagemagick.magicknative.types.NativeOffsetInfo
 import imagemagick.matrices.DoubleMatrix
 import imagemagick.settings.CompareSettings
@@ -56,6 +64,10 @@ import imagemagick.settings.DeskewSettings
 import imagemagick.settings.DistortSettings
 import imagemagick.settings.MagickReadSettings
 import imagemagick.settings.MagickSettings
+import imagemagick.settings.QuantizeSettings
+import imagemagick.settings.createNativeInstance
+import imagemagick.statistics.Moments
+import imagemagick.statistics.PerceptualHash
 import imagemagick.statistics.Statistics
 import imagemagick.types.ChromaticityInfo
 import imagemagick.types.MagickErrorInfo
@@ -66,11 +78,13 @@ import imagemagick.types.PrimaryInfo.Companion.toMagick
 import imagemagick.types.PrimaryInfo.Companion.toNative
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.convert
-import okio.Path
-import okio.Source
-import okio.buffer
+import kotlinx.io.Source
+import kotlinx.io.files.Path
+import platform.posix.size_t
 import kotlin.contracts.ExperimentalContracts
 import kotlin.experimental.ExperimentalNativeApi
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.math.min
 import imagemagick.core.MagickImage as IMagickImage
 import imagemagick.core.MagickImageQuantum as IMagickImageQ
@@ -80,6 +94,9 @@ import imagemagick.core.matrices.MagickColorMatrix as IMagickColorMatrix
 import imagemagick.core.settings.DeskewSettings as IDeskewSettings
 import imagemagick.core.settings.DistortSettings as IDistortSettings
 import imagemagick.core.settings.MagickReadSettings as IMagickReadSettings
+import imagemagick.core.settings.QuantizeSettings as IQuantizeSettings
+import imagemagick.core.statistics.Moments as IMoments
+import imagemagick.core.statistics.PerceptualHash as IPerceptualHash
 import imagemagick.core.statistics.Statistics as IStatistics
 import imagemagick.core.types.ChromaticityInfo as IChromaticityInfo
 import imagemagick.core.types.MagickErrorInfo as IMagickErrorInfo
@@ -551,6 +568,8 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
     override val width: UInt
         get() = nativeInstance.width
 
+    private val hasColorProfile: Boolean = hasProfile("icc") or hasProfile("icm")
+
     override fun adaptiveBlur(
         radius: Double,
         sigma: Double,
@@ -740,7 +759,7 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
             return MagickErrorInfo()
         }
 
-        return createErrorInfo(this)
+        return createErrorInfo()
     }
 
     override fun compare(
@@ -1042,7 +1061,10 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
 
     override fun grayscale(method: PixelIntensityMethod): Unit = nativeInstance.grayscale(method)
 
-    override fun haldClut(image: IMagickImage): Unit = nativeInstance.haldClut(image.nativeInstance())
+    override fun haldClut(
+        image: IMagickImage,
+        channels: Channels,
+    ): Unit = nativeInstance.haldClut(image.nativeInstance(), channels)
 
     override fun hasProfile(name: String): Boolean = nativeInstance.hasProfile(name)
 
@@ -1139,17 +1161,150 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
         rigidity: Double,
     ): Unit = nativeInstance.liquidRescale(MagickGeometry(percentageWidth, percentageHeight), deltaX, rigidity)
 
-    override fun lower(size: UInt): Unit = nativeInstance.lower(size.toULong())
-
-    override fun magnify() {
-        TODO("Not yet implemented")
-    }
-
     override fun localContrast(
         radius: Double,
         strength: Percentage,
         channels: Channels,
     ): Unit = nativeInstance.localContrast(radius, strength.toDouble(), channels)
+
+    override fun lower(size: UInt): Unit = nativeInstance.lower(size.toULong())
+
+    override fun magnify(): Unit = nativeInstance.magnify()
+
+    override fun map(image: IMagickImage): IMagickErrorInfo = map(image, QuantizeSettings())
+
+    override fun map(
+        image: IMagickImage,
+        settings: IQuantizeSettings,
+    ): IMagickErrorInfo =
+        when (nativeInstance.map(image.nativeInstance(), settings.createNativeInstance())) {
+            true -> MagickErrorInfo()
+            false -> createErrorInfo()
+        }
+
+    override fun meanShift(
+        width: UInt,
+        height: UInt,
+        colorDistance: Percentage,
+    ): Unit = nativeInstance.meanShift(width, height, colorDistance)
+
+    override fun minify(): Unit = nativeInstance.minify()
+
+    override fun minimumBoundingBox(): Sequence<PointD> =
+        sequence {
+            nativeInstance.minimumBoundingBox().use {
+                for (i in 0.convert<size_t>()..it.length) {
+                    val x = it.getX(i)
+                    val y = it.getY(i)
+
+                    yield(PointD(x, y))
+                }
+            }
+        }
+
+    override fun modulate(
+        brightness: Percentage,
+        saturation: Percentage,
+        hue: Percentage,
+    ) {
+        val b = brightness.toDouble().toString(removeDecimalIfRound = true)
+        val s = saturation.toDouble().toString(removeDecimalIfRound = true)
+        val h = hue.toDouble().toString(removeDecimalIfRound = true)
+
+        nativeInstance.modulate("$b/$s/$h")
+    }
+
+    override fun morphology(
+        method: MorphologyMethod,
+        userKernel: String,
+        channels: Channels,
+        iterations: Int,
+    ) {
+        throwIfTrue("iterations", iterations < -1, "The number of iterations must be unlimited (-1) or positive")
+
+        nativeInstance.morphology(method, userKernel, channels, iterations)
+    }
+
+    override fun morphology(settings: MorphologySettings) {
+        TemporaryDefines(this).use {
+            it.setArtifact("convolve:bias", settings.convolveBias)
+            it.setArtifact("convolve:scale", settings.convolveScale)
+
+            val userKernel = settings.userKernel
+
+            if (!userKernel.isNullOrEmpty()) {
+                morphology(settings.method, userKernel, settings.channels, settings.iterations)
+            } else {
+                morphology(
+                    settings.method,
+                    settings.kernel,
+                    settings.kernelArguments,
+                    settings.channels,
+                    settings.iterations,
+                )
+            }
+        }
+    }
+
+    override fun moments(): IMoments =
+        nativeInstance.moments().use {
+            Moments(this, it)
+        }
+
+    override fun motionBlur(
+        radius: Double,
+        sigma: Double,
+        angle: Double,
+    ): Unit = nativeInstance.motionBlur(radius, sigma, angle)
+
+    override fun negate(channels: Channels): Unit = nativeInstance.negate(onlyGrayscale = false, channels)
+
+    override fun negateGrayscale(channels: Channels): Unit = nativeInstance.negate(onlyGrayscale = true, channels)
+
+    override fun normalize(): Unit = nativeInstance.normalize()
+
+    override fun oilPaint(
+        radius: Double,
+        sigma: Double,
+    ): Unit = nativeInstance.oilPaint(radius, sigma)
+
+    override fun orderedDither(
+        thresholdMap: String,
+        channels: Channels,
+    ) {
+        throwIfEmpty("thresholdMap", thresholdMap)
+        nativeInstance.orderedDither(thresholdMap, channels)
+    }
+
+    override fun perceptible(
+        epsilon: Double,
+        channels: Channels,
+    ): Unit = nativeInstance.perceptible(epsilon, channels)
+
+    override fun perceptualHash(): IPerceptualHash? = perceptualHash(*PerceptualHash.defaultColorSpaces)
+
+    override fun perceptualHash(vararg colorSpaces: ColorSpace): IPerceptualHash? {
+        PerceptualHash.validateColorSpaces(colorSpaces)
+
+        val hash =
+            TemporaryDefines(this).use {
+                it.setArtifact(
+                    "phash:colorspaces",
+                    colorSpaces.joinToString(separator = ",") { colorSpace -> colorSpace.toString() },
+                )
+
+                nativeInstance.perceptualHash().use { nativePerceptualHash ->
+                    // NOTES: Magick.KT implementation don't throw exception, but use a internal property IsValid
+                    try {
+                        PerceptualHash(this, colorSpaces, nativePerceptualHash)
+                    } catch (e: IllegalStateException) {
+                        null
+                    }
+                }
+            }
+
+        return hash
+    }
 
     override fun ping(data: UByteArray): Unit = ping(data, null)
 
@@ -1209,9 +1364,60 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
         readSettings: IMagickReadSettings<QuantumType>?,
     ): Unit = read(fileName, readSettings, true)
 
+    override fun polaroid(
+        caption: String,
+        angle: Double,
+        method: PixelInterpolateMethod,
+    ) {
+        settings.drawing.createNativeInstance().use {
+            nativeInstance.polaroid(it, caption, angle, method)
+        }
+    }
+
+    override fun posterize(
+        levels: UInt,
+        method: DitherMethod,
+        channels: Channels,
+    ) {
+        nativeInstance.posterize(levels, method, channels)
+    }
+
+    override fun preserveColorType() {
+        // NOTE: this is not a mistake; there is a custom getter on this property
+        colorType = colorType
+        setAttribute("colorspace:auto-grayscale", "false")
+    }
+
+    override fun quantize(settings: IQuantizeSettings): IMagickErrorInfo? {
+        settings.createNativeInstance().use {
+            nativeInstance.quantize(it)
+        }
+
+        return if (settings.measureErrors) {
+            createErrorInfo()
+        } else {
+            null
+        }
+    }
+
     override fun raise(size: UInt): Unit = nativeInstance.raise(size.toULong())
 
-    // read UByteArray
+    override fun randomThreshold(
+        percentageLow: Percentage,
+        percentageHigh: Percentage,
+        channels: Channels,
+    ) {
+        TODO("Not yet implemented")
+    }
+
+    override fun rangeThreshold(
+        percentageLowBlack: Percentage,
+        percentageLowWhite: Percentage,
+        percentageHighWhite: Percentage,
+        percentageHighBlack: Percentage,
+    ) {
+        TODO("Not yet implemented")
+    }
 
     override fun read(data: UByteArray): Unit = read(data, null)
 
@@ -1276,10 +1482,6 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
         read(data, 0u, data.size.toUInt(), readSettings, false)
     }
 
-    // /read UByteArray
-
-    // read Path
-
     override fun read(file: Path): Unit = read(file, null)
 
     override fun read(
@@ -1304,8 +1506,6 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
         readSettings: IMagickReadSettings<QuantumType>?,
     ): Unit = read(file.name, readSettings)
 
-    // /read Path
-
     override fun read(
         color: IMagickColor<QuantumType>,
         width: UInt,
@@ -1314,8 +1514,6 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
         read("xc:${color.toShortString()}", width, height)
         backgroundColor = color
     }
-
-    // read Stream
 
     override fun read(stream: Source): Unit = read(stream, MagickFormat.UNKNOWN)
 
@@ -1334,10 +1532,6 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
         stream: Source,
         readSettings: IMagickReadSettings<QuantumType>?,
     ): Unit = read(stream, readSettings, false)
-
-    // read /Stream
-
-    // read FileName
 
     override fun read(fileName: String): Unit = read(fileName, null)
 
@@ -1370,8 +1564,6 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
         readSettings: IMagickReadSettings<QuantumType>?,
     ): Unit = read(fileName, readSettings, false)
 
-    // /read FileName
-
     private fun read(
         data: UByteArray,
         offset: UInt,
@@ -1398,22 +1590,18 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
         readSettings: IMagickReadSettings<QuantumType>?,
         ping: Boolean,
     ) {
-//        Throw.IfNullOrEmpty(nameof(stream), stream);
+        TODO()
+//        val newReadSettings = createReadSettings(readSettings)
+//        settings = newReadSettings
 //
-//        var bytes = Bytes.FromStreamBuffer(stream);
-//        if (bytes is not null)
-//        {
-//            Read(bytes.GetData(), 0, bytes.Length, readSettings, ping);
-//            return;
+//        settings.ping = ping
+//        settings.fileName = null
+//
+//        settings.createNativeInstance().use { nativeMagickSettings ->
+//            nativeInstance.readStream(stream, nativeMagickSettings)
 //        }
-
-        val newReadSettings = createReadSettings(readSettings)
-        settings = newReadSettings
-
-        settings.ping = ping
-        settings.fileName = null
-
-        nativeInstance.readStream(stream.buffer(), settings)
+//
+//        resetSettings()
     }
 
     private fun read(
@@ -1434,6 +1622,11 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
         resetSettings()
     }
 
+    override fun regionMask(region: IMagickGeometry): Unit =
+        MagickRectangle.fromGeometry(region, this).toNative().use {
+            nativeInstance.regionMask(it)
+        }
+
     override fun removeArtifact(name: String) {
         throwIfEmpty("name", name)
         nativeInstance.removeArtifact(name)
@@ -1453,6 +1646,15 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
     override fun removeReadMask(): Unit = nativeInstance.setReadMask(null)
 
     override fun removeWriteMask(): Unit = nativeInstance.setWriteMask(null)
+
+    override fun rePage() {
+        page = MagickGeometry(0, 0, 0u, 0u)
+    }
+
+    override fun resample(
+        resolutionX: Double,
+        resolutionY: Double,
+    ): Unit = nativeInstance.resample(resolutionX, resolutionY)
 
     override fun resize(
         width: UInt,
@@ -1689,6 +1891,223 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
         }
     }
 
+    override fun stegano(watermark: IMagickImage): Unit = nativeInstance.stegano(watermark.nativeInstance())
+
+    override fun stereo(rightImage: IMagickImage): Unit = nativeInstance.stereo(rightImage.nativeInstance())
+
+    override fun strip(): Unit = nativeInstance.strip()
+
+    override fun swirl(
+        method: PixelInterpolateMethod,
+        degrees: Double,
+    ): Unit = nativeInstance.swirl(method, degrees)
+
+    override fun texture(image: IMagickImage): Unit = nativeInstance.texture(image.nativeInstance())
+
+    override fun threshold(
+        percentage: Percentage,
+        channels: Channels,
+    ): Unit = nativeInstance.threshold(percentage, channels)
+
+    override fun thumbnail(
+        width: UInt,
+        height: UInt,
+    ): Unit = thumbnail(MagickGeometry(width, height))
+
+    override fun thumbnail(geometry: IMagickGeometry): Unit = nativeInstance.thumbnail(geometry.toString())
+
+    override fun thumbnail(percentage: Percentage): Unit = thumbnail(percentage, percentage)
+
+    override fun thumbnail(
+        percentageWidth: Percentage,
+        percentageHeight: Percentage,
+    ): Unit = thumbnail(MagickGeometry(percentageWidth, percentageHeight))
+
+    override fun tile(
+        image: imagemagick.core.MagickImage,
+        compose: CompositeOperator,
+        args: String?,
+    ) {
+        for (y in 0u until height step image.height.toInt()) {
+            for (x in 0u until width step image.width.toInt()) {
+                composite(image, x.toInt(), y.toInt(), compose, args)
+            }
+        }
+    }
+
+    @ExperimentalEncodingApi
+    override fun toBase64(): String {
+        val bytes = toByteArray()
+
+        return Base64.encode(bytes.toByteArray())
+    }
+
+    @ExperimentalEncodingApi
+    override fun toBase64(format: MagickFormat): String {
+        val bytes = toByteArray(format)
+
+        return Base64.encode(bytes.toByteArray())
+    }
+
+    @ExperimentalEncodingApi
+    override fun toBase64(defines: WriteDefines): String {
+        val bytes = toByteArray(defines)
+
+        return Base64.encode(bytes.toByteArray())
+    }
+
+    override fun toByteArray(defines: WriteDefines): UByteArray {
+        settings.setDefines(defines)
+        return toByteArray(defines.format)
+    }
+
+    override fun toByteArray(): UByteArray {
+        settings.fileName = null
+
+        val sink = ByteArrayWrapper()
+
+        Registry.register(sink).use { wrap ->
+            settings.createNativeInstance().use {
+                nativeInstance.writeStream(
+                    it,
+                    wrap.ref,
+                    wrap.writer,
+                    wrap.seeker,
+                    wrap.teller,
+                    wrap.reader,
+                )
+            }
+        }
+
+        return sink.bytes
+    }
+
+    override fun toByteArray(format: MagickFormat): UByteArray =
+        TemporaryMagickFormat(this, format).use {
+            toByteArray()
+        }
+
+    override fun toString(): String = "$format ${width}x$height $depth-bit $colorSpace"
+
+    override fun transformColorSpace(
+        target: ColorProfile,
+        mode: ColorTransformMode,
+    ): Boolean {
+        if (!hasColorProfile) {
+            return false
+        }
+
+        setProfile(target, mode)
+
+        return true
+    }
+
+    override fun transformColorSpace(
+        source: ColorProfile,
+        target: ColorProfile,
+        mode: ColorTransformMode,
+    ): Boolean {
+        if (source.colorSpace != colorSpace) {
+            return false
+        }
+
+        if (!hasColorProfile) {
+            setProfile(source)
+        }
+
+        setProfile(target, mode)
+
+        return true
+    }
+
+    override fun transpose() {
+        nativeInstance.transpose()
+    }
+
+    override fun transverse() {
+        nativeInstance.transverse()
+    }
+
+    override fun trim() {
+        nativeInstance.trim()
+    }
+
+    override fun trim(vararg edges: Gravity) {
+        TemporaryDefines(this).use {
+            it.setArtifact("trim:edges", gravityToEdge(*edges).toSet().joinToString(","))
+            trim()
+        }
+    }
+
+    override fun trim(percentBackground: Percentage) {
+        TemporaryDefines(this).use {
+            it.setArtifact("trim:percent-background", percentBackground.toInt())
+            trim()
+        }
+    }
+
+    override fun unsharpMask(
+        radius: Double,
+        sigma: Double,
+        amount: Double,
+        threshold: Double,
+        channels: Channels,
+    ) {
+        nativeInstance.unsharpMask(radius, sigma, amount, threshold, channels)
+    }
+
+    override fun vignette(
+        radius: Double,
+        sigma: Double,
+        x: Int,
+        y: Int,
+    ) {
+        nativeInstance.vignette(radius, sigma, x.toLong(), y.toLong())
+    }
+
+    override fun wave(method: PixelInterpolateMethod, amplitude: Double, length: Double) {
+        nativeInstance.wave(method, amplitude, length)
+    }
+
+    override fun whiteBalance() {
+        nativeInstance.whiteBalance()
+    }
+
+    override fun whiteBalance(vibrance: Percentage) {
+        TemporaryDefines(this).use {
+            it.setArtifact("white-balance:vibrance", vibrance.toString())
+            whiteBalance()
+        }
+    }
+
+    override fun whiteThreshold(threshold: Percentage, channels: Channels) {
+        nativeInstance.whiteThreshold(threshold.toString(), channels)
+    }
+
+    override fun write(file: Path, defines: WriteDefines) {
+        settings.setDefines(defines)
+        write(file, defines.format)
+    }
+
+    override fun write(file: Path, format: MagickFormat) {
+        TemporaryMagickFormat(this, format).use {
+            write(file)
+        }
+    }
+
+    override fun write(fileName: String) {
+        nativeInstance.fileName = fileName
+        TODO()
+    }
+
+    override fun write(fileName: String, defines: WriteDefines) {
+        TODO("Not yet implemented")
+    }
+
+    override fun write(fileName: String, format: MagickFormat) {
+        TODO("Not yet implemented")
+    }
+
     private fun calculateContrastStretch(
         blackPoint: Percentage,
         whitePoint: Percentage,
@@ -1700,6 +2119,7 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
 
         x *= pixels / 100.0
         y *= pixels / 100.0
+
         y = pixels - y
 
         return PointD(x, y)
@@ -1712,13 +2132,52 @@ public class MagickImage : IMagickImageQ<QuantumType>, AutoCloseable {
         internal fun IMagickImage.nativeInstance(): NativeMagickImage =
             (this as? MagickImage)?.nativeInstance ?: throw UnsupportedOperationException()
 
-        internal fun createErrorInfo(image: MagickImage): IMagickErrorInfo =
-            image.nativeInstance.let {
+        internal inline fun MagickImage.createErrorInfo(): IMagickErrorInfo =
+            nativeInstance.let {
                 MagickErrorInfo(
                     it.meanErrorPerPixel,
                     it.normalizedMaximumError,
                     it.normalizedMeanError,
                 )
+            }
+
+        internal fun gravityToEdge(vararg edges: Gravity) =
+            sequence<String> {
+                edges.forEach {
+                    when (it) {
+                        Gravity.NORTH -> {
+                            yield("north")
+                        }
+                        Gravity.NORTHEAST -> {
+                            yield("north")
+                            yield("east")
+                        }
+                        Gravity.NORTHWEST -> {
+                            yield("north")
+                            yield("west")
+                        }
+                        Gravity.EAST -> {
+                            yield("east")
+                        }
+                        Gravity.WEST -> {
+                            yield("west")
+                        }
+                        Gravity.SOUTH -> {
+                            yield("south")
+                        }
+                        Gravity.SOUTHEAST -> {
+                            yield("south")
+                            yield("east")
+                        }
+                        Gravity.SOUTHWEST -> {
+                            yield("south")
+                            yield("west")
+                        }
+                        else -> {
+                            // NO-OP
+                        }
+                    }
+                }
             }
     }
 }

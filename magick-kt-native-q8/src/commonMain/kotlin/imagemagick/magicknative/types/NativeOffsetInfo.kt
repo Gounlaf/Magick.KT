@@ -10,7 +10,6 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import libMagickNative.OffsetInfo
 import libMagickNative.OffsetInfo_Create
 
-@ExperimentalStdlibApi
 @ExperimentalForeignApi
 public class NativeOffsetInfo(public val ptr: CPointer<OffsetInfo>) : AutoCloseable {
     public constructor() : this(create())

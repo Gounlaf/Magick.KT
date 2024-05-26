@@ -6,7 +6,7 @@ import imagemagick.asserts.ColorAssert
 import imagemagick.colors.MagickColor
 import imagemagick.colors.MagickColors
 import imagemagick.core.types.Percentage
-import imagemagick.core.types.Percentage.Companion.percent
+import imagemagick.core.types.percent
 import imagemagick.helpers.empty
 import imagemagick.helpers.shouldBeIn
 import imagemagick.quantum

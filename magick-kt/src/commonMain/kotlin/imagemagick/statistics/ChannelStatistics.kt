@@ -5,7 +5,7 @@ import imagemagick.magicknative.statistics.NativeChannelStatistics
 import kotlinx.cinterop.ExperimentalForeignApi
 import imagemagick.core.statistics.ChannelStatistics as IChannelStatistics
 
-internal class ChannelStatistics private constructor(
+internal data class ChannelStatistics private constructor(
     override val channel: PixelChannel,
     override val depth: UInt,
     override val entropy: Double,

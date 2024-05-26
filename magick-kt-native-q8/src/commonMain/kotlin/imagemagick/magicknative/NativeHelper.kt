@@ -6,7 +6,6 @@ import imagemagick.events.EventHolder
 import imagemagick.events.WarningEventArgs
 import platform.posix.warn
 
-@ExperimentalStdlibApi
 public abstract class NativeHelper {
     public val warning: EventHolder<WarningEventArgs> = EventHolder()
 

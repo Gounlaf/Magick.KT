@@ -17,7 +17,6 @@ import libMagickNative.GeometryInfo
 import libMagickNative.MagickGeometry_Create
 
 @ExperimentalForeignApi
-@ExperimentalStdlibApi
 public class NativeMagickGeometry(private val ptr: CPointer<GeometryInfo>) : AutoCloseable {
     public constructor() : this(create())
 

@@ -1,7 +1,7 @@
 package imagemagick.kotest.types
 
 import imagemagick.core.types.Percentage
-import imagemagick.core.types.Percentage.Companion.percent
+import imagemagick.core.types.percent
 import imagemagick.helpers.checkGcUsage
 import imagemagick.helpers.empty
 import imagemagick.types.MagickGeometry

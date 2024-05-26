@@ -17,31 +17,30 @@ import libMagickNative.ChannelStatistics
 import platform.posix.size_t
 
 @ExperimentalForeignApi
-@ExperimentalStdlibApi
 public class NativeChannelStatistics(public val ptr: CPointer<ChannelStatistics>) : AutoCloseable {
     public inline val depth: size_t
-        get() = ptr.depth()
+        get() = ptr.depth
 
     public inline val entropy: Double
-        get() = ptr.entropy()
+        get() = ptr.entropy
 
     public inline val kurtosis: Double
-        get() = ptr.kurtosis()
+        get() = ptr.kurtosis
 
     public inline val maximum: Double
-        get() = ptr.maximum()
+        get() = ptr.maximum
 
     public inline val mean: Double
-        get() = ptr.mean()
+        get() = ptr.mean
 
     public inline val minimum: Double
-        get() = ptr.minimum()
+        get() = ptr.minimum
 
     public inline val skewness: Double
-        get() = ptr.skewness()
+        get() = ptr.skewness
 
     public inline val standardDeviation: Double
-        get() = ptr.standardDeviation()
+        get() = ptr.standardDeviation
 
     override fun close() {
         ptr.dispose()
